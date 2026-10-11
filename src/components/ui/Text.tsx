@@ -15,12 +15,14 @@ export type TextVariant =
   | 'displayLarge';
 
 export type TextColor =
+  | 'ground'
   | 'ivory'
   | 'ivorySecondary'
   | 'ivoryMuted'
   | 'ivorySubtle'
   | 'champagne'
   | 'champagneLight'
+  | 'champagneMuted'
   | 'garnet';
 
 export interface TextProps extends RNTextProps {
