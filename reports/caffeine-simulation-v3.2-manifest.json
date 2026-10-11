@@ -1,0 +1,133 @@
+{
+  "timestamp": "2026-10-10T13:32:47.999Z",
+  "testCommand": "npx --no-install tsx --test scripts/engine.test.ts scripts/engine-v2.test.ts scripts/engine-v3.test.ts scripts/engine-v3-1.test.ts scripts/engine-v3-2.test.ts",
+  "testPassCount": 37,
+  "reports": [
+    {
+      "path": "reports/caffeine-simulation-v2-data.json",
+      "sha256": "44bb2315c42abbb30491368191fa4dd2d65a25343fc8e9cc795af12d750d8d3e"
+    },
+    {
+      "path": "reports/caffeine-simulation-v2-lint.log",
+      "sha256": "4a4bfde8e97b313fad8a726bcbd185be46ec784b728101c7c9e36227420e6315"
+    },
+    {
+      "path": "reports/caffeine-simulation-v2-run.log",
+      "sha256": "1984e16919a06f72b15d0df6229525c9af09fa329c0b80f8a31dd222102de14d"
+    },
+    {
+      "path": "reports/caffeine-simulation-v2-tuning-progress.json",
+      "sha256": "abc09a35820e85e205ba4821fb49f399db8785439f7aa1576977785a9cc282b6"
+    },
+    {
+      "path": "reports/caffeine-simulation-v2-tuning.json",
+      "sha256": "71b7772e9678d0e468c58127be7f3039eded6bcac60d14486ab45893dd12c857"
+    },
+    {
+      "path": "reports/caffeine-simulation-v2.md",
+      "sha256": "ef9ab28a0be6d9686a13b385e6b22922f51de02a6d2838366f12f36dba5c6b87"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3-heldout.json",
+      "sha256": "14fef8daed3b0fb9593933c8e425f5aaee8c42c766615c7fc4c4bfbbc1f3c226"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3-history.json",
+      "sha256": "f36d6435fb8ee2fbdc79e7a899cec8d4cb89b8280f98aa274e00431d9fa92167"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3-protocol.md",
+      "sha256": "6e88a729963ead24ece982bf59670e0aa9978e7f06ac896fec4b0dc146557be9"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3-run.log",
+      "sha256": "7f5b7411187c708e481b927b789ab30528a25d9bd70bb0b31da3dbaefbf0de11"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3-selection.json",
+      "sha256": "05f2608bf74fd39c3431e2a63c38fe6bff82d81aa8d71260c9040cdcf2aff815"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3-tuning.json",
+      "sha256": "e8c0bf37eafda2679d35af335aad8fd83c8f732c64b4da825984f4cc7d442a66"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3.1-addendum.md",
+      "sha256": "4b31f0072f3778babea3d3970278f36d0a9427dd330a4c699a8738ddb314fd9c"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3.1-heldout.json",
+      "sha256": "d21790830aa2791761d8e3385b24fd99f52eda7964f4f342a08795dcc07b811d"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3.1-protocol.md",
+      "sha256": "cdad48a997fadd75f86eb6a20a943a53c499bb628d13b8444d13b78c25e10dd5"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3.1-tuning.json",
+      "sha256": "f32cb88e09d59e75e3e2bf3e7f87ce6420525c9c8dd9a024a534c80f838be743"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3.1.md",
+      "sha256": "7f27f124c8df48f9c068fc548feb5bc8b5a3635d89d99305d265efc438574539"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3.2-verification.md",
+      "sha256": "39ad40784929e4a70b9031e13bd80d15e79d92964433b71d913983b60d1f24b3"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3.2.md",
+      "sha256": "221afb7a2caf24ceeada81981c7bb3cba11ec084fad3fc36c370136678f58964"
+    },
+    {
+      "path": "reports/caffeine-simulation-v3.md",
+      "sha256": "c736891913b3e1c9b27c5525475c65beb7ead7ed13f67c8d581f971610dbac0f"
+    },
+    {
+      "path": "reports/caffeine-simulation.md",
+      "sha256": "790281e93a9d20bfa6855107d077f391afff25de7a881154e58ac852d68dd11a"
+    }
+  ],
+  "engine": [
+    {
+      "path": "src/engine/README.md",
+      "sha256": "192e647b28c68ef76a11adbace3afd37bd92a35509a649eba505b724303e0dab"
+    },
+    {
+      "path": "src/engine/adherence.ts",
+      "sha256": "788d13221101a5e604ddb48c22d2ff9d073c3b92a40a7f797dc1b323817b344d"
+    },
+    {
+      "path": "src/engine/analysis.ts",
+      "sha256": "ed1b8a5b68a3663a48f14e84ad7a7824797a533061079304f66ac8e2cbd9d785"
+    },
+    {
+      "path": "src/engine/experimental-complier.ts",
+      "sha256": "a8a07b085ce4a571fa5409fe9f4940f781e738092ed67b5c49aab90f04af572e"
+    },
+    {
+      "path": "src/engine/feasibility-table-data.ts",
+      "sha256": "91560fe5a6be00c0fca907c5820cae88650debbfcc9d9e52e81ef6b3c7f63442"
+    },
+    {
+      "path": "src/engine/feasibility.ts",
+      "sha256": "86227816855c030e4c144a8d1c90483b30198b581ba69d15fb45668a206b81e5"
+    },
+    {
+      "path": "src/engine/index.ts",
+      "sha256": "7b8ca6c5aa79680c9a1a8759951acb142b81df1991ca52feeaf66fd9f1fc49a6"
+    },
+    {
+      "path": "src/engine/schedule.ts",
+      "sha256": "64f7d1aa5746dad5e6bc6446c09b4f14080f0120eb22bb90af3f26c9a349c1ce"
+    },
+    {
+      "path": "src/engine/types.ts",
+      "sha256": "bb887f98ab377dcf90cba23b3c73bbddae1401b858d1a9d57b2d649505210e88"
+    },
+    {
+      "path": "src/engine/verdict.ts",
+      "sha256": "8316f7e35074fb9b17c883c156b3dcd2eca8887f7dabf83138ee18ce2dc3bc25"
+    }
+  ]
+}

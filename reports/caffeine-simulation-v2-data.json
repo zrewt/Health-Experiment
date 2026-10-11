@@ -1,0 +1,4372 @@
+{
+  "protocol": "v2-balanced-residual-pairs-hac-t-joint-stratified-blocks-500x299-v1",
+  "engineHash": "d238707d2b447209bef9cb4d9d0e60e68fa178e9b671d5959dd475bdb013c176",
+  "selectionHash": "a7590767f211d2d35b293298317c5777a6c53c6c80149011f11cae0a937f2a4e",
+  "results": [
+    {
+      "cell": {
+        "id": "core-28-0-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 0,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20000000,
+        "seconds": 2.365928500000009,
+        "target": 0,
+        "meanEstimate": 0.24975417557419916,
+        "supported": 3,
+        "rejected": 26,
+        "inconclusive": 497,
+        "covered": 467,
+        "available": 500,
+        "complierCovered": 429,
+        "complierAvailable": 478,
+        "weakInstrument": 2,
+        "unstableComplier": 20,
+        "supportedMean": 39.61186525580522,
+        "meanComplier": 0.20350900826573182,
+        "sizeUncertain": 3,
+        "gateFailures": 374
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-0-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 0,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20001000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20001000,
+        "seconds": 2.1735525999999954,
+        "target": 0,
+        "meanEstimate": 0.2018595546622262,
+        "supported": 3,
+        "rejected": 17,
+        "inconclusive": 496,
+        "covered": 464,
+        "available": 500,
+        "complierCovered": 358,
+        "complierAvailable": 409,
+        "weakInstrument": 56,
+        "unstableComplier": 35,
+        "supportedMean": 39.698565361031626,
+        "meanComplier": 0.061531424280757537,
+        "sizeUncertain": 1,
+        "gateFailures": 398
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-0-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 0,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20002000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20002000,
+        "seconds": 2.0725123000000023,
+        "target": 0,
+        "meanEstimate": -0.8866081312269369,
+        "supported": 1,
+        "rejected": 22,
+        "inconclusive": 499,
+        "covered": 459,
+        "available": 500,
+        "complierCovered": 248,
+        "complierAvailable": 287,
+        "weakInstrument": 142,
+        "unstableComplier": 71,
+        "supportedMean": 30.820304948789385,
+        "meanComplier": -0.8801677244929013,
+        "sizeUncertain": 1,
+        "gateFailures": 453
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-0-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 0,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20003000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20003000,
+        "seconds": 2.2426584999999903,
+        "target": 0,
+        "meanEstimate": 1.8402634297205778,
+        "supported": 3,
+        "rejected": 23,
+        "inconclusive": 497,
+        "covered": 455,
+        "available": 500,
+        "complierCovered": 415,
+        "complierAvailable": 490,
+        "weakInstrument": 0,
+        "unstableComplier": 10,
+        "supportedMean": 37.95004389666891,
+        "meanComplier": 1.994185574844258,
+        "sizeUncertain": 3,
+        "gateFailures": 186
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-0-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 0,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20004000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20004000,
+        "seconds": 2.188204899999997,
+        "target": 0,
+        "meanEstimate": 0.2554684358766813,
+        "supported": 5,
+        "rejected": 34,
+        "inconclusive": 495,
+        "covered": 457,
+        "available": 500,
+        "complierCovered": 411,
+        "complierAvailable": 468,
+        "weakInstrument": 11,
+        "unstableComplier": 21,
+        "supportedMean": 50.030722533358414,
+        "meanComplier": 0.3667322991132426,
+        "sizeUncertain": 3,
+        "gateFailures": 295
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-0-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 0,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20005000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20005000,
+        "seconds": 2.221132700000002,
+        "target": 0,
+        "meanEstimate": -1.2675008450428262,
+        "supported": 1,
+        "rejected": 20,
+        "inconclusive": 499,
+        "covered": 467,
+        "available": 500,
+        "complierCovered": 358,
+        "complierAvailable": 407,
+        "weakInstrument": 51,
+        "unstableComplier": 42,
+        "supportedMean": 33.38245009208788,
+        "meanComplier": -1.6344077255409943,
+        "sizeUncertain": 1,
+        "gateFailures": 391
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-0-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 0,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20006000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20006000,
+        "seconds": 2.3134266999999964,
+        "target": 0,
+        "meanEstimate": 0.7589094473165621,
+        "supported": 9,
+        "rejected": 27,
+        "inconclusive": 491,
+        "covered": 460,
+        "available": 500,
+        "complierCovered": 424,
+        "complierAvailable": 495,
+        "weakInstrument": 0,
+        "unstableComplier": 5,
+        "supportedMean": 45.26930873976019,
+        "meanComplier": 0.7589094473165621,
+        "sizeUncertain": 7,
+        "gateFailures": 78
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-0-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 0,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20007000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20007000,
+        "seconds": 2.3746419000000025,
+        "target": 0,
+        "meanEstimate": 1.4667763169684898,
+        "supported": 10,
+        "rejected": 27,
+        "inconclusive": 490,
+        "covered": 465,
+        "available": 500,
+        "complierCovered": 431,
+        "complierAvailable": 496,
+        "weakInstrument": 0,
+        "unstableComplier": 4,
+        "supportedMean": 48.68583051358489,
+        "meanComplier": 1.3843961394030884,
+        "sizeUncertain": 7,
+        "gateFailures": 200
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-0-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 0,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20008000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20008000,
+        "seconds": 2.3245371000000015,
+        "target": 0,
+        "meanEstimate": 0.20250317515379765,
+        "supported": 2,
+        "rejected": 32,
+        "inconclusive": 498,
+        "covered": 455,
+        "available": 500,
+        "complierCovered": 418,
+        "complierAvailable": 481,
+        "weakInstrument": 3,
+        "unstableComplier": 16,
+        "supportedMean": 29.805384367839594,
+        "meanComplier": 0.04603384712612242,
+        "sizeUncertain": 2,
+        "gateFailures": 351
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-15-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 15,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20009000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20009000,
+        "seconds": 2.348474700000006,
+        "target": 12,
+        "meanEstimate": 10.283198538086813,
+        "supported": 6,
+        "rejected": 41,
+        "inconclusive": 494,
+        "covered": 461,
+        "available": 500,
+        "complierCovered": 399,
+        "complierAvailable": 466,
+        "weakInstrument": 3,
+        "unstableComplier": 31,
+        "supportedMean": 45.65764163132388,
+        "meanComplier": 12.860992340692274,
+        "sizeUncertain": 3,
+        "gateFailures": 366
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-15-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 15,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20010000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20010000,
+        "seconds": 2.2693424999999987,
+        "target": 10.5,
+        "meanEstimate": 9.119521218900617,
+        "supported": 4,
+        "rejected": 21,
+        "inconclusive": 496,
+        "covered": 469,
+        "available": 500,
+        "complierCovered": 358,
+        "complierAvailable": 404,
+        "weakInstrument": 50,
+        "unstableComplier": 46,
+        "supportedMean": 42.496211174963875,
+        "meanComplier": 13.313153638425973,
+        "sizeUncertain": 4,
+        "gateFailures": 411
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-15-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 15,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20011000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20011000,
+        "seconds": 2.189092300000004,
+        "target": 9,
+        "meanEstimate": 8.786442931505695,
+        "supported": 1,
+        "rejected": 30,
+        "inconclusive": 499,
+        "covered": 457,
+        "available": 500,
+        "complierCovered": 279,
+        "complierAvailable": 327,
+        "weakInstrument": 126,
+        "unstableComplier": 47,
+        "supportedMean": 54.8994042683845,
+        "meanComplier": 13.710566332228419,
+        "sizeUncertain": 0,
+        "gateFailures": 455
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-15-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 15,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20012000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20012000,
+        "seconds": 2.4164088000000046,
+        "target": 13.5,
+        "meanEstimate": 12.07550880414309,
+        "supported": 14,
+        "rejected": 27,
+        "inconclusive": 486,
+        "covered": 466,
+        "available": 500,
+        "complierCovered": 426,
+        "complierAvailable": 488,
+        "weakInstrument": 0,
+        "unstableComplier": 12,
+        "supportedMean": 42.3588538394324,
+        "meanComplier": 13.396514044115657,
+        "sizeUncertain": 11,
+        "gateFailures": 166
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-15-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 15,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20013000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20013000,
+        "seconds": 2.306097299999994,
+        "target": 12,
+        "meanEstimate": 12.194157858238011,
+        "supported": 9,
+        "rejected": 35,
+        "inconclusive": 491,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 409,
+        "complierAvailable": 464,
+        "weakInstrument": 9,
+        "unstableComplier": 27,
+        "supportedMean": 46.88311855216563,
+        "meanComplier": 15.300424636844271,
+        "sizeUncertain": 6,
+        "gateFailures": 282
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-15-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 15,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20014000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20014000,
+        "seconds": 2.207878300000011,
+        "target": 10.5,
+        "meanEstimate": 9.649222145887107,
+        "supported": 1,
+        "rejected": 28,
+        "inconclusive": 499,
+        "covered": 467,
+        "available": 500,
+        "complierCovered": 362,
+        "complierAvailable": 405,
+        "weakInstrument": 47,
+        "unstableComplier": 48,
+        "supportedMean": 49.912815715411455,
+        "meanComplier": 13.46206599042532,
+        "sizeUncertain": 0,
+        "gateFailures": 411
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-15-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 15,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20015000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20015000,
+        "seconds": 2.2445915999999997,
+        "target": 15,
+        "meanEstimate": 12.360730865662347,
+        "supported": 22,
+        "rejected": 39,
+        "inconclusive": 478,
+        "covered": 456,
+        "available": 500,
+        "complierCovered": 434,
+        "complierAvailable": 496,
+        "weakInstrument": 0,
+        "unstableComplier": 4,
+        "supportedMean": 54.431517588271866,
+        "meanComplier": 12.360730865662347,
+        "sizeUncertain": 10,
+        "gateFailures": 66
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-15-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 15,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20016000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20016000,
+        "seconds": 2.193515499999994,
+        "target": 13.5,
+        "meanEstimate": 13.452454613316903,
+        "supported": 17,
+        "rejected": 39,
+        "inconclusive": 483,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 422,
+        "complierAvailable": 486,
+        "weakInstrument": 0,
+        "unstableComplier": 14,
+        "supportedMean": 48.37659505386427,
+        "meanComplier": 14.965084880017887,
+        "sizeUncertain": 11,
+        "gateFailures": 208
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-15-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 15,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20017000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20017000,
+        "seconds": 2.0915003,
+        "target": 12,
+        "meanEstimate": 10.59184736279062,
+        "supported": 6,
+        "rejected": 28,
+        "inconclusive": 494,
+        "covered": 448,
+        "available": 500,
+        "complierCovered": 414,
+        "complierAvailable": 482,
+        "weakInstrument": 1,
+        "unstableComplier": 17,
+        "supportedMean": 58.6368004727172,
+        "meanComplier": 13.040487129746744,
+        "sizeUncertain": 0,
+        "gateFailures": 339
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-30-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20018000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20018000,
+        "seconds": 2.24123550000001,
+        "target": 24,
+        "meanEstimate": 24.70610726584695,
+        "supported": 18,
+        "rejected": 73,
+        "inconclusive": 482,
+        "covered": 457,
+        "available": 500,
+        "complierCovered": 417,
+        "complierAvailable": 470,
+        "weakInstrument": 5,
+        "unstableComplier": 25,
+        "supportedMean": 57.91616717547546,
+        "meanComplier": 30.88452675332212,
+        "sizeUncertain": 5,
+        "gateFailures": 358
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-30-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20019000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20019000,
+        "seconds": 2.1388625000000028,
+        "target": 21,
+        "meanEstimate": 19.358739836159316,
+        "supported": 10,
+        "rejected": 51,
+        "inconclusive": 490,
+        "covered": 453,
+        "available": 500,
+        "complierCovered": 339,
+        "complierAvailable": 390,
+        "weakInstrument": 51,
+        "unstableComplier": 59,
+        "supportedMean": 57.47757499739246,
+        "meanComplier": 28.54137131922797,
+        "sizeUncertain": 3,
+        "gateFailures": 403
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-30-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20020000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20020000,
+        "seconds": 2.056800000000003,
+        "target": 18,
+        "meanEstimate": 18.71453251417253,
+        "supported": 4,
+        "rejected": 51,
+        "inconclusive": 496,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 293,
+        "complierAvailable": 332,
+        "weakInstrument": 122,
+        "unstableComplier": 46,
+        "supportedMean": 54.30049781288713,
+        "meanComplier": 31.039749783895598,
+        "sizeUncertain": 0,
+        "gateFailures": 444
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-30-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20021000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20021000,
+        "seconds": 2.2831544999999895,
+        "target": 27,
+        "meanEstimate": 27.453806620790026,
+        "supported": 45,
+        "rejected": 100,
+        "inconclusive": 455,
+        "covered": 464,
+        "available": 500,
+        "complierCovered": 413,
+        "complierAvailable": 485,
+        "weakInstrument": 0,
+        "unstableComplier": 15,
+        "supportedMean": 53.11744640025051,
+        "meanComplier": 30.767084025070456,
+        "sizeUncertain": 22,
+        "gateFailures": 211
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-30-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20022000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20022000,
+        "seconds": 2.2192418999999934,
+        "target": 24,
+        "meanEstimate": 23.958199179177285,
+        "supported": 31,
+        "rejected": 72,
+        "inconclusive": 469,
+        "covered": 456,
+        "available": 500,
+        "complierCovered": 399,
+        "complierAvailable": 460,
+        "weakInstrument": 12,
+        "unstableComplier": 28,
+        "supportedMean": 53.59015286741354,
+        "meanComplier": 29.95912191718392,
+        "sizeUncertain": 15,
+        "gateFailures": 277
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-30-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20023000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20023000,
+        "seconds": 2.1735078000000065,
+        "target": 21,
+        "meanEstimate": 20.125678043872462,
+        "supported": 8,
+        "rejected": 50,
+        "inconclusive": 492,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 353,
+        "complierAvailable": 410,
+        "weakInstrument": 43,
+        "unstableComplier": 47,
+        "supportedMean": 60.9735188919452,
+        "meanComplier": 28.428082601515772,
+        "sizeUncertain": 2,
+        "gateFailures": 407
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-30-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20024000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20024000,
+        "seconds": 2.210851299999995,
+        "target": 30,
+        "meanEstimate": 29.688557313571064,
+        "supported": 61,
+        "rejected": 100,
+        "inconclusive": 439,
+        "covered": 462,
+        "available": 500,
+        "complierCovered": 438,
+        "complierAvailable": 493,
+        "weakInstrument": 0,
+        "unstableComplier": 7,
+        "supportedMean": 55.26234354890473,
+        "meanComplier": 29.688557313571064,
+        "sizeUncertain": 26,
+        "gateFailures": 82
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-30-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20025000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20025000,
+        "seconds": 2.1829689999999826,
+        "target": 27,
+        "meanEstimate": 26.955022472423916,
+        "supported": 32,
+        "rejected": 76,
+        "inconclusive": 468,
+        "covered": 471,
+        "available": 500,
+        "complierCovered": 434,
+        "complierAvailable": 492,
+        "weakInstrument": 0,
+        "unstableComplier": 8,
+        "supportedMean": 52.4919561584203,
+        "meanComplier": 29.921129303668458,
+        "sizeUncertain": 16,
+        "gateFailures": 194
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-30-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20026000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20026000,
+        "seconds": 2.2029780999999784,
+        "target": 24,
+        "meanEstimate": 25.20390840695023,
+        "supported": 18,
+        "rejected": 73,
+        "inconclusive": 482,
+        "covered": 449,
+        "available": 500,
+        "complierCovered": 406,
+        "complierAvailable": 472,
+        "weakInstrument": 5,
+        "unstableComplier": 23,
+        "supportedMean": 63.6811888042929,
+        "meanComplier": 31.318546384166154,
+        "sizeUncertain": 5,
+        "gateFailures": 359
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-45-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 45,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20027000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20027000,
+        "seconds": 2.196766600000003,
+        "target": 36,
+        "meanEstimate": 36.829193742433944,
+        "supported": 40,
+        "rejected": 116,
+        "inconclusive": 460,
+        "covered": 462,
+        "available": 500,
+        "complierCovered": 411,
+        "complierAvailable": 477,
+        "weakInstrument": 4,
+        "unstableComplier": 19,
+        "supportedMean": 66.53258708254995,
+        "meanComplier": 45.74828826109024,
+        "sizeUncertain": 14,
+        "gateFailures": 362
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-45-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 45,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20028000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20028000,
+        "seconds": 2.16385579999999,
+        "target": 31.5,
+        "meanEstimate": 30.788339200355207,
+        "supported": 20,
+        "rejected": 96,
+        "inconclusive": 480,
+        "covered": 453,
+        "available": 500,
+        "complierCovered": 355,
+        "complierAvailable": 408,
+        "weakInstrument": 41,
+        "unstableComplier": 51,
+        "supportedMean": 65.68273670947386,
+        "meanComplier": 44.75245282833996,
+        "sizeUncertain": 3,
+        "gateFailures": 398
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-45-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 45,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20029000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20029000,
+        "seconds": 2.0080173000000068,
+        "target": 27,
+        "meanEstimate": 26.919443900831237,
+        "supported": 7,
+        "rejected": 64,
+        "inconclusive": 493,
+        "covered": 468,
+        "available": 500,
+        "complierCovered": 289,
+        "complierAvailable": 319,
+        "weakInstrument": 121,
+        "unstableComplier": 60,
+        "supportedMean": 62.8552621590336,
+        "meanComplier": 45.587448260252486,
+        "sizeUncertain": 1,
+        "gateFailures": 464
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-45-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 45,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20030000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20030000,
+        "seconds": 2.1570266999999874,
+        "target": 40.5,
+        "meanEstimate": 40.29146095930702,
+        "supported": 80,
+        "rejected": 155,
+        "inconclusive": 420,
+        "covered": 459,
+        "available": 500,
+        "complierCovered": 428,
+        "complierAvailable": 488,
+        "weakInstrument": 0,
+        "unstableComplier": 12,
+        "supportedMean": 59.52659370707387,
+        "meanComplier": 44.816613286833636,
+        "sizeUncertain": 28,
+        "gateFailures": 195
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-45-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 45,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20031000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20031000,
+        "seconds": 2.148267200000002,
+        "target": 36,
+        "meanEstimate": 35.15635576897359,
+        "supported": 47,
+        "rejected": 117,
+        "inconclusive": 453,
+        "covered": 462,
+        "available": 500,
+        "complierCovered": 412,
+        "complierAvailable": 464,
+        "weakInstrument": 12,
+        "unstableComplier": 24,
+        "supportedMean": 56.483948121098315,
+        "meanComplier": 43.885884925992,
+        "sizeUncertain": 16,
+        "gateFailures": 274
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-45-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 45,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20032000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20032000,
+        "seconds": 2.1924228,
+        "target": 31.5,
+        "meanEstimate": 32.99806071037256,
+        "supported": 31,
+        "rejected": 100,
+        "inconclusive": 469,
+        "covered": 464,
+        "available": 500,
+        "complierCovered": 373,
+        "complierAvailable": 418,
+        "weakInstrument": 36,
+        "unstableComplier": 46,
+        "supportedMean": 59.66896030004241,
+        "meanComplier": 45.4404413936672,
+        "sizeUncertain": 10,
+        "gateFailures": 394
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-45-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 45,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20033000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20033000,
+        "seconds": 2.0885131000000112,
+        "target": 45,
+        "meanEstimate": 44.92223027573802,
+        "supported": 130,
+        "rejected": 199,
+        "inconclusive": 370,
+        "covered": 452,
+        "available": 500,
+        "complierCovered": 434,
+        "complierAvailable": 498,
+        "weakInstrument": 0,
+        "unstableComplier": 2,
+        "supportedMean": 64.95096558644188,
+        "meanComplier": 44.92223027573802,
+        "sizeUncertain": 36,
+        "gateFailures": 81
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-45-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 45,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20034000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20034000,
+        "seconds": 2.1801312000000035,
+        "target": 40.5,
+        "meanEstimate": 42.012862403611756,
+        "supported": 83,
+        "rejected": 148,
+        "inconclusive": 417,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 429,
+        "complierAvailable": 485,
+        "weakInstrument": 0,
+        "unstableComplier": 15,
+        "supportedMean": 61.810107096988354,
+        "meanComplier": 46.29318049122843,
+        "sizeUncertain": 22,
+        "gateFailures": 192
+      }
+    },
+    {
+      "cell": {
+        "id": "core-28-45-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 28,
+          "effect": 45,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20035000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20035000,
+        "seconds": 2.407831299999991,
+        "target": 36,
+        "meanEstimate": 36.164203625244795,
+        "supported": 34,
+        "rejected": 103,
+        "inconclusive": 466,
+        "covered": 456,
+        "available": 500,
+        "complierCovered": 415,
+        "complierAvailable": 480,
+        "weakInstrument": 3,
+        "unstableComplier": 17,
+        "supportedMean": 62.61366737643781,
+        "meanComplier": 45.17119844620912,
+        "sizeUncertain": 9,
+        "gateFailures": 351
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-0-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 0,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20036000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20036000,
+        "seconds": 4.669236499999999,
+        "target": 0,
+        "meanEstimate": -0.5827080841884897,
+        "supported": 4,
+        "rejected": 25,
+        "inconclusive": 496,
+        "covered": 469,
+        "available": 500,
+        "complierCovered": 445,
+        "complierAvailable": 495,
+        "weakInstrument": 3,
+        "unstableComplier": 2,
+        "supportedMean": 43.5019319773495,
+        "meanComplier": -0.854390897354009,
+        "sizeUncertain": 1,
+        "gateFailures": 323
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-0-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 0,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20037000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20037000,
+        "seconds": 4.806699800000002,
+        "target": 0,
+        "meanEstimate": -0.05198712926662825,
+        "supported": 3,
+        "rejected": 21,
+        "inconclusive": 497,
+        "covered": 470,
+        "available": 500,
+        "complierCovered": 424,
+        "complierAvailable": 462,
+        "weakInstrument": 23,
+        "unstableComplier": 15,
+        "supportedMean": 37.92262719124864,
+        "meanComplier": 0.22720913517617017,
+        "sizeUncertain": 2,
+        "gateFailures": 360
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-0-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 0,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20038000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20038000,
+        "seconds": 4.437985600000014,
+        "target": 0,
+        "meanEstimate": 1.848677296564406,
+        "supported": 2,
+        "rejected": 26,
+        "inconclusive": 498,
+        "covered": 465,
+        "available": 500,
+        "complierCovered": 332,
+        "complierAvailable": 371,
+        "weakInstrument": 119,
+        "unstableComplier": 10,
+        "supportedMean": 26.72972736451149,
+        "meanComplier": 1.8952273811564633,
+        "sizeUncertain": 2,
+        "gateFailures": 461
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-0-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 0,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20039000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20039000,
+        "seconds": 4.876829100000003,
+        "target": 0,
+        "meanEstimate": 1.2721305933497025,
+        "supported": 7,
+        "rejected": 24,
+        "inconclusive": 493,
+        "covered": 453,
+        "available": 500,
+        "complierCovered": 446,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 40.323369337467355,
+        "meanComplier": 1.5772215353171433,
+        "sizeUncertain": 6,
+        "gateFailures": 105
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-0-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 0,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20040000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20040000,
+        "seconds": 3.6603891,
+        "target": 0,
+        "meanEstimate": -1.9240237164770713,
+        "supported": 4,
+        "rejected": 22,
+        "inconclusive": 496,
+        "covered": 462,
+        "available": 500,
+        "complierCovered": 440,
+        "complierAvailable": 491,
+        "weakInstrument": 6,
+        "unstableComplier": 3,
+        "supportedMean": 35.45133078512336,
+        "meanComplier": -2.521822987340467,
+        "sizeUncertain": 3,
+        "gateFailures": 182
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-0-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 0,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20041000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20041000,
+        "seconds": 3.2192486999999965,
+        "target": 0,
+        "meanEstimate": -0.3511689319221498,
+        "supported": 1,
+        "rejected": 19,
+        "inconclusive": 499,
+        "covered": 459,
+        "available": 500,
+        "complierCovered": 418,
+        "complierAvailable": 464,
+        "weakInstrument": 30,
+        "unstableComplier": 6,
+        "supportedMean": 39.51125610874806,
+        "meanComplier": -0.41434912730455675,
+        "sizeUncertain": 1,
+        "gateFailures": 375
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-0-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 0,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20042000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20042000,
+        "seconds": 3.0605683000000137,
+        "target": 0,
+        "meanEstimate": 0.1804550263199229,
+        "supported": 12,
+        "rejected": 22,
+        "inconclusive": 487,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 448,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 45.5343296478415,
+        "meanComplier": 0.1804550263199229,
+        "sizeUncertain": 6,
+        "gateFailures": 0
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-0-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 0,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20043000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20043000,
+        "seconds": 2.953684900000022,
+        "target": 0,
+        "meanEstimate": 0.8487830225423276,
+        "supported": 6,
+        "rejected": 20,
+        "inconclusive": 494,
+        "covered": 465,
+        "available": 500,
+        "complierCovered": 450,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 42.792434502509316,
+        "meanComplier": 0.8774455174425689,
+        "sizeUncertain": 3,
+        "gateFailures": 116
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-0-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 0,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20044000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20044000,
+        "seconds": 2.9371106000000147,
+        "target": 0,
+        "meanEstimate": 0.44579407041819114,
+        "supported": 6,
+        "rejected": 29,
+        "inconclusive": 494,
+        "covered": 460,
+        "available": 500,
+        "complierCovered": 443,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 37.697838068011464,
+        "meanComplier": 0.5020989551946974,
+        "sizeUncertain": 5,
+        "gateFailures": 310
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-15-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 15,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20045000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20045000,
+        "seconds": 2.864808000000019,
+        "target": 12,
+        "meanEstimate": 12.351605127666078,
+        "supported": 16,
+        "rejected": 52,
+        "inconclusive": 484,
+        "covered": 460,
+        "available": 500,
+        "complierCovered": 442,
+        "complierAvailable": 493,
+        "weakInstrument": 2,
+        "unstableComplier": 5,
+        "supportedMean": 44.38749437318761,
+        "meanComplier": 15.308902191343762,
+        "sizeUncertain": 13,
+        "gateFailures": 320
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-15-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 15,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20046000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20046000,
+        "seconds": 2.756358399999997,
+        "target": 10.5,
+        "meanEstimate": 11.585976201135564,
+        "supported": 13,
+        "rejected": 47,
+        "inconclusive": 487,
+        "covered": 469,
+        "available": 500,
+        "complierCovered": 410,
+        "complierAvailable": 465,
+        "weakInstrument": 28,
+        "unstableComplier": 7,
+        "supportedMean": 45.338178316610765,
+        "meanComplier": 16.908594281632592,
+        "sizeUncertain": 8,
+        "gateFailures": 367
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-15-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 15,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20047000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20047000,
+        "seconds": 3.276649799999985,
+        "target": 9,
+        "meanEstimate": 9.085800810557474,
+        "supported": 1,
+        "rejected": 43,
+        "inconclusive": 499,
+        "covered": 461,
+        "available": 500,
+        "complierCovered": 340,
+        "complierAvailable": 379,
+        "weakInstrument": 104,
+        "unstableComplier": 17,
+        "supportedMean": 52.78938839684133,
+        "meanComplier": 15.388542502779606,
+        "sizeUncertain": 0,
+        "gateFailures": 453
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-15-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 15,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20048000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20048000,
+        "seconds": 3.0881391000000002,
+        "target": 13.5,
+        "meanEstimate": 12.750803438630086,
+        "supported": 29,
+        "rejected": 50,
+        "inconclusive": 471,
+        "covered": 468,
+        "available": 500,
+        "complierCovered": 451,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 43.21651302583177,
+        "meanComplier": 14.128133937815061,
+        "sizeUncertain": 21,
+        "gateFailures": 101
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-15-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 15,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20049000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20049000,
+        "seconds": 2.8147170000000044,
+        "target": 12,
+        "meanEstimate": 12.761112259049577,
+        "supported": 24,
+        "rejected": 51,
+        "inconclusive": 476,
+        "covered": 460,
+        "available": 500,
+        "complierCovered": 434,
+        "complierAvailable": 490,
+        "weakInstrument": 5,
+        "unstableComplier": 5,
+        "supportedMean": 43.10870030910249,
+        "meanComplier": 15.775320269051814,
+        "sizeUncertain": 18,
+        "gateFailures": 163
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-15-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 15,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20050000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20050000,
+        "seconds": 2.7467769999999727,
+        "target": 10.5,
+        "meanEstimate": 10.563969944173676,
+        "supported": 8,
+        "rejected": 30,
+        "inconclusive": 492,
+        "covered": 460,
+        "available": 500,
+        "complierCovered": 424,
+        "complierAvailable": 473,
+        "weakInstrument": 19,
+        "unstableComplier": 8,
+        "supportedMean": 43.98239840140616,
+        "meanComplier": 14.511192700814009,
+        "sizeUncertain": 4,
+        "gateFailures": 345
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-15-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 15,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20051000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20051000,
+        "seconds": 2.7874301999999735,
+        "target": 15,
+        "meanEstimate": 16.049241398110063,
+        "supported": 44,
+        "rejected": 57,
+        "inconclusive": 455,
+        "covered": 470,
+        "available": 500,
+        "complierCovered": 458,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 43.134386187069076,
+        "meanComplier": 16.049241398110063,
+        "sizeUncertain": 27,
+        "gateFailures": 0
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-15-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 15,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20052000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20052000,
+        "seconds": 2.7113733000000066,
+        "target": 13.5,
+        "meanEstimate": 12.898523366996866,
+        "supported": 25,
+        "rejected": 49,
+        "inconclusive": 474,
+        "covered": 468,
+        "available": 500,
+        "complierCovered": 448,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 41.4979778160533,
+        "meanComplier": 14.437455326131992,
+        "sizeUncertain": 14,
+        "gateFailures": 114
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-15-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 15,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20053000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20053000,
+        "seconds": 2.5907934999999997,
+        "target": 12,
+        "meanEstimate": 12.284678125906066,
+        "supported": 14,
+        "rejected": 38,
+        "inconclusive": 486,
+        "covered": 461,
+        "available": 500,
+        "complierCovered": 452,
+        "complierAvailable": 497,
+        "weakInstrument": 1,
+        "unstableComplier": 2,
+        "supportedMean": 45.2642154389258,
+        "meanComplier": 15.663344597690337,
+        "sizeUncertain": 10,
+        "gateFailures": 344
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-30-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 30,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20054000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20054000,
+        "seconds": 2.6852065,
+        "target": 24,
+        "meanEstimate": 24.966817670777765,
+        "supported": 41,
+        "rejected": 113,
+        "inconclusive": 459,
+        "covered": 451,
+        "available": 500,
+        "complierCovered": 432,
+        "complierAvailable": 497,
+        "weakInstrument": 1,
+        "unstableComplier": 2,
+        "supportedMean": 52.90394406436387,
+        "meanComplier": 30.80911816856531,
+        "sizeUncertain": 20,
+        "gateFailures": 323
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-30-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 30,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20055000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20055000,
+        "seconds": 2.949438300000009,
+        "target": 21,
+        "meanEstimate": 20.60871890488263,
+        "supported": 17,
+        "rejected": 70,
+        "inconclusive": 483,
+        "covered": 469,
+        "available": 500,
+        "complierCovered": 412,
+        "complierAvailable": 458,
+        "weakInstrument": 32,
+        "unstableComplier": 10,
+        "supportedMean": 49.178729237912655,
+        "meanComplier": 29.901071252036854,
+        "sizeUncertain": 9,
+        "gateFailures": 390
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-30-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 30,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20056000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20056000,
+        "seconds": 2.7871191999999865,
+        "target": 18,
+        "meanEstimate": 18.632887573485142,
+        "supported": 10,
+        "rejected": 73,
+        "inconclusive": 490,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 336,
+        "complierAvailable": 380,
+        "weakInstrument": 107,
+        "unstableComplier": 13,
+        "supportedMean": 44.621376945001884,
+        "meanComplier": 30.864857625049055,
+        "sizeUncertain": 9,
+        "gateFailures": 443
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-30-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20057000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20057000,
+        "seconds": 2.8916536000000197,
+        "target": 27,
+        "meanEstimate": 28.964016624977504,
+        "supported": 82,
+        "rejected": 123,
+        "inconclusive": 418,
+        "covered": 472,
+        "available": 500,
+        "complierCovered": 465,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 48.8559914894824,
+        "meanComplier": 32.045281907052306,
+        "sizeUncertain": 43,
+        "gateFailures": 89
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-30-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20058000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20058000,
+        "seconds": 2.973424500000023,
+        "target": 24,
+        "meanEstimate": 24.250595640579945,
+        "supported": 51,
+        "rejected": 101,
+        "inconclusive": 449,
+        "covered": 459,
+        "available": 500,
+        "complierCovered": 452,
+        "complierAvailable": 495,
+        "weakInstrument": 2,
+        "unstableComplier": 3,
+        "supportedMean": 49.33278637915849,
+        "meanComplier": 30.32220964232606,
+        "sizeUncertain": 22,
+        "gateFailures": 205
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-30-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20059000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20059000,
+        "seconds": 2.9016820000000005,
+        "target": 21,
+        "meanEstimate": 19.29097967957861,
+        "supported": 22,
+        "rejected": 72,
+        "inconclusive": 478,
+        "covered": 469,
+        "available": 500,
+        "complierCovered": 410,
+        "complierAvailable": 451,
+        "weakInstrument": 40,
+        "unstableComplier": 9,
+        "supportedMean": 44.77184830965468,
+        "meanComplier": 28.497011736995788,
+        "sizeUncertain": 10,
+        "gateFailures": 365
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-30-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 30,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20060000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20060000,
+        "seconds": 2.5716865999999863,
+        "target": 30,
+        "meanEstimate": 30.09862193123533,
+        "supported": 123,
+        "rejected": 149,
+        "inconclusive": 377,
+        "covered": 464,
+        "available": 500,
+        "complierCovered": 458,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 48.164065626351,
+        "meanComplier": 30.09862193123533,
+        "sizeUncertain": 61,
+        "gateFailures": 0
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-30-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 30,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20061000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20061000,
+        "seconds": 2.648034500000009,
+        "target": 27,
+        "meanEstimate": 25.37814139854488,
+        "supported": 85,
+        "rejected": 113,
+        "inconclusive": 415,
+        "covered": 468,
+        "available": 500,
+        "complierCovered": 457,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 47.74582865602308,
+        "meanComplier": 28.15615288647641,
+        "sizeUncertain": 49,
+        "gateFailures": 116
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-30-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 30,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20062000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20062000,
+        "seconds": 3.181086699999985,
+        "target": 24,
+        "meanEstimate": 25.089655223572784,
+        "supported": 42,
+        "rejected": 113,
+        "inconclusive": 458,
+        "covered": 467,
+        "available": 500,
+        "complierCovered": 449,
+        "complierAvailable": 498,
+        "weakInstrument": 1,
+        "unstableComplier": 1,
+        "supportedMean": 48.61329685403106,
+        "meanComplier": 31.42823589911459,
+        "sizeUncertain": 23,
+        "gateFailures": 331
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-45-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 45,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20063000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20063000,
+        "seconds": 3.711070099999983,
+        "target": 36,
+        "meanEstimate": 36.3577755885935,
+        "supported": 64,
+        "rejected": 194,
+        "inconclusive": 436,
+        "covered": 459,
+        "available": 500,
+        "complierCovered": 447,
+        "complierAvailable": 499,
+        "weakInstrument": 0,
+        "unstableComplier": 1,
+        "supportedMean": 56.39059814067921,
+        "meanComplier": 45.8163806339572,
+        "sizeUncertain": 28,
+        "gateFailures": 340
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-45-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 45,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20064000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20064000,
+        "seconds": 3.293228600000002,
+        "target": 31.5,
+        "meanEstimate": 31.18021954018317,
+        "supported": 52,
+        "rejected": 158,
+        "inconclusive": 448,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 391,
+        "complierAvailable": 459,
+        "weakInstrument": 28,
+        "unstableComplier": 13,
+        "supportedMean": 52.831823049977466,
+        "meanComplier": 44.195978840472996,
+        "sizeUncertain": 23,
+        "gateFailures": 363
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-45-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 45,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20065000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20065000,
+        "seconds": 3.455261499999993,
+        "target": 27,
+        "meanEstimate": 28.464289820811107,
+        "supported": 16,
+        "rejected": 133,
+        "inconclusive": 484,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 348,
+        "complierAvailable": 389,
+        "weakInstrument": 102,
+        "unstableComplier": 9,
+        "supportedMean": 53.99136035555527,
+        "meanComplier": 47.85317168826808,
+        "sizeUncertain": 7,
+        "gateFailures": 451
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-45-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 45,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20066000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20066000,
+        "seconds": 3.6218739999999814,
+        "target": 40.5,
+        "meanEstimate": 40.68526544828526,
+        "supported": 192,
+        "rejected": 253,
+        "inconclusive": 308,
+        "covered": 459,
+        "available": 500,
+        "complierCovered": 449,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 54.54798534992732,
+        "meanComplier": 45.1715954434622,
+        "sizeUncertain": 84,
+        "gateFailures": 93
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-45-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 45,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20067000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20067000,
+        "seconds": 3.7785794999999927,
+        "target": 36,
+        "meanEstimate": 36.867963990686974,
+        "supported": 119,
+        "rejected": 206,
+        "inconclusive": 381,
+        "covered": 470,
+        "available": 500,
+        "complierCovered": 454,
+        "complierAvailable": 496,
+        "weakInstrument": 3,
+        "unstableComplier": 1,
+        "supportedMean": 52.3219138407147,
+        "meanComplier": 46.1281067259325,
+        "sizeUncertain": 50,
+        "gateFailures": 187
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-45-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 45,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20068000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20068000,
+        "seconds": 3.5340467000000064,
+        "target": 31.5,
+        "meanEstimate": 30.107216819952527,
+        "supported": 43,
+        "rejected": 146,
+        "inconclusive": 457,
+        "covered": 475,
+        "available": 500,
+        "complierCovered": 417,
+        "complierAvailable": 465,
+        "weakInstrument": 27,
+        "unstableComplier": 8,
+        "supportedMean": 51.62350312819856,
+        "meanComplier": 42.8107915409572,
+        "sizeUncertain": 21,
+        "gateFailures": 373
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-45-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 45,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20069000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20069000,
+        "seconds": 3.3499666999999897,
+        "target": 45,
+        "meanEstimate": 45.41206306754897,
+        "supported": 271,
+        "rejected": 317,
+        "inconclusive": 229,
+        "covered": 462,
+        "available": 500,
+        "complierCovered": 444,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 56.861093134016905,
+        "meanComplier": 45.41206306754897,
+        "sizeUncertain": 89,
+        "gateFailures": 0
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-45-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 45,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20070000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20070000,
+        "seconds": 2.641647500000021,
+        "target": 40.5,
+        "meanEstimate": 40.83647859653582,
+        "supported": 172,
+        "rejected": 244,
+        "inconclusive": 328,
+        "covered": 459,
+        "available": 500,
+        "complierCovered": 441,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 56.49540450795495,
+        "meanComplier": 45.55144138565486,
+        "sizeUncertain": 62,
+        "gateFailures": 105
+      }
+    },
+    {
+      "cell": {
+        "id": "core-42-45-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 42,
+          "effect": 45,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20071000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20071000,
+        "seconds": 2.7411985000000567,
+        "target": 36,
+        "meanEstimate": 35.41172982475328,
+        "supported": 68,
+        "rejected": 195,
+        "inconclusive": 432,
+        "covered": 465,
+        "available": 500,
+        "complierCovered": 452,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 57.43817528525645,
+        "meanComplier": 44.65381810132386,
+        "sizeUncertain": 28,
+        "gateFailures": 342
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-0-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 0,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20072000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20072000,
+        "seconds": 4.062265400000033,
+        "target": 0,
+        "meanEstimate": 0.8457614906665407,
+        "supported": 1,
+        "rejected": 28,
+        "inconclusive": 499,
+        "covered": 459,
+        "available": 500,
+        "complierCovered": 454,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 30.65060157758711,
+        "meanComplier": 1.0307120318694316,
+        "sizeUncertain": 1,
+        "gateFailures": 386
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-0-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 0,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20073000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20073000,
+        "seconds": 4.602945999999997,
+        "target": 0,
+        "meanEstimate": -0.1047196979837197,
+        "supported": 1,
+        "rejected": 20,
+        "inconclusive": 499,
+        "covered": 462,
+        "available": 500,
+        "complierCovered": 451,
+        "complierAvailable": 483,
+        "weakInstrument": 15,
+        "unstableComplier": 2,
+        "supportedMean": 40.165578453672026,
+        "meanComplier": 0.18415681304968406,
+        "sizeUncertain": 1,
+        "gateFailures": 388
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-0-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 0,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20074000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20074000,
+        "seconds": 4.110080499999982,
+        "target": 0,
+        "meanEstimate": 0.22013331311324236,
+        "supported": 2,
+        "rejected": 37,
+        "inconclusive": 498,
+        "covered": 448,
+        "available": 500,
+        "complierCovered": 356,
+        "complierAvailable": 403,
+        "weakInstrument": 94,
+        "unstableComplier": 3,
+        "supportedMean": 28.244629149177882,
+        "meanComplier": 0.8304419033446365,
+        "sizeUncertain": 2,
+        "gateFailures": 471
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-0-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 0,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20075000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20075000,
+        "seconds": 3.796764000000025,
+        "target": 0,
+        "meanEstimate": 0.5539536345052335,
+        "supported": 5,
+        "rejected": 21,
+        "inconclusive": 495,
+        "covered": 467,
+        "available": 500,
+        "complierCovered": 461,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 37.21974255691572,
+        "meanComplier": 0.6335421854467753,
+        "sizeUncertain": 4,
+        "gateFailures": 94
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-0-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 0,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20076000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20076000,
+        "seconds": 4.197389299999981,
+        "target": 0,
+        "meanEstimate": 1.1028504296066817,
+        "supported": 4,
+        "rejected": 25,
+        "inconclusive": 496,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 449,
+        "complierAvailable": 498,
+        "weakInstrument": 1,
+        "unstableComplier": 1,
+        "supportedMean": 40.76450905574666,
+        "meanComplier": 1.4007558243983897,
+        "sizeUncertain": 3,
+        "gateFailures": 167
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-0-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 0,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20077000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20077000,
+        "seconds": 4.171665800000017,
+        "target": 0,
+        "meanEstimate": -0.24207474452430428,
+        "supported": 3,
+        "rejected": 19,
+        "inconclusive": 497,
+        "covered": 460,
+        "available": 500,
+        "complierCovered": 436,
+        "complierAvailable": 486,
+        "weakInstrument": 14,
+        "unstableComplier": 0,
+        "supportedMean": 40.3468357159143,
+        "meanComplier": -0.41066684310714646,
+        "sizeUncertain": 3,
+        "gateFailures": 385
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-0-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 0,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20078000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20078000,
+        "seconds": 4.259422299999977,
+        "target": 0,
+        "meanEstimate": -0.8322291511888821,
+        "supported": 7,
+        "rejected": 25,
+        "inconclusive": 493,
+        "covered": 461,
+        "available": 500,
+        "complierCovered": 457,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 36.477869616642685,
+        "meanComplier": -0.8322291511888821,
+        "sizeUncertain": 7,
+        "gateFailures": 0
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-0-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 0,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20079000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20079000,
+        "seconds": 4.091203700000013,
+        "target": 0,
+        "meanEstimate": -0.18963845002254753,
+        "supported": 11,
+        "rejected": 33,
+        "inconclusive": 489,
+        "covered": 462,
+        "available": 500,
+        "complierCovered": 453,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 32.53289587776009,
+        "meanComplier": -0.17922371569807444,
+        "sizeUncertain": 9,
+        "gateFailures": 103
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-0-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 0,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20080000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20080000,
+        "seconds": 4.000936999999976,
+        "target": 0,
+        "meanEstimate": -0.9093840246613446,
+        "supported": 4,
+        "rejected": 23,
+        "inconclusive": 496,
+        "covered": 469,
+        "available": 500,
+        "complierCovered": 460,
+        "complierAvailable": 498,
+        "weakInstrument": 2,
+        "unstableComplier": 0,
+        "supportedMean": 37.63914085296473,
+        "meanComplier": -1.1639086647501307,
+        "sizeUncertain": 3,
+        "gateFailures": 364
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-15-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 15,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20081000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20081000,
+        "seconds": 4.390197000000044,
+        "target": 12,
+        "meanEstimate": 11.606479446128652,
+        "supported": 10,
+        "rejected": 49,
+        "inconclusive": 490,
+        "covered": 465,
+        "available": 500,
+        "complierCovered": 454,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 38.68578301000298,
+        "meanComplier": 14.679042819679472,
+        "sizeUncertain": 9,
+        "gateFailures": 364
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-15-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 15,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20082000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20082000,
+        "seconds": 4.259217300000018,
+        "target": 10.5,
+        "meanEstimate": 9.19952904654466,
+        "supported": 7,
+        "rejected": 34,
+        "inconclusive": 493,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 433,
+        "complierAvailable": 480,
+        "weakInstrument": 20,
+        "unstableComplier": 0,
+        "supportedMean": 37.48686679820434,
+        "meanComplier": 13.279215321044271,
+        "sizeUncertain": 4,
+        "gateFailures": 404
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-15-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 15,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20083000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20083000,
+        "seconds": 4.397411599999992,
+        "target": 9,
+        "meanEstimate": 9.839260093122112,
+        "supported": 0,
+        "rejected": 40,
+        "inconclusive": 500,
+        "covered": 469,
+        "available": 500,
+        "complierCovered": 362,
+        "complierAvailable": 391,
+        "weakInstrument": 107,
+        "unstableComplier": 2,
+        "supportedMean": null,
+        "meanComplier": 17.169980810092106,
+        "sizeUncertain": 0,
+        "gateFailures": 468
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-15-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 15,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20084000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20084000,
+        "seconds": 4.107583000000043,
+        "target": 13.5,
+        "meanEstimate": 13.527801547327638,
+        "supported": 30,
+        "rejected": 56,
+        "inconclusive": 470,
+        "covered": 475,
+        "available": 500,
+        "complierCovered": 463,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 38.535844988488705,
+        "meanComplier": 14.999816310531372,
+        "sizeUncertain": 23,
+        "gateFailures": 106
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-15-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 15,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20085000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20085000,
+        "seconds": 4.011445200000017,
+        "target": 12,
+        "meanEstimate": 12.025553149624011,
+        "supported": 23,
+        "rejected": 47,
+        "inconclusive": 477,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 457,
+        "complierAvailable": 499,
+        "weakInstrument": 1,
+        "unstableComplier": 0,
+        "supportedMean": 41.182942191398496,
+        "meanComplier": 14.922920253927137,
+        "sizeUncertain": 13,
+        "gateFailures": 190
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-15-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 15,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20086000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20086000,
+        "seconds": 4.180963600000017,
+        "target": 10.5,
+        "meanEstimate": 10.583609706258791,
+        "supported": 7,
+        "rejected": 42,
+        "inconclusive": 493,
+        "covered": 467,
+        "available": 500,
+        "complierCovered": 442,
+        "complierAvailable": 479,
+        "weakInstrument": 21,
+        "unstableComplier": 0,
+        "supportedMean": 30.097046381422597,
+        "meanComplier": 15.50885176324049,
+        "sizeUncertain": 7,
+        "gateFailures": 382
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-15-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 15,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20087000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20087000,
+        "seconds": 4.3500195999999995,
+        "target": 15,
+        "meanEstimate": 14.760565546323036,
+        "supported": 54,
+        "rejected": 66,
+        "inconclusive": 446,
+        "covered": 473,
+        "available": 500,
+        "complierCovered": 466,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 38.31572600632476,
+        "meanComplier": 14.760565546323036,
+        "sizeUncertain": 40,
+        "gateFailures": 0
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-15-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 15,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20088000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20088000,
+        "seconds": 4.070812900000019,
+        "target": 13.5,
+        "meanEstimate": 13.695155865322068,
+        "supported": 52,
+        "rejected": 78,
+        "inconclusive": 448,
+        "covered": 460,
+        "available": 500,
+        "complierCovered": 445,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 38.95883299349339,
+        "meanComplier": 15.098813447561763,
+        "sizeUncertain": 39,
+        "gateFailures": 103
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-15-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 15,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20089000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20089000,
+        "seconds": 3.6956026999999887,
+        "target": 12,
+        "meanEstimate": 12.318633906772124,
+        "supported": 7,
+        "rejected": 43,
+        "inconclusive": 493,
+        "covered": 468,
+        "available": 500,
+        "complierCovered": 458,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 37.44314287154898,
+        "meanComplier": 15.721599999429793,
+        "sizeUncertain": 6,
+        "gateFailures": 382
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-30-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 30,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20090000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20090000,
+        "seconds": 4.297677199999977,
+        "target": 24,
+        "meanEstimate": 23.481243692247183,
+        "supported": 44,
+        "rejected": 146,
+        "inconclusive": 456,
+        "covered": 454,
+        "available": 500,
+        "complierCovered": 452,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 42.728451501622764,
+        "meanComplier": 29.033171882797607,
+        "sizeUncertain": 28,
+        "gateFailures": 350
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-30-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 30,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20091000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20091000,
+        "seconds": 4.429274600000005,
+        "target": 21,
+        "meanEstimate": 20.43773452410419,
+        "supported": 27,
+        "rejected": 113,
+        "inconclusive": 473,
+        "covered": 449,
+        "available": 500,
+        "complierCovered": 428,
+        "complierAvailable": 480,
+        "weakInstrument": 19,
+        "unstableComplier": 1,
+        "supportedMean": 41.14671801274072,
+        "meanComplier": 29.309922735528907,
+        "sizeUncertain": 16,
+        "gateFailures": 391
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-30-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 30,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20092000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20092000,
+        "seconds": 5.28051449999999,
+        "target": 18,
+        "meanEstimate": 19.107058211323444,
+        "supported": 10,
+        "rejected": 107,
+        "inconclusive": 490,
+        "covered": 461,
+        "available": 500,
+        "complierCovered": 360,
+        "complierAvailable": 392,
+        "weakInstrument": 106,
+        "unstableComplier": 2,
+        "supportedMean": 41.77528187788147,
+        "meanComplier": 30.86890663068242,
+        "sizeUncertain": 5,
+        "gateFailures": 473
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-30-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20093000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20093000,
+        "seconds": 5.057385300000024,
+        "target": 27,
+        "meanEstimate": 27.20859742783989,
+        "supported": 116,
+        "rejected": 162,
+        "inconclusive": 384,
+        "covered": 470,
+        "available": 500,
+        "complierCovered": 465,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 44.71778894568489,
+        "meanComplier": 30.22787997993811,
+        "sizeUncertain": 64,
+        "gateFailures": 106
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-30-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20094000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20094000,
+        "seconds": 5.382131099999999,
+        "target": 24,
+        "meanEstimate": 23.85448745558413,
+        "supported": 85,
+        "rejected": 142,
+        "inconclusive": 415,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 464,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 42.773564469274945,
+        "meanComplier": 30.0750196940327,
+        "sizeUncertain": 48,
+        "gateFailures": 206
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-30-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20095000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20095000,
+        "seconds": 5.171656900000002,
+        "target": 21,
+        "meanEstimate": 21.487782008596486,
+        "supported": 32,
+        "rejected": 112,
+        "inconclusive": 468,
+        "covered": 472,
+        "available": 500,
+        "complierCovered": 451,
+        "complierAvailable": 486,
+        "weakInstrument": 13,
+        "unstableComplier": 1,
+        "supportedMean": 40.087812370855836,
+        "meanComplier": 30.581952924364575,
+        "sizeUncertain": 20,
+        "gateFailures": 393
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-30-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 30,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20096000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20096000,
+        "seconds": 4.943102200000023,
+        "target": 30,
+        "meanEstimate": 30.2366342013635,
+        "supported": 203,
+        "rejected": 222,
+        "inconclusive": 297,
+        "covered": 467,
+        "available": 500,
+        "complierCovered": 461,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 44.127076624593535,
+        "meanComplier": 30.2366342013635,
+        "sizeUncertain": 108,
+        "gateFailures": 0
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-30-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 30,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20097000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20097000,
+        "seconds": 4.978974099999992,
+        "target": 27,
+        "meanEstimate": 27.37216115420744,
+        "supported": 130,
+        "rejected": 189,
+        "inconclusive": 370,
+        "covered": 461,
+        "available": 500,
+        "complierCovered": 453,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 43.419317994465246,
+        "meanComplier": 30.584915532679343,
+        "sizeUncertain": 69,
+        "gateFailures": 117
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-30-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 30,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20098000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20098000,
+        "seconds": 5.167707300000009,
+        "target": 24,
+        "meanEstimate": 25.26028707426762,
+        "supported": 40,
+        "rejected": 152,
+        "inconclusive": 460,
+        "covered": 468,
+        "available": 500,
+        "complierCovered": 462,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 43.07627959396104,
+        "meanComplier": 31.524301289770886,
+        "sizeUncertain": 22,
+        "gateFailures": 365
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-45-0.8-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 45,
+          "adherence": 0.8,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20099000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20099000,
+        "seconds": 5.251027200000012,
+        "target": 36,
+        "meanEstimate": 34.48231765675036,
+        "supported": 57,
+        "rejected": 257,
+        "inconclusive": 443,
+        "covered": 467,
+        "available": 500,
+        "complierCovered": 466,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 49.03061717707693,
+        "meanComplier": 43.59479034273257,
+        "sizeUncertain": 24,
+        "gateFailures": 383
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-45-0.8-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 45,
+          "adherence": 0.8,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20100000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20100000,
+        "seconds": 5.0742886999999754,
+        "target": 31.5,
+        "meanEstimate": 31.62058968323444,
+        "supported": 55,
+        "rejected": 221,
+        "inconclusive": 445,
+        "covered": 457,
+        "available": 500,
+        "complierCovered": 428,
+        "complierAvailable": 485,
+        "weakInstrument": 15,
+        "unstableComplier": 0,
+        "supportedMean": 48.35081606696878,
+        "meanComplier": 45.20362521687819,
+        "sizeUncertain": 23,
+        "gateFailures": 381
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-45-0.8-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 45,
+          "adherence": 0.8,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20101000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20101000,
+        "seconds": 5.500961500000034,
+        "target": 27,
+        "meanEstimate": 25.979514502001873,
+        "supported": 17,
+        "rejected": 144,
+        "inconclusive": 483,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 369,
+        "complierAvailable": 402,
+        "weakInstrument": 95,
+        "unstableComplier": 3,
+        "supportedMean": 44.757899499086655,
+        "meanComplier": 43.47804475251616,
+        "sizeUncertain": 9,
+        "gateFailures": 462
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-45-0.9-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 45,
+          "adherence": 0.9,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20102000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20102000,
+        "seconds": 5.004021999999997,
+        "target": 40.5,
+        "meanEstimate": 41.00892436221619,
+        "supported": 267,
+        "rejected": 349,
+        "inconclusive": 233,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 461,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 49.914857768587076,
+        "meanComplier": 45.363052062464384,
+        "sizeUncertain": 98,
+        "gateFailures": 96
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-45-0.9-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 45,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20103000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20103000,
+        "seconds": 5.026060799999978,
+        "target": 36,
+        "meanEstimate": 35.5096897680699,
+        "supported": 159,
+        "rejected": 266,
+        "inconclusive": 341,
+        "covered": 448,
+        "available": 500,
+        "complierCovered": 436,
+        "complierAvailable": 499,
+        "weakInstrument": 0,
+        "unstableComplier": 1,
+        "supportedMean": 48.74702593052348,
+        "meanComplier": 44.462595240209986,
+        "sizeUncertain": 83,
+        "gateFailures": 176
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-45-0.9-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 45,
+          "adherence": 0.9,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20104000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20104000,
+        "seconds": 4.893147500000021,
+        "target": 31.5,
+        "meanEstimate": 32.338505970229825,
+        "supported": 68,
+        "rejected": 209,
+        "inconclusive": 432,
+        "covered": 475,
+        "available": 500,
+        "complierCovered": 445,
+        "complierAvailable": 482,
+        "weakInstrument": 18,
+        "unstableComplier": 0,
+        "supportedMean": 45.98976891008815,
+        "meanComplier": 45.99635679050089,
+        "sizeUncertain": 36,
+        "gateFailures": 379
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-45-1-0",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 45,
+          "adherence": 1,
+          "contamination": 0,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20105000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20105000,
+        "seconds": 4.965726199999976,
+        "target": 45,
+        "meanEstimate": 44.70659594092572,
+        "supported": 352,
+        "rejected": 387,
+        "inconclusive": 148,
+        "covered": 478,
+        "available": 500,
+        "complierCovered": 469,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 50.935888445849606,
+        "meanComplier": 44.70659594092572,
+        "sizeUncertain": 120,
+        "gateFailures": 0
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-45-1-0.1",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 45,
+          "adherence": 1,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20106000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20106000,
+        "seconds": 4.941614899999986,
+        "target": 40.5,
+        "meanEstimate": 40.06354129458642,
+        "supported": 231,
+        "rejected": 313,
+        "inconclusive": 269,
+        "covered": 465,
+        "available": 500,
+        "complierCovered": 455,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 50.4183530574357,
+        "meanComplier": 44.37881246702492,
+        "sizeUncertain": 82,
+        "gateFailures": 97
+      }
+    },
+    {
+      "cell": {
+        "id": "core-56-45-1-0.2",
+        "group": "core",
+        "label": "",
+        "options": {
+          "duration": 56,
+          "effect": 45,
+          "adherence": 1,
+          "contamination": 0.2,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 20107000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 20107000,
+        "seconds": 5.088357499999984,
+        "target": 36,
+        "meanEstimate": 35.94028707938562,
+        "supported": 80,
+        "rejected": 280,
+        "inconclusive": 420,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 456,
+        "complierAvailable": 500,
+        "weakInstrument": 0,
+        "unstableComplier": 0,
+        "supportedMean": 48.95662001048399,
+        "meanComplier": 45.09453137699732,
+        "sizeUncertain": 41,
+        "gateFailures": 370
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-0",
+        "group": "sensitivity",
+        "label": "Base: rho .4, SD 45",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 1.7339700000000302,
+        "target": 24,
+        "meanEstimate": 23.681265546199818,
+        "supported": 28,
+        "rejected": 60,
+        "inconclusive": 472,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 406,
+        "complierAvailable": 466,
+        "weakInstrument": 7,
+        "unstableComplier": 27,
+        "supportedMean": 58.03260149189506,
+        "meanComplier": 29.61424646703672,
+        "sizeUncertain": 9,
+        "gateFailures": 273
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-1",
+        "group": "sensitivity",
+        "label": "Weekend +30 minutes",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5,
+          "weekend": 30
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 1.7602643999999854,
+        "target": 24,
+        "meanEstimate": 23.714682795617048,
+        "supported": 28,
+        "rejected": 56,
+        "inconclusive": 472,
+        "covered": 454,
+        "available": 500,
+        "complierCovered": 411,
+        "complierAvailable": 466,
+        "weakInstrument": 7,
+        "unstableComplier": 27,
+        "supportedMean": 56.81941179435604,
+        "meanComplier": 29.649946528416976,
+        "sizeUncertain": 11,
+        "gateFailures": 273
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-2",
+        "group": "sensitivity",
+        "label": "Trend +10 minutes",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5,
+          "trend": 10
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 1.7926754000000074,
+        "target": 24,
+        "meanEstimate": 23.825695587352072,
+        "supported": 27,
+        "rejected": 57,
+        "inconclusive": 473,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 405,
+        "complierAvailable": 466,
+        "weakInstrument": 7,
+        "unstableComplier": 27,
+        "supportedMean": 57.33241758636103,
+        "meanComplier": 29.80590764869281,
+        "sizeUncertain": 9,
+        "gateFailures": 273
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-3",
+        "group": "sensitivity",
+        "label": "Trend -10 minutes",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5,
+          "trend": -10
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 1.821862199999974,
+        "target": 24,
+        "meanEstimate": 23.53683550504754,
+        "supported": 29,
+        "rejected": 61,
+        "inconclusive": 471,
+        "covered": 461,
+        "available": 500,
+        "complierCovered": 411,
+        "complierAvailable": 466,
+        "weakInstrument": 7,
+        "unstableComplier": 27,
+        "supportedMean": 58.52460841652653,
+        "meanComplier": 29.422585285380624,
+        "sizeUncertain": 8,
+        "gateFailures": 273
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-4",
+        "group": "sensitivity",
+        "label": "Carryover 25%",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5,
+          "carryover": 0.25
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 1.7673469000000042,
+        "target": 27.5562857142857,
+        "meanEstimate": 27.31943741599669,
+        "supported": 30,
+        "rejected": 70,
+        "inconclusive": 469,
+        "covered": 458,
+        "available": 500,
+        "complierCovered": 399,
+        "complierAvailable": 466,
+        "weakInstrument": 7,
+        "unstableComplier": 27,
+        "supportedMean": 61.130025128634514,
+        "meanComplier": 34.20145157421397,
+        "sizeUncertain": 7,
+        "gateFailures": 273
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-5",
+        "group": "sensitivity",
+        "label": "AR(1) rho .2",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5,
+          "rho": 0.2
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 1.7600756999999867,
+        "target": 24,
+        "meanEstimate": 23.649139264975922,
+        "supported": 28,
+        "rejected": 65,
+        "inconclusive": 472,
+        "covered": 463,
+        "available": 500,
+        "complierCovered": 408,
+        "complierAvailable": 466,
+        "weakInstrument": 7,
+        "unstableComplier": 27,
+        "supportedMean": 55.92628057053183,
+        "meanComplier": 29.57395196473347,
+        "sizeUncertain": 10,
+        "gateFailures": 273
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-6",
+        "group": "sensitivity",
+        "label": "AR(1) rho .6",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5,
+          "rho": 0.6
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 1.7572320999999647,
+        "target": 24,
+        "meanEstimate": 23.78927640476904,
+        "supported": 21,
+        "rejected": 53,
+        "inconclusive": 479,
+        "covered": 462,
+        "available": 500,
+        "complierCovered": 410,
+        "complierAvailable": 466,
+        "weakInstrument": 7,
+        "unstableComplier": 27,
+        "supportedMean": 61.027656848243474,
+        "meanComplier": 29.777391234132327,
+        "sizeUncertain": 3,
+        "gateFailures": 273
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-7",
+        "group": "sensitivity",
+        "label": "Noise SD 35",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5,
+          "sd": 35
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 1.864056799999962,
+        "target": 24,
+        "meanEstimate": 23.749907094633752,
+        "supported": 35,
+        "rejected": 85,
+        "inconclusive": 464,
+        "covered": 462,
+        "available": 500,
+        "complierCovered": 406,
+        "complierAvailable": 466,
+        "weakInstrument": 7,
+        "unstableComplier": 27,
+        "supportedMean": 49.12234731914302,
+        "meanComplier": 29.70913831596904,
+        "sizeUncertain": 13,
+        "gateFailures": 273
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-8",
+        "group": "sensitivity",
+        "label": "Noise SD 60",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5,
+          "sd": 60
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 1.782085000000021,
+        "target": 24,
+        "meanEstimate": 23.578303223548886,
+        "supported": 18,
+        "rejected": 41,
+        "inconclusive": 482,
+        "covered": 459,
+        "available": 500,
+        "complierCovered": 405,
+        "complierAvailable": 466,
+        "weakInstrument": 7,
+        "unstableComplier": 27,
+        "supportedMean": 77.66136271157652,
+        "meanComplier": 29.47190869363821,
+        "sizeUncertain": 2,
+        "gateFailures": 273
+      }
+    },
+    {
+      "cell": {
+        "id": "sensitivity-9",
+        "group": "sensitivity",
+        "label": "Assignment blocks 2 days",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5,
+          "assignmentLength": 2
+        },
+        "seedBase": 21000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 21000000,
+        "seconds": 2.9176147999999813,
+        "target": 24,
+        "meanEstimate": 24.690357688615386,
+        "supported": 33,
+        "rejected": 83,
+        "inconclusive": 467,
+        "covered": 470,
+        "available": 500,
+        "complierCovered": 426,
+        "complierAvailable": 471,
+        "weakInstrument": 6,
+        "unstableComplier": 23,
+        "supportedMean": 57.923313127874984,
+        "meanComplier": 30.878557609132983,
+        "sizeUncertain": 9,
+        "gateFailures": 301
+      }
+    },
+    {
+      "cell": {
+        "id": "length-2",
+        "group": "block-length",
+        "label": "2 nights",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 2
+        },
+        "seedBase": 22000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 22000000,
+        "seconds": 1.7778697999999857,
+        "target": 24,
+        "meanEstimate": 24.543905304016395,
+        "supported": 29,
+        "rejected": 67,
+        "inconclusive": 471,
+        "covered": 466,
+        "available": 500,
+        "complierCovered": 405,
+        "complierAvailable": 466,
+        "weakInstrument": 8,
+        "unstableComplier": 26,
+        "supportedMean": 55.650669042885355,
+        "meanComplier": 30.704697920410062,
+        "sizeUncertain": 9,
+        "gateFailures": 295
+      }
+    },
+    {
+      "cell": {
+        "id": "length-3",
+        "group": "block-length",
+        "label": "3 nights",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 3
+        },
+        "seedBase": 22000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 22000000,
+        "seconds": 1.7959995000000344,
+        "target": 24,
+        "meanEstimate": 24.543905304016395,
+        "supported": 30,
+        "rejected": 67,
+        "inconclusive": 470,
+        "covered": 466,
+        "available": 500,
+        "complierCovered": 405,
+        "complierAvailable": 466,
+        "weakInstrument": 8,
+        "unstableComplier": 26,
+        "supportedMean": 55.344739687636,
+        "meanComplier": 30.704697920410062,
+        "sizeUncertain": 9,
+        "gateFailures": 295
+      }
+    },
+    {
+      "cell": {
+        "id": "length-5",
+        "group": "block-length",
+        "label": "5 nights",
+        "options": {
+          "duration": 28,
+          "effect": 30,
+          "adherence": 0.9,
+          "contamination": 0.1,
+          "method": "studentized",
+          "bootstrapLength": 5
+        },
+        "seedBase": 22000000
+      },
+      "summary": {
+        "runs": 500,
+        "seedBase": 22000000,
+        "seconds": 1.870914000000048,
+        "target": 24,
+        "meanEstimate": 24.543905304016395,
+        "supported": 29,
+        "rejected": 67,
+        "inconclusive": 471,
+        "covered": 464,
+        "available": 500,
+        "complierCovered": 405,
+        "complierAvailable": 466,
+        "weakInstrument": 8,
+        "unstableComplier": 26,
+        "supportedMean": 55.6204742491409,
+        "meanComplier": 30.704697920410062,
+        "sizeUncertain": 10,
+        "gateFailures": 295
+      }
+    }
+  ]
+}

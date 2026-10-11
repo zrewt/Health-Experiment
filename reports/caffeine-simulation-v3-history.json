@@ -1,0 +1,30 @@
+[
+  {
+    "path": "reports/caffeine-simulation-v2-data.json",
+    "sha256": "44bb2315c42abbb30491368191fa4dd2d65a25343fc8e9cc795af12d750d8d3e"
+  },
+  {
+    "path": "reports/caffeine-simulation-v2-lint.log",
+    "sha256": "4a4bfde8e97b313fad8a726bcbd185be46ec784b728101c7c9e36227420e6315"
+  },
+  {
+    "path": "reports/caffeine-simulation-v2-run.log",
+    "sha256": "1984e16919a06f72b15d0df6229525c9af09fa329c0b80f8a31dd222102de14d"
+  },
+  {
+    "path": "reports/caffeine-simulation-v2-tuning-progress.json",
+    "sha256": "abc09a35820e85e205ba4821fb49f399db8785439f7aa1576977785a9cc282b6"
+  },
+  {
+    "path": "reports/caffeine-simulation-v2-tuning.json",
+    "sha256": "71b7772e9678d0e468c58127be7f3039eded6bcac60d14486ab45893dd12c857"
+  },
+  {
+    "path": "reports/caffeine-simulation-v2.md",
+    "sha256": "ef9ab28a0be6d9686a13b385e6b22922f51de02a6d2838366f12f36dba5c6b87"
+  },
+  {
+    "path": "reports/caffeine-simulation.md",
+    "sha256": "790281e93a9d20bfa6855107d077f391afff25de7a881154e58ac852d68dd11a"
+  }
+]

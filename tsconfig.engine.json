@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "strict": true,
+    "esModuleInterop": true,
+    "types": ["node"],
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src/engine/**/*.ts", "scripts/engine.test.ts", "scripts/engine-v2.test.ts", "scripts/engine-v3.test.ts", "scripts/simulate-engine-v3.ts", "scripts/simulate-engine.ts", "scripts/simulate-engine-v2.ts"]
+}

@@ -1,0 +1,6 @@
+
+> aevum@1.0.0 lint
+> expo lint
+
+env: load .env.local
+env: export EXPO_PUBLIC_APP_ENV EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_PUBLIC_SUPABASE_URL

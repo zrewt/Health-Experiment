@@ -1,0 +1,41 @@
+{
+  "protocol": "v3-500x299-standardized-analytic-AR-balanced-sign-v1",
+  "engineHash": "b82f01e6318716e37810eaeefa4811b2d571b448431c5cba278669c6405ca5a0",
+  "protocolHash": "6e88a729963ead24ece982bf59670e0aa9978e7f06ac896fec4b0dc146557be9",
+  "sourceHash": "b278807c0e8695230d4c2416cedf5ed5e432bb78f10c765b5c4079f339133874",
+  "blockLength": 2,
+  "gatePolicy": "B",
+  "designScores": [
+    {
+      "blockLength": 2,
+      "detection": 0.4203,
+      "coverage": 0.927125
+    },
+    {
+      "blockLength": 3,
+      "detection": 0.3889,
+      "coverage": 0.9271666666666667
+    }
+  ],
+  "policyScores": [
+    {
+      "policy": "A",
+      "detection": 0.4203,
+      "pooledNullFpr": 0.01475,
+      "worstNullFpr": 0.022
+    },
+    {
+      "policy": "B",
+      "detection": 0.4816,
+      "pooledNullFpr": 0.018,
+      "worstNullFpr": 0.024
+    },
+    {
+      "policy": "C",
+      "detection": 0.4791,
+      "pooledNullFpr": 0.018,
+      "worstNullFpr": 0.024
+    }
+  ],
+  "rules": "2-day iff A non-null detection gain >=.03 and all-cell coverage loss <=.01; otherwise3. Then highest non-null policy detection subject to pooled null FPR<=.05 and worst null cell<=.07; ties A,B,C; none eligible=>null."
+}

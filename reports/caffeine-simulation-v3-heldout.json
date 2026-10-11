@@ -1,0 +1,5769 @@
+{
+  "protocol": "v3-500x299-standardized-analytic-AR-balanced-sign-v1",
+  "engineHash": "b82f01e6318716e37810eaeefa4811b2d571b448431c5cba278669c6405ca5a0",
+  "protocolHash": "6e88a729963ead24ece982bf59670e0aa9978e7f06ac896fec4b0dc146557be9",
+  "sourceHash": "b278807c0e8695230d4c2416cedf5ed5e432bb78f10c765b5c4079f339133874",
+  "results": [
+    {
+      "cell": {
+        "index": 0,
+        "duration": 42,
+        "effectSd": 0,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.414140199999907,
+        "dataSeedBase": 40000000,
+        "scheduleSeedBase": 41000000,
+        "analysisSeedBase": 42000000,
+        "target": 0,
+        "estimateSum": 97.16080916332817,
+        "estimateCount": 500,
+        "covered": 461,
+        "available": 500,
+        "conservativeSum": 157.3507152729513,
+        "switches": 5656,
+        "allocations": "84480",
+        "feasibilityPower": 0.02499993000909632,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 6,
+            "inconclusive": 494,
+            "noEffect": 0,
+            "estimateSumSupported": 189.29104704133175,
+            "conservativeSumSupported": 56.36186430825043,
+            "highRiskSupported": 4,
+            "understated": 495,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 9,
+            "inconclusive": 491,
+            "noEffect": 0,
+            "estimateSumSupported": 304.38642351536856,
+            "conservativeSumSupported": 87.05953189346977,
+            "highRiskSupported": 5,
+            "understated": 495,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 9,
+            "inconclusive": 491,
+            "noEffect": 0,
+            "estimateSumSupported": 304.38642351536856,
+            "conservativeSumSupported": 87.05953189346977,
+            "highRiskSupported": 5,
+            "understated": 495,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 0,
+        "duration": 42,
+        "effectSd": 0,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.661543799999985,
+        "dataSeedBase": 40000000,
+        "scheduleSeedBase": 41000000,
+        "analysisSeedBase": 42000000,
+        "target": 0,
+        "estimateSum": 208.75772748930808,
+        "estimateCount": 500,
+        "covered": 458,
+        "available": 500,
+        "conservativeSum": 142.56429240665298,
+        "switches": 3277,
+        "allocations": "840",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 7,
+            "inconclusive": 493,
+            "noEffect": 0,
+            "estimateSumSupported": 281.37398986904077,
+            "conservativeSumSupported": 79.4071759385316,
+            "highRiskSupported": 0,
+            "understated": 491,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 9,
+            "inconclusive": 491,
+            "noEffect": 0,
+            "estimateSumSupported": 352.97607670430966,
+            "conservativeSumSupported": 83.7638079719485,
+            "highRiskSupported": 1,
+            "understated": 491,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 306.14330433953444,
+            "conservativeSumSupported": 81.47767197018953,
+            "highRiskSupported": 1,
+            "understated": 491,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 1,
+        "duration": 42,
+        "effectSd": 0,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.465409499999951,
+        "dataSeedBase": 40001000,
+        "scheduleSeedBase": 41001000,
+        "analysisSeedBase": 42001000,
+        "target": 0,
+        "estimateSum": -617.6412885385732,
+        "estimateCount": 500,
+        "covered": 461,
+        "available": 500,
+        "conservativeSum": 184.9544223489356,
+        "switches": 5663,
+        "allocations": "84480",
+        "feasibilityPower": 0.02499993000909632,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 7,
+            "inconclusive": 493,
+            "noEffect": 0,
+            "estimateSumSupported": 292.44517806741584,
+            "conservativeSumSupported": 97.93455586647778,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 7,
+            "inconclusive": 493,
+            "noEffect": 0,
+            "estimateSumSupported": 292.44517806741584,
+            "conservativeSumSupported": 97.93455586647778,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 7,
+            "inconclusive": 493,
+            "noEffect": 0,
+            "estimateSumSupported": 292.44517806741584,
+            "conservativeSumSupported": 97.93455586647778,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 1,
+        "duration": 42,
+        "effectSd": 0,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.651421500000055,
+        "dataSeedBase": 40001000,
+        "scheduleSeedBase": 41001000,
+        "analysisSeedBase": 42001000,
+        "target": 0,
+        "estimateSum": -496.8861769061356,
+        "estimateCount": 500,
+        "covered": 462,
+        "available": 500,
+        "conservativeSum": 103.48828705262355,
+        "switches": 3308,
+        "allocations": "840",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 337.11647989390485,
+            "conservativeSumSupported": 76.88147450617359,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 337.11647989390485,
+            "conservativeSumSupported": 76.88147450617359,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 337.11647989390485,
+            "conservativeSumSupported": 76.88147450617359,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 2,
+        "duration": 42,
+        "effectSd": 0.25,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.367961800000049,
+        "dataSeedBase": 40002000,
+        "scheduleSeedBase": 41002000,
+        "analysisSeedBase": 42002000,
+        "target": 9,
+        "estimateSum": 4694.611291820058,
+        "estimateCount": 500,
+        "covered": 463,
+        "available": 500,
+        "conservativeSum": 403.5250316866287,
+        "switches": 5669,
+        "allocations": "84480",
+        "feasibilityPower": 0.07666698962541052,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 19,
+            "inconclusive": 481,
+            "noEffect": 0,
+            "estimateSumSupported": 741.7631698121631,
+            "conservativeSumSupported": 220.2368667351248,
+            "highRiskSupported": 4,
+            "understated": 488,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 27,
+            "inconclusive": 473,
+            "noEffect": 0,
+            "estimateSumSupported": 1074.532599100329,
+            "conservativeSumSupported": 312.50891534162207,
+            "highRiskSupported": 4,
+            "understated": 488,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 25,
+            "inconclusive": 475,
+            "noEffect": 0,
+            "estimateSumSupported": 1002.7174093386491,
+            "conservativeSumSupported": 296.51484384552043,
+            "highRiskSupported": 4,
+            "understated": 488,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 2,
+        "duration": 42,
+        "effectSd": 0.25,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.5673634999999777,
+        "dataSeedBase": 40002000,
+        "scheduleSeedBase": 41002000,
+        "analysisSeedBase": 42002000,
+        "target": 9,
+        "estimateSum": 4775.355476608793,
+        "estimateCount": 500,
+        "covered": 463,
+        "available": 500,
+        "conservativeSum": 426.90022948228585,
+        "switches": 3304,
+        "allocations": "840",
+        "feasibilityPower": 0.07103976263907696,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 11,
+            "inconclusive": 489,
+            "noEffect": 0,
+            "estimateSumSupported": 514.0972749953985,
+            "conservativeSumSupported": 147.59004161311697,
+            "highRiskSupported": 1,
+            "understated": 493,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 26,
+            "inconclusive": 474,
+            "noEffect": 0,
+            "estimateSumSupported": 1162.6015554234955,
+            "conservativeSumSupported": 315.92257995778857,
+            "highRiskSupported": 3,
+            "understated": 493,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 24,
+            "inconclusive": 476,
+            "noEffect": 0,
+            "estimateSumSupported": 1071.6185461078019,
+            "conservativeSumSupported": 284.22738489174526,
+            "highRiskSupported": 3,
+            "understated": 493,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 3,
+        "duration": 42,
+        "effectSd": 0.25,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.3839776000001,
+        "dataSeedBase": 40003000,
+        "scheduleSeedBase": 41003000,
+        "analysisSeedBase": 42003000,
+        "target": 11.25,
+        "estimateSum": 5912.198371149681,
+        "estimateCount": 500,
+        "covered": 460,
+        "available": 500,
+        "conservativeSum": 664.7506883097062,
+        "switches": 5632,
+        "allocations": "84480",
+        "feasibilityPower": 0.09769010923285992,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 37,
+            "inconclusive": 462,
+            "noEffect": 1,
+            "estimateSumSupported": 1653.2648349893545,
+            "conservativeSumSupported": 550.1185320920192,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 37,
+            "inconclusive": 462,
+            "noEffect": 1,
+            "estimateSumSupported": 1653.2648349893545,
+            "conservativeSumSupported": 550.1185320920192,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 37,
+            "inconclusive": 462,
+            "noEffect": 1,
+            "estimateSumSupported": 1653.2648349893545,
+            "conservativeSumSupported": 550.1185320920192,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 3,
+        "duration": 42,
+        "effectSd": 0.25,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.4985501999999395,
+        "dataSeedBase": 40003000,
+        "scheduleSeedBase": 41003000,
+        "analysisSeedBase": 42003000,
+        "target": 11.25,
+        "estimateSum": 5592.87607143198,
+        "estimateCount": 500,
+        "covered": 467,
+        "available": 500,
+        "conservativeSum": 363.6301194970146,
+        "switches": 3287,
+        "allocations": "840",
+        "feasibilityPower": 0.08929281957903688,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 26,
+            "inconclusive": 474,
+            "noEffect": 0,
+            "estimateSumSupported": 1095.6700720808847,
+            "conservativeSumSupported": 285.41243620855136,
+            "highRiskSupported": 7,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 26,
+            "inconclusive": 474,
+            "noEffect": 0,
+            "estimateSumSupported": 1095.6700720808847,
+            "conservativeSumSupported": 285.41243620855136,
+            "highRiskSupported": 7,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 26,
+            "inconclusive": 474,
+            "noEffect": 0,
+            "estimateSumSupported": 1095.6700720808847,
+            "conservativeSumSupported": 285.41243620855136,
+            "highRiskSupported": 7,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 4,
+        "duration": 42,
+        "effectSd": 0.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.339720399999991,
+        "dataSeedBase": 40004000,
+        "scheduleSeedBase": 41004000,
+        "analysisSeedBase": 42004000,
+        "target": 18,
+        "estimateSum": 9358.775064630028,
+        "estimateCount": 500,
+        "covered": 468,
+        "available": 500,
+        "conservativeSum": 990.097283361645,
+        "switches": 5560,
+        "allocations": "84480",
+        "feasibilityPower": 0.18519471476037094,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 38,
+            "inconclusive": 462,
+            "noEffect": 0,
+            "estimateSumSupported": 1620.1863707408143,
+            "conservativeSumSupported": 444.22725887643844,
+            "highRiskSupported": 5,
+            "understated": 493,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 68,
+            "inconclusive": 432,
+            "noEffect": 0,
+            "estimateSumSupported": 2927.9056198426915,
+            "conservativeSumSupported": 855.1730321994895,
+            "highRiskSupported": 6,
+            "understated": 493,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 66,
+            "inconclusive": 434,
+            "noEffect": 0,
+            "estimateSumSupported": 2854.882368947997,
+            "conservativeSumSupported": 835.5643986322782,
+            "highRiskSupported": 6,
+            "understated": 493,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 4,
+        "duration": 42,
+        "effectSd": 0.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.492819200000027,
+        "dataSeedBase": 40004000,
+        "scheduleSeedBase": 41004000,
+        "analysisSeedBase": 42004000,
+        "target": 18,
+        "estimateSum": 9318.818650077383,
+        "estimateCount": 500,
+        "covered": 448,
+        "available": 500,
+        "conservativeSum": 1231.0459036107522,
+        "switches": 3261,
+        "allocations": "840",
+        "feasibilityPower": 0.16447811829958311,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 43,
+            "inconclusive": 457,
+            "noEffect": 0,
+            "estimateSumSupported": 2049.3014203592684,
+            "conservativeSumSupported": 744.8560149798938,
+            "highRiskSupported": 5,
+            "understated": 491,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 63,
+            "inconclusive": 437,
+            "noEffect": 0,
+            "estimateSumSupported": 2968.804890143859,
+            "conservativeSumSupported": 1041.9273320379275,
+            "highRiskSupported": 7,
+            "understated": 491,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 59,
+            "inconclusive": 441,
+            "noEffect": 0,
+            "estimateSumSupported": 2817.8967165489707,
+            "conservativeSumSupported": 1004.8524356044796,
+            "highRiskSupported": 5,
+            "understated": 491,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 5,
+        "duration": 42,
+        "effectSd": 0.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.313220699999947,
+        "dataSeedBase": 40005000,
+        "scheduleSeedBase": 41005000,
+        "analysisSeedBase": 42005000,
+        "target": 22.5,
+        "estimateSum": 11595.439175207252,
+        "estimateCount": 500,
+        "covered": 469,
+        "available": 500,
+        "conservativeSum": 1733.1707985497842,
+        "switches": 5667,
+        "allocations": "84480",
+        "feasibilityPower": 0.2644489732448027,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 106,
+            "inconclusive": 394,
+            "noEffect": 0,
+            "estimateSumSupported": 4643.21846776489,
+            "conservativeSumSupported": 1588.7145809966585,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 106,
+            "inconclusive": 394,
+            "noEffect": 0,
+            "estimateSumSupported": 4643.21846776489,
+            "conservativeSumSupported": 1588.7145809966585,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 106,
+            "inconclusive": 394,
+            "noEffect": 0,
+            "estimateSumSupported": 4643.21846776489,
+            "conservativeSumSupported": 1588.7145809966585,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 5,
+        "duration": 42,
+        "effectSd": 0.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.525999700000044,
+        "dataSeedBase": 40005000,
+        "scheduleSeedBase": 41005000,
+        "analysisSeedBase": 42005000,
+        "target": 22.5,
+        "estimateSum": 11363.088972499068,
+        "estimateCount": 500,
+        "covered": 464,
+        "available": 500,
+        "conservativeSum": 1334.8192606127643,
+        "switches": 3313,
+        "allocations": "840",
+        "feasibilityPower": 0.23260883665734358,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 76,
+            "inconclusive": 424,
+            "noEffect": 0,
+            "estimateSumSupported": 3460.856417504567,
+            "conservativeSumSupported": 1134.5747851029867,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 76,
+            "inconclusive": 424,
+            "noEffect": 0,
+            "estimateSumSupported": 3460.856417504567,
+            "conservativeSumSupported": 1134.5747851029867,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 76,
+            "inconclusive": 424,
+            "noEffect": 0,
+            "estimateSumSupported": 3460.856417504567,
+            "conservativeSumSupported": 1134.5747851029867,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 6,
+        "duration": 42,
+        "effectSd": 0.75,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.427861600000062,
+        "dataSeedBase": 40006000,
+        "scheduleSeedBase": 41006000,
+        "analysisSeedBase": 42006000,
+        "target": 27,
+        "estimateSum": 14252.32418011959,
+        "estimateCount": 500,
+        "covered": 458,
+        "available": 500,
+        "conservativeSum": 2338.8300109582465,
+        "switches": 5629,
+        "allocations": "84480",
+        "feasibilityPower": 0.3580657169411681,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 99,
+            "inconclusive": 401,
+            "noEffect": 0,
+            "estimateSumSupported": 4740.079298393278,
+            "conservativeSumSupported": 1480.3611751028782,
+            "highRiskSupported": 1,
+            "understated": 492,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 140,
+            "inconclusive": 360,
+            "noEffect": 0,
+            "estimateSumSupported": 6670.882641610661,
+            "conservativeSumSupported": 2114.665365148542,
+            "highRiskSupported": 3,
+            "understated": 492,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 135,
+            "inconclusive": 365,
+            "noEffect": 0,
+            "estimateSumSupported": 6444.747123825534,
+            "conservativeSumSupported": 2048.7868714744723,
+            "highRiskSupported": 2,
+            "understated": 492,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 6,
+        "duration": 42,
+        "effectSd": 0.75,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.541930099999998,
+        "dataSeedBase": 40006000,
+        "scheduleSeedBase": 41006000,
+        "analysisSeedBase": 42006000,
+        "target": 27,
+        "estimateSum": 13042.507866492924,
+        "estimateCount": 500,
+        "covered": 459,
+        "available": 500,
+        "conservativeSum": 1910.8366600932163,
+        "switches": 3281,
+        "allocations": "840",
+        "feasibilityPower": 0.31407030570225114,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 67,
+            "inconclusive": 433,
+            "noEffect": 0,
+            "estimateSumSupported": 3301.2935071724723,
+            "conservativeSumSupported": 1192.7822328145446,
+            "highRiskSupported": 5,
+            "understated": 493,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 106,
+            "inconclusive": 394,
+            "noEffect": 0,
+            "estimateSumSupported": 5181.904474036945,
+            "conservativeSumSupported": 1739.1424179090204,
+            "highRiskSupported": 10,
+            "understated": 493,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 100,
+            "inconclusive": 400,
+            "noEffect": 0,
+            "estimateSumSupported": 4881.380330143379,
+            "conservativeSumSupported": 1637.721814347217,
+            "highRiskSupported": 10,
+            "understated": 493,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 7,
+        "duration": 42,
+        "effectSd": 0.75,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.322806599999894,
+        "dataSeedBase": 40007000,
+        "scheduleSeedBase": 41007000,
+        "analysisSeedBase": 42007000,
+        "target": 33.75,
+        "estimateSum": 17296.22255724145,
+        "estimateCount": 500,
+        "covered": 470,
+        "available": 500,
+        "conservativeSum": 3612.4277882023825,
+        "switches": 5630,
+        "allocations": "84480",
+        "feasibilityPower": 0.5141389918125687,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 212,
+            "inconclusive": 288,
+            "noEffect": 0,
+            "estimateSumSupported": 9963.051918268073,
+            "conservativeSumSupported": 3369.3308562407587,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 212,
+            "inconclusive": 288,
+            "noEffect": 0,
+            "estimateSumSupported": 9963.051918268073,
+            "conservativeSumSupported": 3369.3308562407587,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 212,
+            "inconclusive": 288,
+            "noEffect": 0,
+            "estimateSumSupported": 9963.051918268073,
+            "conservativeSumSupported": 3369.3308562407587,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 7,
+        "duration": 42,
+        "effectSd": 0.75,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.5338765999999597,
+        "dataSeedBase": 40007000,
+        "scheduleSeedBase": 41007000,
+        "analysisSeedBase": 42007000,
+        "target": 33.75,
+        "estimateSum": 16921.69531882792,
+        "estimateCount": 500,
+        "covered": 461,
+        "available": 500,
+        "conservativeSum": 3588.77523839368,
+        "switches": 3330,
+        "allocations": "840",
+        "feasibilityPower": 0.454047733495971,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 178,
+            "inconclusive": 322,
+            "noEffect": 0,
+            "estimateSumSupported": 9046.681562277288,
+            "conservativeSumSupported": 3259.1864615212967,
+            "highRiskSupported": 11,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 178,
+            "inconclusive": 322,
+            "noEffect": 0,
+            "estimateSumSupported": 9046.681562277288,
+            "conservativeSumSupported": 3259.1864615212967,
+            "highRiskSupported": 11,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 178,
+            "inconclusive": 322,
+            "noEffect": 0,
+            "estimateSumSupported": 9046.681562277288,
+            "conservativeSumSupported": 3259.1864615212967,
+            "highRiskSupported": 11,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 8,
+        "duration": 42,
+        "effectSd": 1,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.403905999999959,
+        "dataSeedBase": 40008000,
+        "scheduleSeedBase": 41008000,
+        "analysisSeedBase": 42008000,
+        "target": 36,
+        "estimateSum": 18242.167691030827,
+        "estimateCount": 500,
+        "covered": 456,
+        "available": 500,
+        "conservativeSum": 4172.058076895366,
+        "switches": 5696,
+        "allocations": "84480",
+        "feasibilityPower": 0.5668955796817158,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 150,
+            "inconclusive": 350,
+            "noEffect": 0,
+            "estimateSumSupported": 7565.749558782527,
+            "conservativeSumSupported": 2849.155770981376,
+            "highRiskSupported": 6,
+            "understated": 488,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 205,
+            "inconclusive": 295,
+            "noEffect": 0,
+            "estimateSumSupported": 10474.527895134059,
+            "conservativeSumSupported": 3931.3731385816873,
+            "highRiskSupported": 6,
+            "understated": 488,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 202,
+            "inconclusive": 298,
+            "noEffect": 0,
+            "estimateSumSupported": 10329.791382264048,
+            "conservativeSumSupported": 3914.0367592033226,
+            "highRiskSupported": 6,
+            "understated": 488,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 8,
+        "duration": 42,
+        "effectSd": 1,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.618288500000024,
+        "dataSeedBase": 40008000,
+        "scheduleSeedBase": 41008000,
+        "analysisSeedBase": 42008000,
+        "target": 36,
+        "estimateSum": 18775.736180187287,
+        "estimateCount": 500,
+        "covered": 465,
+        "available": 500,
+        "conservativeSum": 3974.454950150443,
+        "switches": 3320,
+        "allocations": "840",
+        "feasibilityPower": 0.5030028975298089,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 145,
+            "inconclusive": 355,
+            "noEffect": 0,
+            "estimateSumSupported": 7904.875531637013,
+            "conservativeSumSupported": 2884.152362834487,
+            "highRiskSupported": 7,
+            "understated": 492,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 184,
+            "inconclusive": 316,
+            "noEffect": 0,
+            "estimateSumSupported": 9935.410947912214,
+            "conservativeSumSupported": 3607.0240493192205,
+            "highRiskSupported": 10,
+            "understated": 492,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 182,
+            "inconclusive": 318,
+            "noEffect": 0,
+            "estimateSumSupported": 9835.079331239556,
+            "conservativeSumSupported": 3588.1867719067477,
+            "highRiskSupported": 10,
+            "understated": 492,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 9,
+        "duration": 42,
+        "effectSd": 1,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.287190399999963,
+        "dataSeedBase": 40009000,
+        "scheduleSeedBase": 41009000,
+        "analysisSeedBase": 42009000,
+        "target": 45,
+        "estimateSum": 22252.996996523812,
+        "estimateCount": 500,
+        "covered": 465,
+        "available": 500,
+        "conservativeSum": 6568.907659152648,
+        "switches": 5608,
+        "allocations": "84480",
+        "feasibilityPower": 0.7582193514808706,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 308,
+            "inconclusive": 192,
+            "noEffect": 0,
+            "estimateSumSupported": 16234.00602264116,
+            "conservativeSumSupported": 6327.946180269404,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 308,
+            "inconclusive": 192,
+            "noEffect": 0,
+            "estimateSumSupported": 16234.00602264116,
+            "conservativeSumSupported": 6327.946180269404,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 308,
+            "inconclusive": 192,
+            "noEffect": 0,
+            "estimateSumSupported": 16234.00602264116,
+            "conservativeSumSupported": 6327.946180269404,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 9,
+        "duration": 42,
+        "effectSd": 1,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.5585047999999952,
+        "dataSeedBase": 40009000,
+        "scheduleSeedBase": 41009000,
+        "analysisSeedBase": 42009000,
+        "target": 45,
+        "estimateSum": 22624.360598222298,
+        "estimateCount": 500,
+        "covered": 472,
+        "available": 500,
+        "conservativeSum": 5836.266289558751,
+        "switches": 3286,
+        "allocations": "840",
+        "feasibilityPower": 0.6912511834945172,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 273,
+            "inconclusive": 227,
+            "noEffect": 0,
+            "estimateSumSupported": 15308.738113579459,
+            "conservativeSumSupported": 5605.09556024827,
+            "highRiskSupported": 13,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 273,
+            "inconclusive": 227,
+            "noEffect": 0,
+            "estimateSumSupported": 15308.738113579459,
+            "conservativeSumSupported": 5605.09556024827,
+            "highRiskSupported": 13,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 273,
+            "inconclusive": 227,
+            "noEffect": 0,
+            "estimateSumSupported": 15308.738113579459,
+            "conservativeSumSupported": 5605.09556024827,
+            "highRiskSupported": 13,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 10,
+        "duration": 42,
+        "effectSd": 1.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.393564699999988,
+        "dataSeedBase": 40010000,
+        "scheduleSeedBase": 41010000,
+        "analysisSeedBase": 42010000,
+        "target": 54,
+        "estimateSum": 26862.454514864243,
+        "estimateCount": 500,
+        "covered": 474,
+        "available": 500,
+        "conservativeSum": 8991.6270648154,
+        "switches": 5665,
+        "allocations": "84480",
+        "feasibilityPower": 0.8911553228032558,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 235,
+            "inconclusive": 265,
+            "noEffect": 0,
+            "estimateSumSupported": 14561.307365779452,
+            "conservativeSumSupported": 6335.957010782831,
+            "highRiskSupported": 1,
+            "understated": 494,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 344,
+            "inconclusive": 156,
+            "noEffect": 0,
+            "estimateSumSupported": 21032.715582594865,
+            "conservativeSumSupported": 8800.871156052777,
+            "highRiskSupported": 1,
+            "understated": 494,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 336,
+            "inconclusive": 164,
+            "noEffect": 0,
+            "estimateSumSupported": 20649.564448465782,
+            "conservativeSumSupported": 8684.538501022342,
+            "highRiskSupported": 1,
+            "understated": 494,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 10,
+        "duration": 42,
+        "effectSd": 1.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.430632800000021,
+        "dataSeedBase": 40010000,
+        "scheduleSeedBase": 41010000,
+        "analysisSeedBase": 42010000,
+        "target": 54,
+        "estimateSum": 26164.677587947994,
+        "estimateCount": 500,
+        "covered": 467,
+        "available": 500,
+        "conservativeSum": 7740.95312664175,
+        "switches": 3326,
+        "allocations": "840",
+        "feasibilityPower": 0.8392237906946315,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 209,
+            "inconclusive": 291,
+            "noEffect": 0,
+            "estimateSumSupported": 13401.16831098984,
+            "conservativeSumSupported": 5457.567493332346,
+            "highRiskSupported": 1,
+            "understated": 494,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 300,
+            "inconclusive": 200,
+            "noEffect": 0,
+            "estimateSumSupported": 18768.304511648068,
+            "conservativeSumSupported": 7384.027387360035,
+            "highRiskSupported": 3,
+            "understated": 494,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 292,
+            "inconclusive": 208,
+            "noEffect": 0,
+            "estimateSumSupported": 18304.21668743653,
+            "conservativeSumSupported": 7218.4916490105325,
+            "highRiskSupported": 3,
+            "understated": 494,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 11,
+        "duration": 42,
+        "effectSd": 1.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.285062000000035,
+        "dataSeedBase": 40011000,
+        "scheduleSeedBase": 41011000,
+        "analysisSeedBase": 42011000,
+        "target": 67.5,
+        "estimateSum": 33564.33029644438,
+        "estimateCount": 500,
+        "covered": 461,
+        "available": 500,
+        "conservativeSum": 15988.829215425609,
+        "switches": 5540,
+        "allocations": "84480",
+        "feasibilityPower": 0.9788655166009038,
+        "mde70": 42.02003527991588,
+        "se": 16.913796396004308,
+        "policies": {
+          "A": {
+            "supported": 449,
+            "inconclusive": 51,
+            "noEffect": 0,
+            "estimateSumSupported": 31368.845185858296,
+            "conservativeSumSupported": 15906.698889639392,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 449,
+            "inconclusive": 51,
+            "noEffect": 0,
+            "estimateSumSupported": 31368.845185858296,
+            "conservativeSumSupported": 15906.698889639392,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 449,
+            "inconclusive": 51,
+            "noEffect": 0,
+            "estimateSumSupported": 31368.845185858296,
+            "conservativeSumSupported": 15906.698889639392,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 11,
+        "duration": 42,
+        "effectSd": 1.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.298782600000035,
+        "dataSeedBase": 40011000,
+        "scheduleSeedBase": 41011000,
+        "analysisSeedBase": 42011000,
+        "target": 67.5,
+        "estimateSum": 33945.03970316321,
+        "estimateCount": 500,
+        "covered": 460,
+        "available": 500,
+        "conservativeSum": 15266.272539775062,
+        "switches": 3250,
+        "allocations": "840",
+        "feasibilityPower": 0.9581028226206544,
+        "mde70": 45.457445408418934,
+        "se": 18.297413869330235,
+        "policies": {
+          "A": {
+            "supported": 420,
+            "inconclusive": 80,
+            "noEffect": 0,
+            "estimateSumSupported": 30392.81424438403,
+            "conservativeSumSupported": 15142.27919904035,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 420,
+            "inconclusive": 80,
+            "noEffect": 0,
+            "estimateSumSupported": 30392.81424438403,
+            "conservativeSumSupported": 15142.27919904035,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 420,
+            "inconclusive": 80,
+            "noEffect": 0,
+            "estimateSumSupported": 30392.81424438403,
+            "conservativeSumSupported": 15142.27919904035,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 12,
+        "duration": 56,
+        "effectSd": 0,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 5.5326520000000015,
+        "dataSeedBase": 40012000,
+        "scheduleSeedBase": 41012000,
+        "analysisSeedBase": 42012000,
+        "target": 0,
+        "estimateSum": 111.91683851490552,
+        "estimateCount": 500,
+        "covered": 461,
+        "available": 500,
+        "conservativeSum": 171.60860133287383,
+        "switches": 6871,
+        "allocations": "7983976",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 5,
+            "inconclusive": 495,
+            "noEffect": 0,
+            "estimateSumSupported": 177.3001150255763,
+            "conservativeSumSupported": 56.4021972301675,
+            "highRiskSupported": 0,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 14,
+            "inconclusive": 486,
+            "noEffect": 0,
+            "estimateSumSupported": 461.85865092817255,
+            "conservativeSumSupported": 151.29558372433806,
+            "highRiskSupported": 1,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 14,
+            "inconclusive": 486,
+            "noEffect": 0,
+            "estimateSumSupported": 461.85865092817255,
+            "conservativeSumSupported": 151.29558372433806,
+            "highRiskSupported": 1,
+            "understated": 499,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 12,
+        "duration": 56,
+        "effectSd": 0,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.737647400000016,
+        "dataSeedBase": 40012000,
+        "scheduleSeedBase": 41012000,
+        "analysisSeedBase": 42012000,
+        "target": 0,
+        "estimateSum": -591.7810031033487,
+        "estimateCount": 500,
+        "covered": 455,
+        "available": 500,
+        "conservativeSum": 189.20496332823393,
+        "switches": 4969,
+        "allocations": "21420",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 9,
+            "inconclusive": 491,
+            "noEffect": 0,
+            "estimateSumSupported": 307.4475364805371,
+            "conservativeSumSupported": 131.66608271816062,
+            "highRiskSupported": 4,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 11,
+            "inconclusive": 489,
+            "noEffect": 0,
+            "estimateSumSupported": 377.4197402355534,
+            "conservativeSumSupported": 142.21297221936194,
+            "highRiskSupported": 4,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 11,
+            "inconclusive": 489,
+            "noEffect": 0,
+            "estimateSumSupported": 377.4197402355534,
+            "conservativeSumSupported": 142.21297221936194,
+            "highRiskSupported": 4,
+            "understated": 499,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 13,
+        "duration": 56,
+        "effectSd": 0,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 5.531087199999951,
+        "dataSeedBase": 40013000,
+        "scheduleSeedBase": 41013000,
+        "analysisSeedBase": 42013000,
+        "target": 0,
+        "estimateSum": 38.638440332022014,
+        "estimateCount": 500,
+        "covered": 455,
+        "available": 500,
+        "conservativeSum": 183.6009974803406,
+        "switches": 6919,
+        "allocations": "7983976",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 20,
+            "inconclusive": 480,
+            "noEffect": 0,
+            "estimateSumSupported": 666.5010750617633,
+            "conservativeSumSupported": 171.1435350466689,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 20,
+            "inconclusive": 480,
+            "noEffect": 0,
+            "estimateSumSupported": 666.5010750617633,
+            "conservativeSumSupported": 171.1435350466689,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 20,
+            "inconclusive": 480,
+            "noEffect": 0,
+            "estimateSumSupported": 666.5010750617633,
+            "conservativeSumSupported": 171.1435350466689,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 13,
+        "duration": 56,
+        "effectSd": 0,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.930617100000032,
+        "dataSeedBase": 40013000,
+        "scheduleSeedBase": 41013000,
+        "analysisSeedBase": 42013000,
+        "target": 0,
+        "estimateSum": 183.77945262604396,
+        "estimateCount": 500,
+        "covered": 457,
+        "available": 500,
+        "conservativeSum": 126.80861694021239,
+        "switches": 5107,
+        "allocations": "21420",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 9,
+            "inconclusive": 491,
+            "noEffect": 0,
+            "estimateSumSupported": 312.78308312695776,
+            "conservativeSumSupported": 105.2712587999916,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 9,
+            "inconclusive": 491,
+            "noEffect": 0,
+            "estimateSumSupported": 312.78308312695776,
+            "conservativeSumSupported": 105.2712587999916,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 9,
+            "inconclusive": 491,
+            "noEffect": 0,
+            "estimateSumSupported": 312.78308312695776,
+            "conservativeSumSupported": 105.2712587999916,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 14,
+        "duration": 56,
+        "effectSd": 0.25,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.11125820000004,
+        "dataSeedBase": 40014000,
+        "scheduleSeedBase": 41014000,
+        "analysisSeedBase": 42014000,
+        "target": 9,
+        "estimateSum": 4895.710419466952,
+        "estimateCount": 500,
+        "covered": 463,
+        "available": 500,
+        "conservativeSum": 463.6545713563783,
+        "switches": 6915,
+        "allocations": "7983976",
+        "feasibilityPower": 0.08828184563358822,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 30,
+            "inconclusive": 470,
+            "noEffect": 0,
+            "estimateSumSupported": 1137.044927855393,
+            "conservativeSumSupported": 326.6767498473557,
+            "highRiskSupported": 2,
+            "understated": 498,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 37,
+            "inconclusive": 462,
+            "noEffect": 1,
+            "estimateSumSupported": 1391.1574100958283,
+            "conservativeSumSupported": 386.56550977569253,
+            "highRiskSupported": 3,
+            "understated": 498,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 37,
+            "inconclusive": 462,
+            "noEffect": 1,
+            "estimateSumSupported": 1391.1574100958283,
+            "conservativeSumSupported": 386.56550977569253,
+            "highRiskSupported": 3,
+            "understated": 498,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 14,
+        "duration": 56,
+        "effectSd": 0.25,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.787129700000048,
+        "dataSeedBase": 40014000,
+        "scheduleSeedBase": 41014000,
+        "analysisSeedBase": 42014000,
+        "target": 9,
+        "estimateSum": 4116.497251306738,
+        "estimateCount": 500,
+        "covered": 454,
+        "available": 500,
+        "conservativeSum": 509.3135618526475,
+        "switches": 5133,
+        "allocations": "21420",
+        "feasibilityPower": 0.08219053256274904,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 25,
+            "inconclusive": 475,
+            "noEffect": 0,
+            "estimateSumSupported": 943.9044502517256,
+            "conservativeSumSupported": 288.5850654623514,
+            "highRiskSupported": 4,
+            "understated": 498,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 34,
+            "inconclusive": 466,
+            "noEffect": 0,
+            "estimateSumSupported": 1292.1801323801415,
+            "conservativeSumSupported": 425.45790006887177,
+            "highRiskSupported": 6,
+            "understated": 498,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 32,
+            "inconclusive": 468,
+            "noEffect": 0,
+            "estimateSumSupported": 1219.8155009177667,
+            "conservativeSumSupported": 400.0196516600216,
+            "highRiskSupported": 5,
+            "understated": 498,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 15,
+        "duration": 56,
+        "effectSd": 0.25,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 5.661455799999996,
+        "dataSeedBase": 40015000,
+        "scheduleSeedBase": 41015000,
+        "analysisSeedBase": 42015000,
+        "target": 11.25,
+        "estimateSum": 5212.418027218344,
+        "estimateCount": 500,
+        "covered": 469,
+        "available": 500,
+        "conservativeSum": 489.4299530069286,
+        "switches": 6965,
+        "allocations": "7983976",
+        "feasibilityPower": 0.11521083147089176,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 35,
+            "inconclusive": 465,
+            "noEffect": 0,
+            "estimateSumSupported": 1234.5785710150647,
+            "conservativeSumSupported": 394.88790473331926,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 35,
+            "inconclusive": 465,
+            "noEffect": 0,
+            "estimateSumSupported": 1234.5785710150647,
+            "conservativeSumSupported": 394.88790473331926,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 35,
+            "inconclusive": 465,
+            "noEffect": 0,
+            "estimateSumSupported": 1234.5785710150647,
+            "conservativeSumSupported": 394.88790473331926,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 15,
+        "duration": 56,
+        "effectSd": 0.25,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.758582300000009,
+        "dataSeedBase": 40015000,
+        "scheduleSeedBase": 41015000,
+        "analysisSeedBase": 42015000,
+        "target": 11.25,
+        "estimateSum": 5894.461917838755,
+        "estimateCount": 500,
+        "covered": 472,
+        "available": 500,
+        "conservativeSum": 516.5133137460919,
+        "switches": 4974,
+        "allocations": "21420",
+        "feasibilityPower": 0.10599396869316209,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 46,
+            "inconclusive": 454,
+            "noEffect": 0,
+            "estimateSumSupported": 1758.2467292008446,
+            "conservativeSumSupported": 457.0172012910137,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 46,
+            "inconclusive": 454,
+            "noEffect": 0,
+            "estimateSumSupported": 1758.2467292008446,
+            "conservativeSumSupported": 457.0172012910137,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 46,
+            "inconclusive": 454,
+            "noEffect": 0,
+            "estimateSumSupported": 1758.2467292008446,
+            "conservativeSumSupported": 457.0172012910137,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 16,
+        "duration": 56,
+        "effectSd": 0.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 5.664248499999987,
+        "dataSeedBase": 40016000,
+        "scheduleSeedBase": 41016000,
+        "analysisSeedBase": 42016000,
+        "target": 18,
+        "estimateSum": 9397.63314827523,
+        "estimateCount": 500,
+        "covered": 464,
+        "available": 500,
+        "conservativeSum": 1404.1143667919387,
+        "switches": 6924,
+        "allocations": "7983976",
+        "feasibilityPower": 0.22878329444255183,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 68,
+            "inconclusive": 432,
+            "noEffect": 0,
+            "estimateSumSupported": 2740.073381324188,
+            "conservativeSumSupported": 995.6929567380784,
+            "highRiskSupported": 3,
+            "understated": 497,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 96,
+            "inconclusive": 404,
+            "noEffect": 0,
+            "estimateSumSupported": 3788.240497433026,
+            "conservativeSumSupported": 1282.1740113638239,
+            "highRiskSupported": 5,
+            "understated": 497,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 95,
+            "inconclusive": 405,
+            "noEffect": 0,
+            "estimateSumSupported": 3749.6424288081685,
+            "conservativeSumSupported": 1281.9374532733534,
+            "highRiskSupported": 5,
+            "understated": 497,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 16,
+        "duration": 56,
+        "effectSd": 0.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.72286269999994,
+        "dataSeedBase": 40016000,
+        "scheduleSeedBase": 41016000,
+        "analysisSeedBase": 42016000,
+        "target": 18,
+        "estimateSum": 8920.592395337791,
+        "estimateCount": 500,
+        "covered": 467,
+        "available": 500,
+        "conservativeSum": 1091.4143096108487,
+        "switches": 5065,
+        "allocations": "21420",
+        "feasibilityPower": 0.20582005939478268,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 50,
+            "inconclusive": 450,
+            "noEffect": 0,
+            "estimateSumSupported": 1987.192605242343,
+            "conservativeSumSupported": 588.9049650093642,
+            "highRiskSupported": 5,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 76,
+            "inconclusive": 424,
+            "noEffect": 0,
+            "estimateSumSupported": 3065.81743996269,
+            "conservativeSumSupported": 977.2696308509807,
+            "highRiskSupported": 8,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 76,
+            "inconclusive": 424,
+            "noEffect": 0,
+            "estimateSumSupported": 3065.81743996269,
+            "conservativeSumSupported": 977.2696308509807,
+            "highRiskSupported": 8,
+            "understated": 499,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 17,
+        "duration": 56,
+        "effectSd": 0.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 5.66300549999997,
+        "dataSeedBase": 40017000,
+        "scheduleSeedBase": 41017000,
+        "analysisSeedBase": 42017000,
+        "target": 22.5,
+        "estimateSum": 11223.215007155744,
+        "estimateCount": 500,
+        "covered": 472,
+        "available": 500,
+        "conservativeSum": 1601.4645883610885,
+        "switches": 6930,
+        "allocations": "7983976",
+        "feasibilityPower": 0.33048173888405563,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 118,
+            "inconclusive": 382,
+            "noEffect": 0,
+            "estimateSumSupported": 4653.149177628747,
+            "conservativeSumSupported": 1464.294963820214,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 118,
+            "inconclusive": 382,
+            "noEffect": 0,
+            "estimateSumSupported": 4653.149177628747,
+            "conservativeSumSupported": 1464.294963820214,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 118,
+            "inconclusive": 382,
+            "noEffect": 0,
+            "estimateSumSupported": 4653.149177628747,
+            "conservativeSumSupported": 1464.294963820214,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 17,
+        "duration": 56,
+        "effectSd": 0.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.731162099999958,
+        "dataSeedBase": 40017000,
+        "scheduleSeedBase": 41017000,
+        "analysisSeedBase": 42017000,
+        "target": 22.5,
+        "estimateSum": 11381.070399547687,
+        "estimateCount": 500,
+        "covered": 468,
+        "available": 500,
+        "conservativeSum": 1646.2111510787413,
+        "switches": 4964,
+        "allocations": "21420",
+        "feasibilityPower": 0.29588518238156614,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 117,
+            "inconclusive": 383,
+            "noEffect": 0,
+            "estimateSumSupported": 4768.468303961239,
+            "conservativeSumSupported": 1491.1749239368992,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 117,
+            "inconclusive": 383,
+            "noEffect": 0,
+            "estimateSumSupported": 4768.468303961239,
+            "conservativeSumSupported": 1491.1749239368992,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 117,
+            "inconclusive": 383,
+            "noEffect": 0,
+            "estimateSumSupported": 4768.468303961239,
+            "conservativeSumSupported": 1491.1749239368992,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 18,
+        "duration": 56,
+        "effectSd": 0.75,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.438185599999968,
+        "dataSeedBase": 40018000,
+        "scheduleSeedBase": 41018000,
+        "analysisSeedBase": 42018000,
+        "target": 27,
+        "estimateSum": 13142.949122928732,
+        "estimateCount": 500,
+        "covered": 470,
+        "available": 500,
+        "conservativeSum": 2193.8324784162387,
+        "switches": 6954,
+        "allocations": "7983976",
+        "feasibilityPower": 0.4465797623117978,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 92,
+            "inconclusive": 408,
+            "noEffect": 0,
+            "estimateSumSupported": 3963.3615081632865,
+            "conservativeSumSupported": 1361.5068355394064,
+            "highRiskSupported": 3,
+            "understated": 498,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 139,
+            "inconclusive": 361,
+            "noEffect": 0,
+            "estimateSumSupported": 5857.309090051886,
+            "conservativeSumSupported": 1952.2846428374883,
+            "highRiskSupported": 4,
+            "understated": 498,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 137,
+            "inconclusive": 363,
+            "noEffect": 0,
+            "estimateSumSupported": 5778.041652366598,
+            "conservativeSumSupported": 1937.9569032190634,
+            "highRiskSupported": 4,
+            "understated": 498,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 18,
+        "duration": 56,
+        "effectSd": 0.75,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 5.3543868000000945,
+        "dataSeedBase": 40018000,
+        "scheduleSeedBase": 41018000,
+        "analysisSeedBase": 42018000,
+        "target": 27,
+        "estimateSum": 13684.916149749846,
+        "estimateCount": 500,
+        "covered": 467,
+        "available": 500,
+        "conservativeSum": 2352.170896042774,
+        "switches": 5009,
+        "allocations": "21420",
+        "feasibilityPower": 0.40070073511914184,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 106,
+            "inconclusive": 394,
+            "noEffect": 0,
+            "estimateSumSupported": 4746.534613094404,
+            "conservativeSumSupported": 1699.0594169188942,
+            "highRiskSupported": 6,
+            "understated": 497,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 151,
+            "inconclusive": 349,
+            "noEffect": 0,
+            "estimateSumSupported": 6601.780194676707,
+            "conservativeSumSupported": 2194.6828276986375,
+            "highRiskSupported": 10,
+            "understated": 497,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 148,
+            "inconclusive": 352,
+            "noEffect": 0,
+            "estimateSumSupported": 6463.6425243613685,
+            "conservativeSumSupported": 2179.0621244020435,
+            "highRiskSupported": 10,
+            "understated": 497,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 19,
+        "duration": 56,
+        "effectSd": 0.75,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.3120575999999415,
+        "dataSeedBase": 40019000,
+        "scheduleSeedBase": 41019000,
+        "analysisSeedBase": 42019000,
+        "target": 33.75,
+        "estimateSum": 17182.8897014368,
+        "estimateCount": 500,
+        "covered": 474,
+        "available": 500,
+        "conservativeSum": 4250.067736590371,
+        "switches": 6822,
+        "allocations": "7983976",
+        "feasibilityPower": 0.6263140751038334,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 259,
+            "inconclusive": 241,
+            "noEffect": 0,
+            "estimateSumSupported": 11538.23487740174,
+            "conservativeSumSupported": 4070.4102471787155,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 259,
+            "inconclusive": 241,
+            "noEffect": 0,
+            "estimateSumSupported": 11538.23487740174,
+            "conservativeSumSupported": 4070.4102471787155,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 259,
+            "inconclusive": 241,
+            "noEffect": 0,
+            "estimateSumSupported": 11538.23487740174,
+            "conservativeSumSupported": 4070.4102471787155,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 19,
+        "duration": 56,
+        "effectSd": 0.75,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 5.153337300000014,
+        "dataSeedBase": 40019000,
+        "scheduleSeedBase": 41019000,
+        "analysisSeedBase": 42019000,
+        "target": 33.75,
+        "estimateSum": 16689.17752505957,
+        "estimateCount": 500,
+        "covered": 455,
+        "available": 500,
+        "conservativeSum": 3942.441974400104,
+        "switches": 4983,
+        "allocations": "21420",
+        "feasibilityPower": 0.5696855403684054,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 229,
+            "inconclusive": 271,
+            "noEffect": 0,
+            "estimateSumSupported": 10608.14353074973,
+            "conservativeSumSupported": 3797.5180009778023,
+            "highRiskSupported": 6,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 229,
+            "inconclusive": 271,
+            "noEffect": 0,
+            "estimateSumSupported": 10608.14353074973,
+            "conservativeSumSupported": 3797.5180009778023,
+            "highRiskSupported": 6,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 229,
+            "inconclusive": 271,
+            "noEffect": 0,
+            "estimateSumSupported": 10608.14353074973,
+            "conservativeSumSupported": 3797.5180009778023,
+            "highRiskSupported": 6,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 20,
+        "duration": 56,
+        "effectSd": 1,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 553.3431492000001,
+        "dataSeedBase": 40020000,
+        "scheduleSeedBase": 41020000,
+        "analysisSeedBase": 42020000,
+        "target": 36,
+        "estimateSum": 17816.783046116543,
+        "estimateCount": 500,
+        "covered": 466,
+        "available": 500,
+        "conservativeSum": 4619.2447147414505,
+        "switches": 6850,
+        "allocations": "7983976",
+        "feasibilityPower": 0.6823373695065053,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 176,
+            "inconclusive": 324,
+            "noEffect": 0,
+            "estimateSumSupported": 8152.667277551472,
+            "conservativeSumSupported": 3031.353711740239,
+            "highRiskSupported": 1,
+            "understated": 497,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 255,
+            "inconclusive": 245,
+            "noEffect": 0,
+            "estimateSumSupported": 11800.196371608801,
+            "conservativeSumSupported": 4446.922141440622,
+            "highRiskSupported": 2,
+            "understated": 497,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 252,
+            "inconclusive": 248,
+            "noEffect": 0,
+            "estimateSumSupported": 11687.141672954347,
+            "conservativeSumSupported": 4405.812402270029,
+            "highRiskSupported": 2,
+            "understated": 497,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 20,
+        "duration": 56,
+        "effectSd": 1,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 5.236953699999955,
+        "dataSeedBase": 40020000,
+        "scheduleSeedBase": 41020000,
+        "analysisSeedBase": 42020000,
+        "target": 36,
+        "estimateSum": 18090.426581238193,
+        "estimateCount": 500,
+        "covered": 462,
+        "available": 500,
+        "conservativeSum": 4745.618392071499,
+        "switches": 5030,
+        "allocations": "21420",
+        "feasibilityPower": 0.6247357770236629,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 183,
+            "inconclusive": 317,
+            "noEffect": 0,
+            "estimateSumSupported": 8830.395908965886,
+            "conservativeSumSupported": 3403.7842210994213,
+            "highRiskSupported": 6,
+            "understated": 497,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 257,
+            "inconclusive": 243,
+            "noEffect": 0,
+            "estimateSumSupported": 12055.11949575497,
+            "conservativeSumSupported": 4545.193202397224,
+            "highRiskSupported": 9,
+            "understated": 497,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 250,
+            "inconclusive": 250,
+            "noEffect": 0,
+            "estimateSumSupported": 11778.523276402744,
+            "conservativeSumSupported": 4479.239897372096,
+            "highRiskSupported": 8,
+            "understated": 497,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 21,
+        "duration": 56,
+        "effectSd": 1,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.3422669999999925,
+        "dataSeedBase": 40021000,
+        "scheduleSeedBase": 41021000,
+        "analysisSeedBase": 42021000,
+        "target": 45,
+        "estimateSum": 22648.83942026096,
+        "estimateCount": 500,
+        "covered": 463,
+        "available": 500,
+        "conservativeSum": 8471.997184312573,
+        "switches": 6959,
+        "allocations": "7983976",
+        "feasibilityPower": 0.8605507355580223,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 380,
+            "inconclusive": 120,
+            "noEffect": 0,
+            "estimateSumSupported": 19314.358821289832,
+            "conservativeSumSupported": 8364.206116099152,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 380,
+            "inconclusive": 120,
+            "noEffect": 0,
+            "estimateSumSupported": 19314.358821289832,
+            "conservativeSumSupported": 8364.206116099152,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 380,
+            "inconclusive": 120,
+            "noEffect": 0,
+            "estimateSumSupported": 19314.358821289832,
+            "conservativeSumSupported": 8364.206116099152,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 21,
+        "duration": 56,
+        "effectSd": 1,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.671620499999961,
+        "dataSeedBase": 40021000,
+        "scheduleSeedBase": 41021000,
+        "analysisSeedBase": 42021000,
+        "target": 45,
+        "estimateSum": 22174.583266928927,
+        "estimateCount": 500,
+        "covered": 462,
+        "available": 500,
+        "conservativeSum": 7494.490707938504,
+        "switches": 5097,
+        "allocations": "21420",
+        "feasibilityPower": 0.8125734972883885,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 345,
+            "inconclusive": 155,
+            "noEffect": 0,
+            "estimateSumSupported": 17681.806834087605,
+            "conservativeSumSupported": 7317.715988294597,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 345,
+            "inconclusive": 155,
+            "noEffect": 0,
+            "estimateSumSupported": 17681.806834087605,
+            "conservativeSumSupported": 7317.715988294597,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 345,
+            "inconclusive": 155,
+            "noEffect": 0,
+            "estimateSumSupported": 17681.806834087605,
+            "conservativeSumSupported": 7317.715988294597,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 22,
+        "duration": 56,
+        "effectSd": 1.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 4.0782340000001716,
+        "dataSeedBase": 40022000,
+        "scheduleSeedBase": 41022000,
+        "analysisSeedBase": 42022000,
+        "target": 54,
+        "estimateSum": 27114.73112731859,
+        "estimateCount": 500,
+        "covered": 468,
+        "available": 500,
+        "conservativeSum": 11137.538735690016,
+        "switches": 6907,
+        "allocations": "7983976",
+        "feasibilityPower": 0.9546149845626508,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 302,
+            "inconclusive": 198,
+            "noEffect": 0,
+            "estimateSumSupported": 17976.33525822059,
+            "conservativeSumSupported": 8360.155680744308,
+            "highRiskSupported": 0,
+            "understated": 495,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 420,
+            "inconclusive": 80,
+            "noEffect": 0,
+            "estimateSumSupported": 24511.40441060844,
+            "conservativeSumSupported": 11103.504328537114,
+            "highRiskSupported": 0,
+            "understated": 495,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 415,
+            "inconclusive": 85,
+            "noEffect": 0,
+            "estimateSumSupported": 24280.74399162311,
+            "conservativeSumSupported": 11017.345049076786,
+            "highRiskSupported": 0,
+            "understated": 495,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 22,
+        "duration": 56,
+        "effectSd": 1.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.2209261000000406,
+        "dataSeedBase": 40022000,
+        "scheduleSeedBase": 41022000,
+        "analysisSeedBase": 42022000,
+        "target": 54,
+        "estimateSum": 26953.06540773065,
+        "estimateCount": 500,
+        "covered": 454,
+        "available": 500,
+        "conservativeSum": 10255.151720005113,
+        "switches": 5083,
+        "allocations": "21420",
+        "feasibilityPower": 0.9274274448975727,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 273,
+            "inconclusive": 227,
+            "noEffect": 0,
+            "estimateSumSupported": 16807.89608585497,
+            "conservativeSumSupported": 7639.883781437072,
+            "highRiskSupported": 0,
+            "understated": 498,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 390,
+            "inconclusive": 110,
+            "noEffect": 0,
+            "estimateSumSupported": 23254.319156516223,
+            "conservativeSumSupported": 10111.612165320106,
+            "highRiskSupported": 1,
+            "understated": 498,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 386,
+            "inconclusive": 114,
+            "noEffect": 0,
+            "estimateSumSupported": 23058.316926469815,
+            "conservativeSumSupported": 10082.185973496089,
+            "highRiskSupported": 1,
+            "understated": 498,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 23,
+        "duration": 56,
+        "effectSd": 1.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.9716056999999565,
+        "dataSeedBase": 40023000,
+        "scheduleSeedBase": 41023000,
+        "analysisSeedBase": 42023000,
+        "target": 67.5,
+        "estimateSum": 34187.55815558833,
+        "estimateCount": 500,
+        "covered": 460,
+        "available": 500,
+        "conservativeSum": 19365.278565803914,
+        "switches": 6859,
+        "allocations": "7983976",
+        "feasibilityPower": 0.9953952166207688,
+        "mde70": 36.74176065984408,
+        "se": 14.789198887901737,
+        "policies": {
+          "A": {
+            "supported": 489,
+            "inconclusive": 11,
+            "noEffect": 0,
+            "estimateSumSupported": 33713.38161125856,
+            "conservativeSumSupported": 19341.50119819745,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 489,
+            "inconclusive": 11,
+            "noEffect": 0,
+            "estimateSumSupported": 33713.38161125856,
+            "conservativeSumSupported": 19341.50119819745,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 489,
+            "inconclusive": 11,
+            "noEffect": 0,
+            "estimateSumSupported": 33713.38161125856,
+            "conservativeSumSupported": 19341.50119819745,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 23,
+        "duration": 56,
+        "effectSd": 1.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 3.393219799999846,
+        "dataSeedBase": 40023000,
+        "scheduleSeedBase": 41023000,
+        "analysisSeedBase": 42023000,
+        "target": 67.5,
+        "estimateSum": 33326.54371230025,
+        "estimateCount": 500,
+        "covered": 462,
+        "available": 500,
+        "conservativeSum": 17183.057247549466,
+        "switches": 5036,
+        "allocations": "21420",
+        "feasibilityPower": 0.9895866714949019,
+        "mde70": 39.26285395817564,
+        "se": 15.803982870334327,
+        "policies": {
+          "A": {
+            "supported": 468,
+            "inconclusive": 32,
+            "noEffect": 0,
+            "estimateSumSupported": 32039.709389422605,
+            "conservativeSumSupported": 17173.098850212653,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 468,
+            "inconclusive": 32,
+            "noEffect": 0,
+            "estimateSumSupported": 32039.709389422605,
+            "conservativeSumSupported": 17173.098850212653,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 468,
+            "inconclusive": 32,
+            "noEffect": 0,
+            "estimateSumSupported": 32039.709389422605,
+            "conservativeSumSupported": 17173.098850212653,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 24,
+        "duration": 70,
+        "effectSd": 0,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.563914899999975,
+        "dataSeedBase": 40024000,
+        "scheduleSeedBase": 41024000,
+        "analysisSeedBase": 42024000,
+        "target": 0,
+        "estimateSum": 249.66318330189466,
+        "estimateCount": 500,
+        "covered": 467,
+        "available": 500,
+        "conservativeSum": 82.11636649508256,
+        "switches": 9192,
+        "allocations": "844200552",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 8,
+            "inconclusive": 491,
+            "noEffect": 1,
+            "estimateSumSupported": 228.25685634820888,
+            "conservativeSumSupported": 39.50706112745067,
+            "highRiskSupported": 1,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 11,
+            "inconclusive": 488,
+            "noEffect": 1,
+            "estimateSumSupported": 314.92979931494676,
+            "conservativeSumSupported": 63.72126954813811,
+            "highRiskSupported": 1,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 10,
+            "inconclusive": 489,
+            "noEffect": 1,
+            "estimateSumSupported": 290.30014894809324,
+            "conservativeSumSupported": 58.28429594630407,
+            "highRiskSupported": 1,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 24,
+        "duration": 70,
+        "effectSd": 0,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.488230900000082,
+        "dataSeedBase": 40024000,
+        "scheduleSeedBase": 41024000,
+        "analysisSeedBase": 42024000,
+        "target": 0,
+        "estimateSum": 594.6015945731306,
+        "estimateCount": 500,
+        "covered": 464,
+        "available": 500,
+        "conservativeSum": 130.48726729725425,
+        "switches": 6060,
+        "allocations": "274428",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 6,
+            "inconclusive": 494,
+            "noEffect": 0,
+            "estimateSumSupported": 191.28360463582345,
+            "conservativeSumSupported": 62.456082869757616,
+            "highRiskSupported": 1,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 9,
+            "inconclusive": 491,
+            "noEffect": 0,
+            "estimateSumSupported": 313.6179717664275,
+            "conservativeSumSupported": 96.62466057958063,
+            "highRiskSupported": 1,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 9,
+            "inconclusive": 491,
+            "noEffect": 0,
+            "estimateSumSupported": 313.6179717664275,
+            "conservativeSumSupported": 96.62466057958063,
+            "highRiskSupported": 1,
+            "understated": 499,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 25,
+        "duration": 70,
+        "effectSd": 0,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.941039800000144,
+        "dataSeedBase": 40025000,
+        "scheduleSeedBase": 41025000,
+        "analysisSeedBase": 42025000,
+        "target": 0,
+        "estimateSum": -180.43933210320142,
+        "estimateCount": 500,
+        "covered": 469,
+        "available": 500,
+        "conservativeSum": 84.07486714599405,
+        "switches": 9125,
+        "allocations": "844200552",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 263.32559329215076,
+            "conservativeSumSupported": 71.2340113220154,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 263.32559329215076,
+            "conservativeSumSupported": 71.2340113220154,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 263.32559329215076,
+            "conservativeSumSupported": 71.2340113220154,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 25,
+        "duration": 70,
+        "effectSd": 0,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.075369400000199,
+        "dataSeedBase": 40025000,
+        "scheduleSeedBase": 41025000,
+        "analysisSeedBase": 42025000,
+        "target": 0,
+        "estimateSum": 224.2818372458384,
+        "estimateCount": 500,
+        "covered": 458,
+        "available": 500,
+        "conservativeSum": 149.0966953357772,
+        "switches": 6006,
+        "allocations": "274428",
+        "feasibilityPower": 0.024999930009096297,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 14,
+            "inconclusive": 486,
+            "noEffect": 0,
+            "estimateSumSupported": 478.77554827292727,
+            "conservativeSumSupported": 129.98321626971227,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 14,
+            "inconclusive": 486,
+            "noEffect": 0,
+            "estimateSumSupported": 478.77554827292727,
+            "conservativeSumSupported": 129.98321626971227,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 14,
+            "inconclusive": 486,
+            "noEffect": 0,
+            "estimateSumSupported": 478.77554827292727,
+            "conservativeSumSupported": 129.98321626971227,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 26,
+        "duration": 70,
+        "effectSd": 0.25,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.9787593999998645,
+        "dataSeedBase": 40026000,
+        "scheduleSeedBase": 41026000,
+        "analysisSeedBase": 42026000,
+        "target": 9,
+        "estimateSum": 5085.504445988102,
+        "estimateCount": 500,
+        "covered": 468,
+        "available": 500,
+        "conservativeSum": 425.6606274405188,
+        "switches": 9125,
+        "allocations": "844200552",
+        "feasibilityPower": 0.10052148651598636,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 28,
+            "inconclusive": 472,
+            "noEffect": 0,
+            "estimateSumSupported": 903.3718908842068,
+            "conservativeSumSupported": 252.605897236035,
+            "highRiskSupported": 2,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 42,
+            "inconclusive": 458,
+            "noEffect": 0,
+            "estimateSumSupported": 1362.2585989211764,
+            "conservativeSumSupported": 365.31769017955577,
+            "highRiskSupported": 2,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 41,
+            "inconclusive": 459,
+            "noEffect": 0,
+            "estimateSumSupported": 1327.8549677389608,
+            "conservativeSumSupported": 363.76459199368236,
+            "highRiskSupported": 2,
+            "understated": 499,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 26,
+        "duration": 70,
+        "effectSd": 0.25,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.232193299999926,
+        "dataSeedBase": 40026000,
+        "scheduleSeedBase": 41026000,
+        "analysisSeedBase": 42026000,
+        "target": 9,
+        "estimateSum": 4996.981551400515,
+        "estimateCount": 500,
+        "covered": 465,
+        "available": 500,
+        "conservativeSum": 394.98288216607494,
+        "switches": 6019,
+        "allocations": "274428",
+        "feasibilityPower": 0.09240538698877002,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 21,
+            "inconclusive": 479,
+            "noEffect": 0,
+            "estimateSumSupported": 732.1026733192709,
+            "conservativeSumSupported": 230.90856446967024,
+            "highRiskSupported": 3,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 32,
+            "inconclusive": 468,
+            "noEffect": 0,
+            "estimateSumSupported": 1096.1216359151813,
+            "conservativeSumSupported": 333.79546459801486,
+            "highRiskSupported": 3,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 32,
+            "inconclusive": 468,
+            "noEffect": 0,
+            "estimateSumSupported": 1096.1216359151813,
+            "conservativeSumSupported": 333.79546459801486,
+            "highRiskSupported": 3,
+            "understated": 499,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 27,
+        "duration": 70,
+        "effectSd": 0.25,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.992892499999842,
+        "dataSeedBase": 40027000,
+        "scheduleSeedBase": 41027000,
+        "analysisSeedBase": 42027000,
+        "target": 11.25,
+        "estimateSum": 5307.047520536173,
+        "estimateCount": 500,
+        "covered": 471,
+        "available": 500,
+        "conservativeSum": 424.53734766359537,
+        "switches": 9161,
+        "allocations": "844200552",
+        "feasibilityPower": 0.13387877702407475,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 43,
+            "inconclusive": 455,
+            "noEffect": 2,
+            "estimateSumSupported": 1372.6649056554115,
+            "conservativeSumSupported": 345.9123555667668,
+            "highRiskSupported": 8,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 43,
+            "inconclusive": 455,
+            "noEffect": 2,
+            "estimateSumSupported": 1372.6649056554115,
+            "conservativeSumSupported": 345.9123555667668,
+            "highRiskSupported": 8,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 43,
+            "inconclusive": 455,
+            "noEffect": 2,
+            "estimateSumSupported": 1372.6649056554115,
+            "conservativeSumSupported": 345.9123555667668,
+            "highRiskSupported": 8,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 27,
+        "duration": 70,
+        "effectSd": 0.25,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.395021100000013,
+        "dataSeedBase": 40027000,
+        "scheduleSeedBase": 41027000,
+        "analysisSeedBase": 42027000,
+        "target": 11.25,
+        "estimateSum": 5783.115096388242,
+        "estimateCount": 500,
+        "covered": 472,
+        "available": 500,
+        "conservativeSum": 562.3968882519918,
+        "switches": 5982,
+        "allocations": "274428",
+        "feasibilityPower": 0.12148037144658458,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 50,
+            "inconclusive": 450,
+            "noEffect": 0,
+            "estimateSumSupported": 1716.5481655173428,
+            "conservativeSumSupported": 484.37859543437366,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 50,
+            "inconclusive": 450,
+            "noEffect": 0,
+            "estimateSumSupported": 1716.5481655173428,
+            "conservativeSumSupported": 484.37859543437366,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 50,
+            "inconclusive": 450,
+            "noEffect": 0,
+            "estimateSumSupported": 1716.5481655173428,
+            "conservativeSumSupported": 484.37859543437366,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 28,
+        "duration": 70,
+        "effectSd": 0.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.25129560000007,
+        "dataSeedBase": 40028000,
+        "scheduleSeedBase": 41028000,
+        "analysisSeedBase": 42028000,
+        "target": 18,
+        "estimateSum": 8495.905619442054,
+        "estimateCount": 500,
+        "covered": 458,
+        "available": 500,
+        "conservativeSum": 1256.7470111466635,
+        "switches": 9180,
+        "allocations": "844200552",
+        "feasibilityPower": 0.2751841250264059,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 65,
+            "inconclusive": 435,
+            "noEffect": 0,
+            "estimateSumSupported": 2256.782586626567,
+            "conservativeSumSupported": 727.9854624819992,
+            "highRiskSupported": 5,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 99,
+            "inconclusive": 401,
+            "noEffect": 0,
+            "estimateSumSupported": 3533.522965065839,
+            "conservativeSumSupported": 1162.860115014424,
+            "highRiskSupported": 5,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 99,
+            "inconclusive": 401,
+            "noEffect": 0,
+            "estimateSumSupported": 3533.522965065839,
+            "conservativeSumSupported": 1162.860115014424,
+            "highRiskSupported": 5,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 28,
+        "duration": 70,
+        "effectSd": 0.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.710589299999876,
+        "dataSeedBase": 40028000,
+        "scheduleSeedBase": 41028000,
+        "analysisSeedBase": 42028000,
+        "target": 18,
+        "estimateSum": 9001.42302403373,
+        "estimateCount": 500,
+        "covered": 461,
+        "available": 500,
+        "conservativeSum": 1259.992196791381,
+        "switches": 6085,
+        "allocations": "274428",
+        "feasibilityPower": 0.24440220888554637,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 76,
+            "inconclusive": 424,
+            "noEffect": 0,
+            "estimateSumSupported": 2803.089437111571,
+            "conservativeSumSupported": 915.8532988460538,
+            "highRiskSupported": 6,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 97,
+            "inconclusive": 403,
+            "noEffect": 0,
+            "estimateSumSupported": 3590.0088612935892,
+            "conservativeSumSupported": 1171.229324998495,
+            "highRiskSupported": 7,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 97,
+            "inconclusive": 403,
+            "noEffect": 0,
+            "estimateSumSupported": 3590.0088612935892,
+            "conservativeSumSupported": 1171.229324998495,
+            "highRiskSupported": 7,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 29,
+        "duration": 70,
+        "effectSd": 0.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.493531700000167,
+        "dataSeedBase": 40029000,
+        "scheduleSeedBase": 41029000,
+        "analysisSeedBase": 42029000,
+        "target": 22.5,
+        "estimateSum": 11544.91948844306,
+        "estimateCount": 500,
+        "covered": 464,
+        "available": 500,
+        "conservativeSum": 2200.4753943694077,
+        "switches": 9161,
+        "allocations": "844200552",
+        "feasibilityPower": 0.39877498937328226,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 173,
+            "inconclusive": 327,
+            "noEffect": 0,
+            "estimateSumSupported": 6372.1350560544615,
+            "conservativeSumSupported": 2062.141839380303,
+            "highRiskSupported": 8,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 173,
+            "inconclusive": 327,
+            "noEffect": 0,
+            "estimateSumSupported": 6372.1350560544615,
+            "conservativeSumSupported": 2062.141839380303,
+            "highRiskSupported": 8,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 173,
+            "inconclusive": 327,
+            "noEffect": 0,
+            "estimateSumSupported": 6372.1350560544615,
+            "conservativeSumSupported": 2062.141839380303,
+            "highRiskSupported": 8,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 29,
+        "duration": 70,
+        "effectSd": 0.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.794447600000073,
+        "dataSeedBase": 40029000,
+        "scheduleSeedBase": 41029000,
+        "analysisSeedBase": 42029000,
+        "target": 22.5,
+        "estimateSum": 11908.241668692119,
+        "estimateCount": 500,
+        "covered": 463,
+        "available": 500,
+        "conservativeSum": 2144.154807209074,
+        "switches": 6043,
+        "allocations": "274428",
+        "feasibilityPower": 0.3537286698937667,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 159,
+            "inconclusive": 341,
+            "noEffect": 0,
+            "estimateSumSupported": 6183.8051156621195,
+            "conservativeSumSupported": 1982.1981774236008,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 159,
+            "inconclusive": 341,
+            "noEffect": 0,
+            "estimateSumSupported": 6183.8051156621195,
+            "conservativeSumSupported": 1982.1981774236008,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 159,
+            "inconclusive": 341,
+            "noEffect": 0,
+            "estimateSumSupported": 6183.8051156621195,
+            "conservativeSumSupported": 1982.1981774236008,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 30,
+        "duration": 70,
+        "effectSd": 0.75,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.41939860000019,
+        "dataSeedBase": 40030000,
+        "scheduleSeedBase": 41030000,
+        "analysisSeedBase": 42030000,
+        "target": 27,
+        "estimateSum": 13708.832555814019,
+        "estimateCount": 500,
+        "covered": 471,
+        "available": 500,
+        "conservativeSum": 2943.5009378073346,
+        "switches": 9195,
+        "allocations": "844200552",
+        "feasibilityPower": 0.5335392820358661,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 152,
+            "inconclusive": 348,
+            "noEffect": 0,
+            "estimateSumSupported": 6040.184623414647,
+            "conservativeSumSupported": 2165.4492452446975,
+            "highRiskSupported": 2,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 213,
+            "inconclusive": 287,
+            "noEffect": 0,
+            "estimateSumSupported": 8300.54778973302,
+            "conservativeSumSupported": 2802.4003840227383,
+            "highRiskSupported": 5,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 213,
+            "inconclusive": 287,
+            "noEffect": 0,
+            "estimateSumSupported": 8300.54778973302,
+            "conservativeSumSupported": 2802.4003840227383,
+            "highRiskSupported": 5,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 30,
+        "duration": 70,
+        "effectSd": 0.75,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.709461600000039,
+        "dataSeedBase": 40030000,
+        "scheduleSeedBase": 41030000,
+        "analysisSeedBase": 42030000,
+        "target": 27,
+        "estimateSum": 13445.076476217027,
+        "estimateCount": 500,
+        "covered": 463,
+        "available": 500,
+        "conservativeSum": 2579.882482599701,
+        "switches": 6067,
+        "allocations": "274428",
+        "feasibilityPower": 0.4767407661921585,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 128,
+            "inconclusive": 372,
+            "noEffect": 0,
+            "estimateSumSupported": 5198.536686700584,
+            "conservativeSumSupported": 1772.4740134488093,
+            "highRiskSupported": 7,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 170,
+            "inconclusive": 330,
+            "noEffect": 0,
+            "estimateSumSupported": 6973.0615441214495,
+            "conservativeSumSupported": 2396.53897872351,
+            "highRiskSupported": 8,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 170,
+            "inconclusive": 330,
+            "noEffect": 0,
+            "estimateSumSupported": 6973.0615441214495,
+            "conservativeSumSupported": 2396.53897872351,
+            "highRiskSupported": 8,
+            "understated": 499,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 31,
+        "duration": 70,
+        "effectSd": 0.75,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.26409549999982,
+        "dataSeedBase": 40031000,
+        "scheduleSeedBase": 41031000,
+        "analysisSeedBase": 42031000,
+        "target": 33.75,
+        "estimateSum": 16675.724440951206,
+        "estimateCount": 500,
+        "covered": 468,
+        "available": 500,
+        "conservativeSum": 4853.054063697126,
+        "switches": 9313,
+        "allocations": "844200552",
+        "feasibilityPower": 0.7241461671941921,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 310,
+            "inconclusive": 190,
+            "noEffect": 0,
+            "estimateSumSupported": 12471.620410036683,
+            "conservativeSumSupported": 4685.697888517424,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 310,
+            "inconclusive": 190,
+            "noEffect": 0,
+            "estimateSumSupported": 12471.620410036683,
+            "conservativeSumSupported": 4685.697888517424,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 310,
+            "inconclusive": 190,
+            "noEffect": 0,
+            "estimateSumSupported": 12471.620410036683,
+            "conservativeSumSupported": 4685.697888517424,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 31,
+        "duration": 70,
+        "effectSd": 0.75,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.840304999999935,
+        "dataSeedBase": 40031000,
+        "scheduleSeedBase": 41031000,
+        "analysisSeedBase": 42031000,
+        "target": 33.75,
+        "estimateSum": 17348.60176589775,
+        "estimateCount": 500,
+        "covered": 469,
+        "available": 500,
+        "conservativeSum": 5173.333338608308,
+        "switches": 6132,
+        "allocations": "274428",
+        "feasibilityPower": 0.6616871143305825,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 301,
+            "inconclusive": 199,
+            "noEffect": 0,
+            "estimateSumSupported": 13008.971703554133,
+            "conservativeSumSupported": 5041.576243158833,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 301,
+            "inconclusive": 199,
+            "noEffect": 0,
+            "estimateSumSupported": 13008.971703554133,
+            "conservativeSumSupported": 5041.576243158833,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 301,
+            "inconclusive": 199,
+            "noEffect": 0,
+            "estimateSumSupported": 13008.971703554133,
+            "conservativeSumSupported": 5041.576243158833,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 32,
+        "duration": 70,
+        "effectSd": 1,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.564505200000014,
+        "dataSeedBase": 40032000,
+        "scheduleSeedBase": 41032000,
+        "analysisSeedBase": 42032000,
+        "target": 36,
+        "estimateSum": 17443.678678133147,
+        "estimateCount": 500,
+        "covered": 466,
+        "available": 500,
+        "conservativeSum": 5290.184812934719,
+        "switches": 9163,
+        "allocations": "844200552",
+        "feasibilityPower": 0.7780272723836765,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 230,
+            "inconclusive": 270,
+            "noEffect": 0,
+            "estimateSumSupported": 9723.58401085823,
+            "conservativeSumSupported": 3816.0281836084737,
+            "highRiskSupported": 2,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 328,
+            "inconclusive": 172,
+            "noEffect": 0,
+            "estimateSumSupported": 13618.270029749301,
+            "conservativeSumSupported": 5224.89815436749,
+            "highRiskSupported": 3,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 327,
+            "inconclusive": 173,
+            "noEffect": 0,
+            "estimateSumSupported": 13578.198501343779,
+            "conservativeSumSupported": 5206.0984828577375,
+            "highRiskSupported": 3,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 32,
+        "duration": 70,
+        "effectSd": 1,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.4658651000000535,
+        "dataSeedBase": 40032000,
+        "scheduleSeedBase": 41032000,
+        "analysisSeedBase": 42032000,
+        "target": 36,
+        "estimateSum": 17859.564494378763,
+        "estimateCount": 500,
+        "covered": 458,
+        "available": 500,
+        "conservativeSum": 5201.371045999589,
+        "switches": 6071,
+        "allocations": "274428",
+        "feasibilityPower": 0.717537353957769,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 205,
+            "inconclusive": 295,
+            "noEffect": 0,
+            "estimateSumSupported": 9443.019663897085,
+            "conservativeSumSupported": 3661.597444141245,
+            "highRiskSupported": 3,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 296,
+            "inconclusive": 204,
+            "noEffect": 0,
+            "estimateSumSupported": 13301.925028744894,
+            "conservativeSumSupported": 5064.821824791504,
+            "highRiskSupported": 5,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 294,
+            "inconclusive": 206,
+            "noEffect": 0,
+            "estimateSumSupported": 13205.101860436325,
+            "conservativeSumSupported": 5022.199975000428,
+            "highRiskSupported": 5,
+            "understated": 499,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 33,
+        "duration": 70,
+        "effectSd": 1,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.39583759999997,
+        "dataSeedBase": 40033000,
+        "scheduleSeedBase": 41033000,
+        "analysisSeedBase": 42033000,
+        "target": 45,
+        "estimateSum": 22671.10806925359,
+        "estimateCount": 500,
+        "covered": 457,
+        "available": 500,
+        "conservativeSum": 9807.259177343662,
+        "switches": 9144,
+        "allocations": "844200552",
+        "feasibilityPower": 0.9260410439294752,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 431,
+            "inconclusive": 69,
+            "noEffect": 0,
+            "estimateSumSupported": 20961.304138309508,
+            "conservativeSumSupported": 9761.416965534692,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 431,
+            "inconclusive": 69,
+            "noEffect": 0,
+            "estimateSumSupported": 20961.304138309508,
+            "conservativeSumSupported": 9761.416965534692,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 431,
+            "inconclusive": 69,
+            "noEffect": 0,
+            "estimateSumSupported": 20961.304138309508,
+            "conservativeSumSupported": 9761.416965534692,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 33,
+        "duration": 70,
+        "effectSd": 1,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.511152999999933,
+        "dataSeedBase": 40033000,
+        "scheduleSeedBase": 41033000,
+        "analysisSeedBase": 42033000,
+        "target": 45,
+        "estimateSum": 22663.91230636393,
+        "estimateCount": 500,
+        "covered": 460,
+        "available": 500,
+        "conservativeSum": 9014.451986316984,
+        "switches": 6058,
+        "allocations": "274428",
+        "feasibilityPower": 0.8867486767066565,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 412,
+            "inconclusive": 88,
+            "noEffect": 0,
+            "estimateSumSupported": 20253.016732658387,
+            "conservativeSumSupported": 8911.082539273242,
+            "highRiskSupported": 6,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 412,
+            "inconclusive": 88,
+            "noEffect": 0,
+            "estimateSumSupported": 20253.016732658387,
+            "conservativeSumSupported": 8911.082539273242,
+            "highRiskSupported": 6,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 412,
+            "inconclusive": 88,
+            "noEffect": 0,
+            "estimateSumSupported": 20253.016732658387,
+            "conservativeSumSupported": 8911.082539273242,
+            "highRiskSupported": 6,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 34,
+        "duration": 70,
+        "effectSd": 1.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.279616600000066,
+        "dataSeedBase": 40034000,
+        "scheduleSeedBase": 41034000,
+        "analysisSeedBase": 42034000,
+        "target": 54,
+        "estimateSum": 26833.84816134491,
+        "estimateCount": 500,
+        "covered": 466,
+        "available": 500,
+        "conservativeSum": 12714.74966814214,
+        "switches": 9136,
+        "allocations": "844200552",
+        "feasibilityPower": 0.983344084517875,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 298,
+            "inconclusive": 202,
+            "noEffect": 0,
+            "estimateSumSupported": 17046.848369794476,
+            "conservativeSumSupported": 8777.738202293596,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 466,
+            "inconclusive": 34,
+            "noEffect": 0,
+            "estimateSumSupported": 25807.404829366038,
+            "conservativeSumSupported": 12700.609668586223,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 462,
+            "inconclusive": 38,
+            "noEffect": 0,
+            "estimateSumSupported": 25585.53921778628,
+            "conservativeSumSupported": 12588.715036320078,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 34,
+        "duration": 70,
+        "effectSd": 1.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.399973499999847,
+        "dataSeedBase": 40034000,
+        "scheduleSeedBase": 41034000,
+        "analysisSeedBase": 42034000,
+        "target": 54,
+        "estimateSum": 26858.108428932144,
+        "estimateCount": 500,
+        "covered": 460,
+        "available": 500,
+        "conservativeSum": 11869.558882461904,
+        "switches": 6099,
+        "allocations": "274428",
+        "feasibilityPower": 0.9673569899786021,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 313,
+            "inconclusive": 187,
+            "noEffect": 0,
+            "estimateSumSupported": 18124.153345122166,
+            "conservativeSumSupported": 8964.66625988254,
+            "highRiskSupported": 0,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 440,
+            "inconclusive": 60,
+            "noEffect": 0,
+            "estimateSumSupported": 24890.53220395376,
+            "conservativeSumSupported": 11790.878813846317,
+            "highRiskSupported": 0,
+            "understated": 499,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 438,
+            "inconclusive": 62,
+            "noEffect": 0,
+            "estimateSumSupported": 24814.78972656029,
+            "conservativeSumSupported": 11759.085245344862,
+            "highRiskSupported": 0,
+            "understated": 499,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 35,
+        "duration": 70,
+        "effectSd": 1.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.26914419999998,
+        "dataSeedBase": 40035000,
+        "scheduleSeedBase": 41035000,
+        "analysisSeedBase": 42035000,
+        "target": 67.5,
+        "estimateSum": 33482.85340179004,
+        "estimateCount": 500,
+        "covered": 474,
+        "available": 500,
+        "conservativeSum": 20161.818963458478,
+        "switches": 9198,
+        "allocations": "844200552",
+        "feasibilityPower": 0.9991846147039032,
+        "mde70": 32.8148028945582,
+        "se": 13.20852996044132,
+        "policies": {
+          "A": {
+            "supported": 496,
+            "inconclusive": 4,
+            "noEffect": 0,
+            "estimateSumSupported": 33316.71240175431,
+            "conservativeSumSupported": 20161.818963458478,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 496,
+            "inconclusive": 4,
+            "noEffect": 0,
+            "estimateSumSupported": 33316.71240175431,
+            "conservativeSumSupported": 20161.818963458478,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 496,
+            "inconclusive": 4,
+            "noEffect": 0,
+            "estimateSumSupported": 33316.71240175431,
+            "conservativeSumSupported": 20161.818963458478,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 35,
+        "duration": 70,
+        "effectSd": 1.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 6.282768899999792,
+        "dataSeedBase": 40035000,
+        "scheduleSeedBase": 41035000,
+        "analysisSeedBase": 42035000,
+        "target": 67.5,
+        "estimateSum": 34507.58561216084,
+        "estimateCount": 500,
+        "covered": 452,
+        "available": 500,
+        "conservativeSum": 20203.803625541874,
+        "switches": 6030,
+        "allocations": "274428",
+        "feasibilityPower": 0.9973977864007828,
+        "mde70": 35.273887333662586,
+        "se": 14.198354296535433,
+        "policies": {
+          "A": {
+            "supported": 493,
+            "inconclusive": 7,
+            "noEffect": 0,
+            "estimateSumSupported": 34237.48922922965,
+            "conservativeSumSupported": 20203.555853440943,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 493,
+            "inconclusive": 7,
+            "noEffect": 0,
+            "estimateSumSupported": 34237.48922922965,
+            "conservativeSumSupported": 20203.555853440943,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 493,
+            "inconclusive": 7,
+            "noEffect": 0,
+            "estimateSumSupported": 34237.48922922965,
+            "conservativeSumSupported": 20203.555853440943,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 36,
+        "duration": 84,
+        "effectSd": 0,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 10.096033400000072,
+        "dataSeedBase": 40036000,
+        "scheduleSeedBase": 41036000,
+        "analysisSeedBase": 42036000,
+        "target": 0,
+        "estimateSum": -123.41021173748692,
+        "estimateCount": 500,
+        "covered": 463,
+        "available": 500,
+        "conservativeSum": 105.86225747771225,
+        "switches": 10540,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.02499993000909632,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 4,
+            "inconclusive": 496,
+            "noEffect": 0,
+            "estimateSumSupported": 111.32323311965524,
+            "conservativeSumSupported": 26.351028576633386,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 260.3360806100552,
+            "conservativeSumSupported": 90.19066693301906,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 260.3360806100552,
+            "conservativeSumSupported": 90.19066693301906,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 36,
+        "duration": 84,
+        "effectSd": 0,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.012391800000099,
+        "dataSeedBase": 40036000,
+        "scheduleSeedBase": 41036000,
+        "analysisSeedBase": 42036000,
+        "target": 0,
+        "estimateSum": 237.6802319365422,
+        "estimateCount": 500,
+        "covered": 476,
+        "available": 500,
+        "conservativeSum": 81.34298258312417,
+        "switches": 6839,
+        "allocations": "7039032",
+        "feasibilityPower": 0.024999930009096286,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 3,
+            "inconclusive": 497,
+            "noEffect": 0,
+            "estimateSumSupported": 96.72525439634074,
+            "conservativeSumSupported": 22.10069525006503,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 5,
+            "inconclusive": 495,
+            "noEffect": 0,
+            "estimateSumSupported": 168.69692450232378,
+            "conservativeSumSupported": 55.23406339927458,
+            "highRiskSupported": 1,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 5,
+            "inconclusive": 495,
+            "noEffect": 0,
+            "estimateSumSupported": 168.69692450232378,
+            "conservativeSumSupported": 55.23406339927458,
+            "highRiskSupported": 1,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 37,
+        "duration": 84,
+        "effectSd": 0,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 9.962425300000003,
+        "dataSeedBase": 40037000,
+        "scheduleSeedBase": 41037000,
+        "analysisSeedBase": 42037000,
+        "target": 0,
+        "estimateSum": 97.71765691383308,
+        "estimateCount": 500,
+        "covered": 466,
+        "available": 500,
+        "conservativeSum": 96.62927622198609,
+        "switches": 10541,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.02499993000909632,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 11,
+            "inconclusive": 489,
+            "noEffect": 0,
+            "estimateSumSupported": 294.0296697078786,
+            "conservativeSumSupported": 73.06484544800472,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 11,
+            "inconclusive": 489,
+            "noEffect": 0,
+            "estimateSumSupported": 294.0296697078786,
+            "conservativeSumSupported": 73.06484544800472,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 11,
+            "inconclusive": 489,
+            "noEffect": 0,
+            "estimateSumSupported": 294.0296697078786,
+            "conservativeSumSupported": 73.06484544800472,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 37,
+        "duration": 84,
+        "effectSd": 0,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.824344700000016,
+        "dataSeedBase": 40037000,
+        "scheduleSeedBase": 41037000,
+        "analysisSeedBase": 42037000,
+        "target": 0,
+        "estimateSum": -196.46221564693298,
+        "estimateCount": 500,
+        "covered": 470,
+        "available": 500,
+        "conservativeSum": 65.52736582170277,
+        "switches": 6795,
+        "allocations": "7039032",
+        "feasibilityPower": 0.024999930009096286,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 221.9020880699452,
+            "conservativeSumSupported": 49.912192964965335,
+            "highRiskSupported": 4,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 221.9020880699452,
+            "conservativeSumSupported": 49.912192964965335,
+            "highRiskSupported": 4,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 8,
+            "inconclusive": 492,
+            "noEffect": 0,
+            "estimateSumSupported": 221.9020880699452,
+            "conservativeSumSupported": 49.912192964965335,
+            "highRiskSupported": 4,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 38,
+        "duration": 84,
+        "effectSd": 0.25,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 9.73737260000012,
+        "dataSeedBase": 40038000,
+        "scheduleSeedBase": 41038000,
+        "analysisSeedBase": 42038000,
+        "target": 9,
+        "estimateSum": 4818.445013655342,
+        "estimateCount": 500,
+        "covered": 460,
+        "available": 500,
+        "conservativeSum": 486.95349687896197,
+        "switches": 10381,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.11173866612509371,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 37,
+            "inconclusive": 463,
+            "noEffect": 0,
+            "estimateSumSupported": 1117.5704913220643,
+            "conservativeSumSupported": 308.7297537151009,
+            "highRiskSupported": 3,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 51,
+            "inconclusive": 449,
+            "noEffect": 0,
+            "estimateSumSupported": 1526.5835375269842,
+            "conservativeSumSupported": 427.29102817571237,
+            "highRiskSupported": 5,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 51,
+            "inconclusive": 449,
+            "noEffect": 0,
+            "estimateSumSupported": 1526.5835375269842,
+            "conservativeSumSupported": 427.29102817571237,
+            "highRiskSupported": 5,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 38,
+        "duration": 84,
+        "effectSd": 0.25,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.800144300000044,
+        "dataSeedBase": 40038000,
+        "scheduleSeedBase": 41038000,
+        "analysisSeedBase": 42038000,
+        "target": 9,
+        "estimateSum": 4457.073748318524,
+        "estimateCount": 500,
+        "covered": 465,
+        "available": 500,
+        "conservativeSum": 416.070608672775,
+        "switches": 6833,
+        "allocations": "7039032",
+        "feasibilityPower": 0.10218125076579335,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 31,
+            "inconclusive": 469,
+            "noEffect": 0,
+            "estimateSumSupported": 1030.0245805199897,
+            "conservativeSumSupported": 287.87407673971586,
+            "highRiskSupported": 3,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 38,
+            "inconclusive": 462,
+            "noEffect": 0,
+            "estimateSumSupported": 1255.1446221604826,
+            "conservativeSumSupported": 349.37152353040824,
+            "highRiskSupported": 4,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 38,
+            "inconclusive": 462,
+            "noEffect": 0,
+            "estimateSumSupported": 1255.1446221604826,
+            "conservativeSumSupported": 349.37152353040824,
+            "highRiskSupported": 4,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 39,
+        "duration": 84,
+        "effectSd": 0.25,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 10.087991600000066,
+        "dataSeedBase": 40039000,
+        "scheduleSeedBase": 41039000,
+        "analysisSeedBase": 42039000,
+        "target": 11.25,
+        "estimateSum": 5917.880935195384,
+        "estimateCount": 500,
+        "covered": 458,
+        "available": 500,
+        "conservativeSum": 660.1854713892701,
+        "switches": 10513,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.15111189449506623,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 66,
+            "inconclusive": 434,
+            "noEffect": 0,
+            "estimateSumSupported": 1984.3684778074633,
+            "conservativeSumSupported": 586.651943973226,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 66,
+            "inconclusive": 434,
+            "noEffect": 0,
+            "estimateSumSupported": 1984.3684778074633,
+            "conservativeSumSupported": 586.651943973226,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 66,
+            "inconclusive": 434,
+            "noEffect": 0,
+            "estimateSumSupported": 1984.3684778074633,
+            "conservativeSumSupported": 586.651943973226,
+            "highRiskSupported": 9,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 39,
+        "duration": 84,
+        "effectSd": 0.25,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.7604571,
+        "dataSeedBase": 40039000,
+        "scheduleSeedBase": 41039000,
+        "analysisSeedBase": 42039000,
+        "target": 11.25,
+        "estimateSum": 5719.044785242353,
+        "estimateCount": 500,
+        "covered": 477,
+        "available": 500,
+        "conservativeSum": 534.1345544535827,
+        "switches": 6772,
+        "allocations": "7039032",
+        "feasibilityPower": 0.13642243125663953,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 55,
+            "inconclusive": 445,
+            "noEffect": 0,
+            "estimateSumSupported": 1680.9493222680057,
+            "conservativeSumSupported": 455.2879954614803,
+            "highRiskSupported": 6,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 55,
+            "inconclusive": 445,
+            "noEffect": 0,
+            "estimateSumSupported": 1680.9493222680057,
+            "conservativeSumSupported": 455.2879954614803,
+            "highRiskSupported": 6,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 55,
+            "inconclusive": 445,
+            "noEffect": 0,
+            "estimateSumSupported": 1680.9493222680057,
+            "conservativeSumSupported": 455.2879954614803,
+            "highRiskSupported": 6,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 40,
+        "duration": 84,
+        "effectSd": 0.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 9.861646200000076,
+        "dataSeedBase": 40040000,
+        "scheduleSeedBase": 41040000,
+        "analysisSeedBase": 42040000,
+        "target": 18,
+        "estimateSum": 8906.444320619383,
+        "estimateCount": 500,
+        "covered": 462,
+        "available": 500,
+        "conservativeSum": 1503.9675815540977,
+        "switches": 10444,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.3174990648271627,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 101,
+            "inconclusive": 399,
+            "noEffect": 0,
+            "estimateSumSupported": 3284.592877012882,
+            "conservativeSumSupported": 987.6285205020803,
+            "highRiskSupported": 4,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 135,
+            "inconclusive": 365,
+            "noEffect": 0,
+            "estimateSumSupported": 4444.4894277591875,
+            "conservativeSumSupported": 1421.4156371965078,
+            "highRiskSupported": 4,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 135,
+            "inconclusive": 365,
+            "noEffect": 0,
+            "estimateSumSupported": 4444.4894277591875,
+            "conservativeSumSupported": 1421.4156371965078,
+            "highRiskSupported": 4,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 40,
+        "duration": 84,
+        "effectSd": 0.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.9162205999998845,
+        "dataSeedBase": 40040000,
+        "scheduleSeedBase": 41040000,
+        "analysisSeedBase": 42040000,
+        "target": 18,
+        "estimateSum": 9179.896165088858,
+        "estimateCount": 500,
+        "covered": 468,
+        "available": 500,
+        "conservativeSum": 1399.8383793207124,
+        "switches": 6786,
+        "allocations": "7039032",
+        "feasibilityPower": 0.2814708947112755,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 95,
+            "inconclusive": 405,
+            "noEffect": 0,
+            "estimateSumSupported": 3272.1861315729334,
+            "conservativeSumSupported": 1049.2402778786247,
+            "highRiskSupported": 5,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 126,
+            "inconclusive": 374,
+            "noEffect": 0,
+            "estimateSumSupported": 4253.835566896813,
+            "conservativeSumSupported": 1324.3563893727062,
+            "highRiskSupported": 9,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 125,
+            "inconclusive": 375,
+            "noEffect": 0,
+            "estimateSumSupported": 4230.3739432291995,
+            "conservativeSumSupported": 1319.35979308622,
+            "highRiskSupported": 8,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 41,
+        "duration": 84,
+        "effectSd": 0.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 9.903615599999902,
+        "dataSeedBase": 40041000,
+        "scheduleSeedBase": 41041000,
+        "analysisSeedBase": 42041000,
+        "target": 22.5,
+        "estimateSum": 11113.326888175503,
+        "estimateCount": 500,
+        "covered": 455,
+        "available": 500,
+        "conservativeSum": 2437.815076017114,
+        "switches": 10348,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.45882716617502683,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 201,
+            "inconclusive": 298,
+            "noEffect": 1,
+            "estimateSumSupported": 6801.488279731837,
+            "conservativeSumSupported": 2334.961919747904,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 201,
+            "inconclusive": 298,
+            "noEffect": 1,
+            "estimateSumSupported": 6801.488279731837,
+            "conservativeSumSupported": 2334.961919747904,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 201,
+            "inconclusive": 298,
+            "noEffect": 1,
+            "estimateSumSupported": 6801.488279731837,
+            "conservativeSumSupported": 2334.961919747904,
+            "highRiskSupported": 10,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 41,
+        "duration": 84,
+        "effectSd": 0.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.982345100000035,
+        "dataSeedBase": 40041000,
+        "scheduleSeedBase": 41041000,
+        "analysisSeedBase": 42041000,
+        "target": 22.5,
+        "estimateSum": 11659.225232396879,
+        "estimateCount": 500,
+        "covered": 464,
+        "available": 500,
+        "conservativeSum": 2172.7617412857435,
+        "switches": 6827,
+        "allocations": "7039032",
+        "feasibilityPower": 0.40783970663222896,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 178,
+            "inconclusive": 322,
+            "noEffect": 0,
+            "estimateSumSupported": 6522.927767707536,
+            "conservativeSumSupported": 2084.474670397283,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 178,
+            "inconclusive": 322,
+            "noEffect": 0,
+            "estimateSumSupported": 6522.927767707536,
+            "conservativeSumSupported": 2084.474670397283,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 178,
+            "inconclusive": 322,
+            "noEffect": 0,
+            "estimateSumSupported": 6522.927767707536,
+            "conservativeSumSupported": 2084.474670397283,
+            "highRiskSupported": 3,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 42,
+        "duration": 84,
+        "effectSd": 0.75,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 10.0178293000001,
+        "dataSeedBase": 40042000,
+        "scheduleSeedBase": 41042000,
+        "analysisSeedBase": 42042000,
+        "target": 27,
+        "estimateSum": 13625.265419127789,
+        "estimateCount": 500,
+        "covered": 471,
+        "available": 500,
+        "conservativeSum": 3296.1757359753537,
+        "switches": 10513,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.605621919534953,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 179,
+            "inconclusive": 321,
+            "noEffect": 0,
+            "estimateSumSupported": 6715.36667319162,
+            "conservativeSumSupported": 2516.715768525256,
+            "highRiskSupported": 4,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 235,
+            "inconclusive": 265,
+            "noEffect": 0,
+            "estimateSumSupported": 8670.613359695117,
+            "conservativeSumSupported": 3203.302580302037,
+            "highRiskSupported": 6,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 234,
+            "inconclusive": 266,
+            "noEffect": 0,
+            "estimateSumSupported": 8638.98493698415,
+            "conservativeSumSupported": 3194.5886331405577,
+            "highRiskSupported": 6,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 42,
+        "duration": 84,
+        "effectSd": 0.75,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.066665299999993,
+        "dataSeedBase": 40042000,
+        "scheduleSeedBase": 41042000,
+        "analysisSeedBase": 42042000,
+        "target": 27,
+        "estimateSum": 13120.29233024528,
+        "estimateCount": 500,
+        "covered": 464,
+        "available": 500,
+        "conservativeSum": 2854.452554266834,
+        "switches": 6777,
+        "allocations": "7039032",
+        "feasibilityPower": 0.5446937828901287,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 163,
+            "inconclusive": 337,
+            "noEffect": 0,
+            "estimateSumSupported": 6188.664633695487,
+            "conservativeSumSupported": 2210.29610357035,
+            "highRiskSupported": 3,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 207,
+            "inconclusive": 292,
+            "noEffect": 1,
+            "estimateSumSupported": 7866.972174326297,
+            "conservativeSumSupported": 2774.1337040390054,
+            "highRiskSupported": 4,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 206,
+            "inconclusive": 293,
+            "noEffect": 1,
+            "estimateSumSupported": 7832.083291072456,
+            "conservativeSumSupported": 2768.3098137261723,
+            "highRiskSupported": 4,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 43,
+        "duration": 84,
+        "effectSd": 0.75,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 9.952141799999866,
+        "dataSeedBase": 40043000,
+        "scheduleSeedBase": 41043000,
+        "analysisSeedBase": 42043000,
+        "target": 33.75,
+        "estimateSum": 17444.951845908643,
+        "estimateCount": 500,
+        "covered": 469,
+        "available": 500,
+        "conservativeSum": 6187.54113469769,
+        "switches": 10458,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.7952855569506798,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 387,
+            "inconclusive": 113,
+            "noEffect": 0,
+            "estimateSumSupported": 15189.950561172174,
+            "conservativeSumSupported": 6142.097349840808,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 387,
+            "inconclusive": 113,
+            "noEffect": 0,
+            "estimateSumSupported": 15189.950561172174,
+            "conservativeSumSupported": 6142.097349840808,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 387,
+            "inconclusive": 113,
+            "noEffect": 0,
+            "estimateSumSupported": 15189.950561172174,
+            "conservativeSumSupported": 6142.097349840808,
+            "highRiskSupported": 2,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 43,
+        "duration": 84,
+        "effectSd": 0.75,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.708120399999898,
+        "dataSeedBase": 40043000,
+        "scheduleSeedBase": 41043000,
+        "analysisSeedBase": 42043000,
+        "target": 33.75,
+        "estimateSum": 16887.747704125963,
+        "estimateCount": 500,
+        "covered": 463,
+        "available": 500,
+        "conservativeSum": 5224.402729653837,
+        "switches": 6744,
+        "allocations": "7039032",
+        "feasibilityPower": 0.7357585673647838,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 322,
+            "inconclusive": 178,
+            "noEffect": 0,
+            "estimateSumSupported": 13111.706684884146,
+            "conservativeSumSupported": 5142.433310227738,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 322,
+            "inconclusive": 178,
+            "noEffect": 0,
+            "estimateSumSupported": 13111.706684884146,
+            "conservativeSumSupported": 5142.433310227738,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 322,
+            "inconclusive": 178,
+            "noEffect": 0,
+            "estimateSumSupported": 13111.706684884146,
+            "conservativeSumSupported": 5142.433310227738,
+            "highRiskSupported": 5,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 44,
+        "duration": 84,
+        "effectSd": 1,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.827301800000015,
+        "dataSeedBase": 40044000,
+        "scheduleSeedBase": 41044000,
+        "analysisSeedBase": 42044000,
+        "target": 36,
+        "estimateSum": 17643.060337584895,
+        "estimateCount": 500,
+        "covered": 469,
+        "available": 500,
+        "conservativeSum": 6011.670381319605,
+        "switches": 10491,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.8438855944655298,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 271,
+            "inconclusive": 229,
+            "noEffect": 0,
+            "estimateSumSupported": 11136.037516247698,
+            "conservativeSumSupported": 4548.376712029891,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 367,
+            "inconclusive": 133,
+            "noEffect": 0,
+            "estimateSumSupported": 14883.08411150136,
+            "conservativeSumSupported": 5966.3660027413935,
+            "highRiskSupported": 1,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 365,
+            "inconclusive": 135,
+            "noEffect": 0,
+            "estimateSumSupported": 14816.959389991374,
+            "conservativeSumSupported": 5956.351623282203,
+            "highRiskSupported": 1,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 44,
+        "duration": 84,
+        "effectSd": 1,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.068806499999948,
+        "dataSeedBase": 40044000,
+        "scheduleSeedBase": 41044000,
+        "analysisSeedBase": 42044000,
+        "target": 36,
+        "estimateSum": 17992.63193420198,
+        "estimateCount": 500,
+        "covered": 472,
+        "available": 500,
+        "conservativeSum": 5654.8760356111725,
+        "switches": 6741,
+        "allocations": "7039032",
+        "feasibilityPower": 0.7890153751062945,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 264,
+            "inconclusive": 236,
+            "noEffect": 0,
+            "estimateSumSupported": 11404.311700320393,
+            "conservativeSumSupported": 4528.334922564487,
+            "highRiskSupported": 6,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 342,
+            "inconclusive": 158,
+            "noEffect": 0,
+            "estimateSumSupported": 14378.417936150263,
+            "conservativeSumSupported": 5552.6894511482615,
+            "highRiskSupported": 8,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 338,
+            "inconclusive": 162,
+            "noEffect": 0,
+            "estimateSumSupported": 14233.839527789218,
+            "conservativeSumSupported": 5517.277810732893,
+            "highRiskSupported": 8,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 45,
+        "duration": 84,
+        "effectSd": 1,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 11.205268500000006,
+        "dataSeedBase": 40045000,
+        "scheduleSeedBase": 41045000,
+        "analysisSeedBase": 42045000,
+        "target": 45,
+        "estimateSum": 22678.32587828291,
+        "estimateCount": 500,
+        "covered": 468,
+        "available": 500,
+        "conservativeSum": 10610.988541499788,
+        "switches": 10322,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.9602150441566114,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 465,
+            "inconclusive": 35,
+            "noEffect": 0,
+            "estimateSumSupported": 21826.2793395322,
+            "conservativeSumSupported": 10601.932289617635,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 465,
+            "inconclusive": 35,
+            "noEffect": 0,
+            "estimateSumSupported": 21826.2793395322,
+            "conservativeSumSupported": 10601.932289617635,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 465,
+            "inconclusive": 35,
+            "noEffect": 0,
+            "estimateSumSupported": 21826.2793395322,
+            "conservativeSumSupported": 10601.932289617635,
+            "highRiskSupported": 1,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 45,
+        "duration": 84,
+        "effectSd": 1,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 8.108701900000218,
+        "dataSeedBase": 40045000,
+        "scheduleSeedBase": 41045000,
+        "analysisSeedBase": 42045000,
+        "target": 45,
+        "estimateSum": 22938.46713388095,
+        "estimateCount": 500,
+        "covered": 468,
+        "available": 500,
+        "conservativeSum": 10112.0187836423,
+        "switches": 6768,
+        "allocations": "7039032",
+        "feasibilityPower": 0.9323798208136125,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 443,
+            "inconclusive": 57,
+            "noEffect": 0,
+            "estimateSumSupported": 21435.54696068264,
+            "conservativeSumSupported": 10081.620620940128,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 443,
+            "inconclusive": 57,
+            "noEffect": 0,
+            "estimateSumSupported": 21435.54696068264,
+            "conservativeSumSupported": 10081.620620940128,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 443,
+            "inconclusive": 57,
+            "noEffect": 0,
+            "estimateSumSupported": 21435.54696068264,
+            "conservativeSumSupported": 10081.620620940128,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 46,
+        "duration": 84,
+        "effectSd": 1.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 10.256483000000008,
+        "dataSeedBase": 40046000,
+        "scheduleSeedBase": 41046000,
+        "analysisSeedBase": 42046000,
+        "target": 54,
+        "estimateSum": 26879.559433536815,
+        "estimateCount": 500,
+        "covered": 465,
+        "available": 500,
+        "conservativeSum": 13910.844390513334,
+        "switches": 10492,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.9937166084583821,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 339,
+            "inconclusive": 161,
+            "noEffect": 0,
+            "estimateSumSupported": 19370.15724999434,
+            "conservativeSumSupported": 10562.60916753242,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 477,
+            "inconclusive": 23,
+            "noEffect": 0,
+            "estimateSumSupported": 26273.980182633837,
+            "conservativeSumSupported": 13909.265004182509,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 476,
+            "inconclusive": 24,
+            "noEffect": 0,
+            "estimateSumSupported": 26223.02425791452,
+            "conservativeSumSupported": 13882.400347152063,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 46,
+        "duration": 84,
+        "effectSd": 1.5,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.6647101000000255,
+        "dataSeedBase": 40046000,
+        "scheduleSeedBase": 41046000,
+        "analysisSeedBase": 42046000,
+        "target": 54,
+        "estimateSum": 26913.340008693438,
+        "estimateCount": 500,
+        "covered": 469,
+        "available": 500,
+        "conservativeSum": 12910.800358888291,
+        "switches": 6812,
+        "allocations": "7039032",
+        "feasibilityPower": 0.9855371369046466,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 347,
+            "inconclusive": 153,
+            "noEffect": 0,
+            "estimateSumSupported": 19723.052051588216,
+            "conservativeSumSupported": 10210.134986017863,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 465,
+            "inconclusive": 35,
+            "noEffect": 0,
+            "estimateSumSupported": 25779.88499646832,
+            "conservativeSumSupported": 12902.82139213876,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 463,
+            "inconclusive": 37,
+            "noEffect": 0,
+            "estimateSumSupported": 25685.48217327437,
+            "conservativeSumSupported": 12862.878631231157,
+            "highRiskSupported": 0,
+            "understated": 500,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 47,
+        "duration": 84,
+        "effectSd": 1.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 2
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 9.236974699999903,
+        "dataSeedBase": 40047000,
+        "scheduleSeedBase": 41047000,
+        "analysisSeedBase": 42047000,
+        "target": 67.5,
+        "estimateSum": 33674.68615785533,
+        "estimateCount": 500,
+        "covered": 465,
+        "available": 500,
+        "conservativeSum": 21644.28001404418,
+        "switches": 10401,
+        "allocations": "88596471040",
+        "feasibilityPower": 0.9998467243638717,
+        "mde70": 30.10823366580534,
+        "se": 12.119088684110533,
+        "policies": {
+          "A": {
+            "supported": 500,
+            "inconclusive": 0,
+            "noEffect": 0,
+            "estimateSumSupported": 33674.68615785533,
+            "conservativeSumSupported": 21644.28001404418,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 500,
+            "inconclusive": 0,
+            "noEffect": 0,
+            "estimateSumSupported": 33674.68615785533,
+            "conservativeSumSupported": 21644.28001404418,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 500,
+            "inconclusive": 0,
+            "noEffect": 0,
+            "estimateSumSupported": 33674.68615785533,
+            "conservativeSumSupported": 21644.28001404418,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    },
+    {
+      "cell": {
+        "index": 47,
+        "duration": 84,
+        "effectSd": 1.5,
+        "adherence": 1,
+        "contamination": 0,
+        "blockLength": 3
+      },
+      "summary": {
+        "runs": 500,
+        "seconds": 7.365361199999927,
+        "dataSeedBase": 40047000,
+        "scheduleSeedBase": 41047000,
+        "analysisSeedBase": 42047000,
+        "target": 67.5,
+        "estimateSum": 34072.45660469333,
+        "estimateCount": 500,
+        "covered": 455,
+        "available": 500,
+        "conservativeSum": 20754.185975916218,
+        "switches": 6779,
+        "allocations": "7039032",
+        "feasibilityPower": 0.9993603483804634,
+        "mde70": 32.369883366598536,
+        "se": 13.029442097749474,
+        "policies": {
+          "A": {
+            "supported": 495,
+            "inconclusive": 5,
+            "noEffect": 0,
+            "estimateSumSupported": 33934.58188788503,
+            "conservativeSumSupported": 20754.185975916218,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "B": {
+            "supported": 495,
+            "inconclusive": 5,
+            "noEffect": 0,
+            "estimateSumSupported": 33934.58188788503,
+            "conservativeSumSupported": 20754.185975916218,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          },
+          "C": {
+            "supported": 495,
+            "inconclusive": 5,
+            "noEffect": 0,
+            "estimateSumSupported": 33934.58188788503,
+            "conservativeSumSupported": 20754.185975916218,
+            "highRiskSupported": 0,
+            "understated": 0,
+            "understatedUnknown": 0
+          }
+        }
+      }
+    }
+  ],
+  "selectionHash": "8c2d6bd3a32e10d15a523e2339a478183548d54139a916b93575edca58aebe03"
+}

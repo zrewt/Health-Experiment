@@ -1,0 +1,223 @@
+{
+  "protocol": "v3.1-simulation-lookup-and-planned-power-v1",
+  "totalPoints": 12,
+  "completedPoints": 12,
+  "results": [
+    {
+      "cell": {
+        "index": 0,
+        "sd": 40,
+        "rho": 0.3,
+        "duration": 42,
+        "adherence": 1,
+        "contamination": 0,
+        "effect": 25
+      },
+      "detection": 0.265,
+      "runs": 200,
+      "seconds": 1.1154737,
+      "supportedCount": 53,
+      "sumEstimateSupported": 2029.5015503236814,
+      "inflatedCount": 27,
+      "highOrModRiskInflatedCount": 27
+    },
+    {
+      "cell": {
+        "index": 1,
+        "sd": 40,
+        "rho": 0.3,
+        "duration": 56,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "effect": 15
+      },
+      "detection": 0.115,
+      "runs": 200,
+      "seconds": 1.2637341000000002,
+      "supportedCount": 23,
+      "sumEstimateSupported": 758.9373530909318,
+      "inflatedCount": 23,
+      "highOrModRiskInflatedCount": 23
+    },
+    {
+      "cell": {
+        "index": 2,
+        "sd": 40,
+        "rho": 0.5,
+        "duration": 70,
+        "adherence": 1,
+        "contamination": 0,
+        "effect": 12
+      },
+      "detection": 0.14,
+      "runs": 200,
+      "seconds": 1.7173192999999995,
+      "supportedCount": 28,
+      "sumEstimateSupported": 873.9311831140953,
+      "inflatedCount": 28,
+      "highOrModRiskInflatedCount": 28
+    },
+    {
+      "cell": {
+        "index": 3,
+        "sd": 40,
+        "rho": 0.5,
+        "duration": 84,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "effect": 40
+      },
+      "detection": 0.665,
+      "runs": 200,
+      "seconds": 2.0545778,
+      "supportedCount": 133,
+      "sumEstimateSupported": 4852.448802878423,
+      "inflatedCount": 13,
+      "highOrModRiskInflatedCount": 13
+    },
+    {
+      "cell": {
+        "index": 4,
+        "sd": 52,
+        "rho": 0.3,
+        "duration": 42,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "effect": 40
+      },
+      "detection": 0.27,
+      "runs": 200,
+      "seconds": 1.2157738,
+      "supportedCount": 54,
+      "sumEstimateSupported": 2826.8513936441495,
+      "inflatedCount": 33,
+      "highOrModRiskInflatedCount": 33
+    },
+    {
+      "cell": {
+        "index": 5,
+        "sd": 52,
+        "rho": 0.3,
+        "duration": 56,
+        "adherence": 1,
+        "contamination": 0,
+        "effect": 25
+      },
+      "detection": 0.21,
+      "runs": 200,
+      "seconds": 1.6260758000000006,
+      "supportedCount": 42,
+      "sumEstimateSupported": 1788.8687448208711,
+      "inflatedCount": 31,
+      "highOrModRiskInflatedCount": 31
+    },
+    {
+      "cell": {
+        "index": 6,
+        "sd": 52,
+        "rho": 0.5,
+        "duration": 70,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "effect": 15
+      },
+      "detection": 0.11,
+      "runs": 200,
+      "seconds": 1.6798617999999987,
+      "supportedCount": 22,
+      "sumEstimateSupported": 852.1410835673191,
+      "inflatedCount": 22,
+      "highOrModRiskInflatedCount": 22
+    },
+    {
+      "cell": {
+        "index": 7,
+        "sd": 52,
+        "rho": 0.5,
+        "duration": 84,
+        "adherence": 1,
+        "contamination": 0,
+        "effect": 12
+      },
+      "detection": 0.085,
+      "runs": 200,
+      "seconds": 2.4548362,
+      "supportedCount": 17,
+      "sumEstimateSupported": 603.4974347938964,
+      "inflatedCount": 17,
+      "highOrModRiskInflatedCount": 17
+    },
+    {
+      "cell": {
+        "index": 8,
+        "sd": 68,
+        "rho": 0.3,
+        "duration": 42,
+        "adherence": 1,
+        "contamination": 0,
+        "effect": 12
+      },
+      "detection": 0.05,
+      "runs": 200,
+      "seconds": 1.4609120000000002,
+      "supportedCount": 10,
+      "sumEstimateSupported": 558.4923493429253,
+      "inflatedCount": 10,
+      "highOrModRiskInflatedCount": 10
+    },
+    {
+      "cell": {
+        "index": 9,
+        "sd": 68,
+        "rho": 0.3,
+        "duration": 56,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "effect": 40
+      },
+      "detection": 0.25,
+      "runs": 200,
+      "seconds": 1.553778699999999,
+      "supportedCount": 50,
+      "sumEstimateSupported": 3057.509843942585,
+      "inflatedCount": 41,
+      "highOrModRiskInflatedCount": 41
+    },
+    {
+      "cell": {
+        "index": 10,
+        "sd": 68,
+        "rho": 0.5,
+        "duration": 70,
+        "adherence": 1,
+        "contamination": 0,
+        "effect": 25
+      },
+      "detection": 0.18,
+      "runs": 200,
+      "seconds": 1.7429851999999992,
+      "supportedCount": 36,
+      "sumEstimateSupported": 2004.7986135485507,
+      "inflatedCount": 36,
+      "highOrModRiskInflatedCount": 36
+    },
+    {
+      "cell": {
+        "index": 11,
+        "sd": 68,
+        "rho": 0.5,
+        "duration": 84,
+        "adherence": 0.9,
+        "contamination": 0.1,
+        "effect": 15
+      },
+      "detection": 0.1,
+      "runs": 200,
+      "seconds": 2.0539573999999994,
+      "supportedCount": 20,
+      "sumEstimateSupported": 969.9793360627123,
+      "inflatedCount": 20,
+      "highOrModRiskInflatedCount": 20
+    }
+  ]
+}
