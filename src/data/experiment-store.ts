@@ -24,6 +24,7 @@ export interface ConsentRecord {
 
 export interface StoredDailyEntry extends DailyEntry {
   editedAt: string;
+  synced?: boolean;
 }
 
 // Local storage key prefixes for offline resilience / fallback when Supabase is not reachable
@@ -101,6 +102,7 @@ export async function getSetup(userId: string): Promise<ExperimentSetupRecord | 
 /**
  * Saves a daily entry (upsert by user_id and date).
  * MISSING IS NOT ZERO: undefined or null sleepMinutes stays null.
+ * If cloud save fails or offline, the entry is preserved locally with synced: false.
  */
 export async function saveEntry(userId: string, entry: DailyEntry): Promise<StoredDailyEntry> {
   const sleepMinutes = entry.sleepMinutes ?? null;
@@ -112,6 +114,7 @@ export async function saveEntry(userId: string, entry: DailyEntry): Promise<Stor
     sleepMinutes,
     lastCaffeineTime,
     editedAt,
+    synced: false,
   };
 
   // 1. Update local AsyncStorage cache
@@ -122,21 +125,72 @@ export async function saveEntry(userId: string, entry: DailyEntry): Promise<Stor
 
   // 2. Persist to Supabase if available
   if (supabase) {
-    const { error } = await supabase.from('experiment_entries').upsert({
-      user_id: userId,
-      date: entry.date,
-      sleep_minutes: sleepMinutes,
-      last_caffeine_time: lastCaffeineTime,
-      edited_at: editedAt,
-    }, { onConflict: 'user_id,date' });
+    try {
+      const { error } = await supabase.from('experiment_entries').upsert({
+        user_id: userId,
+        date: entry.date,
+        sleep_minutes: sleepMinutes,
+        last_caffeine_time: lastCaffeineTime,
+        edited_at: editedAt,
+      }, { onConflict: 'user_id,date' });
 
-    if (error) {
-      console.warn('Supabase saveEntry error:', error.message);
-      throw new Error(`Failed to save entry to cloud: ${error.message}`);
+      if (error) {
+        console.warn('Supabase saveEntry error:', error.message);
+        // Stays synced: false, local cache preserved
+      } else {
+        record.synced = true;
+        entriesMap[entry.date] = record;
+        await AsyncStorage.setItem(entriesKey(userId), JSON.stringify(entriesMap));
+      }
+    } catch (e) {
+      console.warn('Supabase saveEntry network/exception:', e);
+      // Stays synced: false
     }
   }
 
   return record;
+}
+
+/**
+ * Retries syncing all unsynced local entries to Supabase.
+ */
+export async function syncUnsyncedEntries(userId: string): Promise<{ syncedCount: number; failedCount: number }> {
+  const rawEntries = await AsyncStorage.getItem(entriesKey(userId));
+  if (!rawEntries) return { syncedCount: 0, failedCount: 0 };
+  const entriesMap: Record<string, StoredDailyEntry> = JSON.parse(rawEntries);
+  const unsynced = Object.values(entriesMap).filter(e => e.synced === false);
+
+  if (!supabase || unsynced.length === 0) {
+    return { syncedCount: 0, failedCount: unsynced.length };
+  }
+
+  let syncedCount = 0;
+  let failedCount = 0;
+
+  for (const entry of unsynced) {
+    try {
+      const { error } = await supabase.from('experiment_entries').upsert({
+        user_id: userId,
+        date: entry.date,
+        sleep_minutes: entry.sleepMinutes,
+        last_caffeine_time: entry.lastCaffeineTime,
+        edited_at: entry.editedAt,
+      }, { onConflict: 'user_id,date' });
+
+      if (!error) {
+        entry.synced = true;
+        entriesMap[entry.date] = entry;
+        syncedCount++;
+      } else {
+        failedCount++;
+      }
+    } catch {
+      failedCount++;
+    }
+  }
+
+  await AsyncStorage.setItem(entriesKey(userId), JSON.stringify(entriesMap));
+  return { syncedCount, failedCount };
 }
 
 /**
@@ -157,6 +211,7 @@ export async function listEntries(userId: string): Promise<StoredDailyEntry[]> {
           sleepMinutes: d.sleep_minutes !== null ? Number(d.sleep_minutes) : null,
           lastCaffeineTime: d.last_caffeine_time ?? null,
           editedAt: d.edited_at,
+          synced: true,
         }));
         // Update local cache
         const map: Record<string, StoredDailyEntry> = {};

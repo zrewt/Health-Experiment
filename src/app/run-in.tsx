@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/auth';
 import {
   listEntries,
   saveEntry,
+  syncUnsyncedEntries,
   getConsent,
   StoredDailyEntry,
 } from '@/data/experiment-store';
@@ -175,6 +176,7 @@ export default function RunInScreen() {
     }
 
     setSavingEntry(true);
+    setStorageError(null);
     try {
       const saved = await saveEntry(user.id, {
         date: activeDate,
@@ -188,6 +190,10 @@ export default function RunInScreen() {
         next.push(saved);
         return next.sort((a, b) => a.date.localeCompare(b.date));
       });
+
+      if (saved.synced === false) {
+        setStorageError('Entry saved locally (not synced yet). Will retry automatically.');
+      }
     } catch (err) {
       setStorageError(err instanceof Error ? err.message : 'Could not save entry. Please retry.');
     } finally {
@@ -210,9 +216,10 @@ export default function RunInScreen() {
   const getDayStatus = (d: string) => {
     const entry = entries.find((e) => e.date === d);
     if (!entry) return 'Missing';
-    if (entry.sleepMinutes !== null && entry.lastCaffeineTime !== null) return 'Logged';
-    if (entry.sleepMinutes !== null || entry.lastCaffeineTime !== null) return 'Partly logged';
-    return 'Missing';
+    const syncSuffix = entry.synced === false ? ' (not synced yet)' : '';
+    if (entry.sleepMinutes !== null && entry.lastCaffeineTime !== null) return `Logged${syncSuffix}`;
+    if (entry.sleepMinutes !== null || entry.lastCaffeineTime !== null) return `Partly logged${syncSuffix}`;
+    return `Missing${syncSuffix}`;
   };
 
   return (
@@ -234,16 +241,26 @@ export default function RunInScreen() {
           </Text>
         </View>
 
-        {/* Storage error banner */}
+        {/* Storage error / offline sync banner */}
         {storageError ? (
           <View style={styles.errorBanner}>
-            <Text variant="sub" color="garnet" weight="semiBold">
+            <Text variant="sub" color="garnet" weight="semiBold" style={{ flex: 1, marginRight: spacing.sm }}>
               {storageError}
             </Text>
             <Button
-              label="Retry"
+              label="Retry Sync"
               variant="quiet"
-              onPress={() => setReloadTrigger((n) => n + 1)}
+              onPress={async () => {
+                if (user) {
+                  const res = await syncUnsyncedEntries(user.id);
+                  if (res.failedCount === 0) {
+                    setStorageError(null);
+                  } else {
+                    setStorageError(`${res.failedCount} entries still not synced yet. Tap to retry.`);
+                  }
+                  setReloadTrigger((n) => n + 1);
+                }
+              }}
             />
           </View>
         ) : null}

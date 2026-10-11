@@ -66,7 +66,7 @@ test('canEditDate permits only current entry date and previous 3 days', () => {
   assert.equal(canEditDate(today, '2026-10-16'), false);
 });
 
-test('getRunInDescriptiveStats computes engine-native descriptive counts only', () => {
+test('getRunInDescriptiveStats computes engine-native descriptive counts only and does not expose eligible, reasons, or thresholds', () => {
   const entries: DailyEntry[] = [
     { date: '2026-10-01', sleepMinutes: 480, lastCaffeineTime: '14:00' },
     { date: '2026-10-02', sleepMinutes: 450, lastCaffeineTime: '10:00' },
@@ -83,4 +83,17 @@ test('getRunInDescriptiveStats computes engine-native descriptive counts only', 
   assert.equal(stats.afternoonCaffeineDays, 1);
   // Unknown caffeine: day 4 -> 1 day
   assert.equal(stats.unknownCaffeineDays, 1);
+
+  // Exact key set assertion: must NOT expose eligible, reasons, thresholds, power, SD, or effect
+  const keys = Object.keys(stats).sort();
+  assert.deepEqual(keys, [
+    'afternoonCaffeineDays',
+    'averageSleepMinutes',
+    'daysLogged',
+    'unknownCaffeineDays',
+    'validDays',
+  ]);
+  assert.equal('eligible' in (stats as any), false);
+  assert.equal('reasons' in (stats as any), false);
+  assert.equal('threshold' in (stats as any), false);
 });
