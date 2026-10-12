@@ -2,9 +2,37 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import type { DailyEntry } from '@/experiment/types';
 import { mergePendingEntries, retryPendingEntries } from './pending-entries';
+import { createPlanPersistence, type StoredExperimentPlan } from './plan-persistence';
+import { parseLocalDate } from '@/experiment/dates';
 
 export const HEALTH_DATA_POLICY_VERSION = '2026-10-health-draft-v1';
 export const DEFAULT_EXPERIMENT_ID = 'caffeine-cutoff';
+
+const planPersistence = createPlanPersistence(AsyncStorage, {
+  async getActive(userId) {
+    if (!supabase) throw new Error('Server storage is unavailable. Your experiment has not been started.');
+    const { data, error } = await supabase.from('experiment_plans')
+      .select('id, plan, status').eq('user_id', userId).neq('status', 'cancelled').maybeSingle();
+    if (error) throw new Error(`Could not load experiment plan: ${error.message}`);
+    return data as StoredExperimentPlan | null;
+  },
+  async insert(userId, plan) {
+    if (!supabase) throw new Error('Server storage is unavailable. Your experiment has not been started.');
+    const { data, error } = await supabase.from('experiment_plans')
+      .insert({ user_id: userId, plan, status: 'scheduled' }).select('id, plan, status').single();
+    if (error) throw new Error(`Could not save experiment plan: ${error.message}`);
+    return data as StoredExperimentPlan;
+  },
+  async setNextCheckDate(userId, date) {
+    parseLocalDate(date);
+    if (!supabase) throw new Error('Server storage is unavailable. The re-check date has not been saved.');
+    const { data, error } = await supabase.from('experiment_setup')
+      .update({ next_check_date: date }).eq('user_id', userId).select('user_id').single();
+    if (error || !data) throw new Error(`Could not save re-check date: ${error?.message ?? 'setup not found'}`);
+  },
+});
+
+export const { getActivePlan, savePlan, saveNextCheckDate, getPendingPlan } = planPersistence;
 
 export type ScreeningAnswer = 'usually' | 'sometimes' | 'rarely_or_never';
 
@@ -13,6 +41,7 @@ export interface ExperimentSetupRecord {
   cutoffTime: string;
   screeningAnswer: ScreeningAnswer;
   runInStartDate: string;
+  nextCheckDate?: string | null;
 }
 
 export interface ConsentRecord {
@@ -54,6 +83,7 @@ export async function saveSetup(userId: string, setup: ExperimentSetupRecord): P
       cutoff_time: setup.cutoffTime,
       screening_answer: setup.screeningAnswer,
       run_in_start_date: setup.runInStartDate,
+      next_check_date: setup.nextCheckDate ?? null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' });
     if (error) {
@@ -71,7 +101,7 @@ export async function getSetup(userId: string): Promise<ExperimentSetupRecord | 
     try {
       const { data, error } = await supabase
         .from('experiment_setup')
-        .select('experiment_id, cutoff_time, screening_answer, run_in_start_date')
+        .select('experiment_id, cutoff_time, screening_answer, run_in_start_date, next_check_date')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -81,6 +111,7 @@ export async function getSetup(userId: string): Promise<ExperimentSetupRecord | 
           cutoffTime: data.cutoff_time,
           screeningAnswer: data.screening_answer,
           runInStartDate: data.run_in_start_date,
+          nextCheckDate: data.next_check_date ?? null,
         };
         await AsyncStorage.setItem(setupKey(userId), JSON.stringify(record));
         return record;

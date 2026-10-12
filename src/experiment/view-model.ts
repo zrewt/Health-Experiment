@@ -1,6 +1,6 @@
 import type { DailyEntry } from './types';
-import { toEngineRecord } from './adapter';
 import { runInMinValidDays, conditionRule } from './config';
+import { toEngineRecord, getFeasibilityScreenState } from './adapter';
 import { checkCaffeineEligibility } from '../engine';
 
 export interface RunInDescriptiveStats {
@@ -11,26 +11,21 @@ export interface RunInDescriptiveStats {
   validDays: number;
 }
 
-/**
- * Pure helper for Screen 2's descriptive panel.
- * Uses ONLY the frozen engine's checkCaffeineEligibility computation.
- * Performs NO new statistical estimations or threshold checks.
- */
+/** Uses the frozen engine for descriptive-only counts; does not expose eligibility. */
 export function getRunInDescriptiveStats(entries: readonly DailyEntry[]): RunInDescriptiveStats {
-  const records = entries.map(e => toEngineRecord(e, 'control'));
+  const records = entries.map(entry => toEngineRecord(entry, 'control'));
   const engineResult = checkCaffeineEligibility(records, {
     minRunInDays: runInMinValidDays,
     cutoffTime: conditionRule.cutoffTime,
   });
-
-  const validDays = records.filter(r => r.outcome.sleepMinutes !== null).length;
-  const daysLogged = entries.length;
-
+  const validDays = records.filter(record => record.outcome.sleepMinutes !== null).length;
   return {
-    daysLogged,
+    daysLogged: entries.length,
     averageSleepMinutes: engineResult.baselineOutcomeMean,
     afternoonCaffeineDays: engineResult.lateCaffeineDaysCount,
     unknownCaffeineDays: engineResult.unknownExposureDaysCount,
     validDays,
   };
 }
+
+export { getFeasibilityScreenState };

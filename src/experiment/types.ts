@@ -18,6 +18,10 @@ export interface BaselineSummary {
   sd: number | null;
   eligible: boolean;
   reasons: string[];
+  engineReasons: string[];
+  lateCaffeineDays: number;
+  knownExposureDays: number;
+  unknownExposureDays: number;
 }
 
 export type FeasibilityTier = 'informative' | 'long_shot' | 'not_informative' | 'cannot_assess';
@@ -73,6 +77,7 @@ export interface FeasibilityViewModel {
 
 export interface ExperimentPlan {
   seed: number;
+  analysisSeed: number;
   schedule: ScheduledDay[];
   chosenDuration: number;
   startDate: string;
@@ -109,6 +114,51 @@ export interface ProgressSummary {
   daysRemaining: number;
   adherenceCounts: Record<AdherenceStatus, number>;
 }
+
+export type FeasibilityScreenState =
+  | {
+      kind: 'cannot_assess';
+      message: string;
+      detailsHeading: 'Details';
+      reasons: string[];
+      lateCaffeineDays: number;
+      knownExposureDays: number;
+      unknownExposureDays: number;
+      detailFacts: string[];
+      actions: ['Keep logging; re-check in 7 days', 'Not now'];
+    }
+  | {
+      kind: 'ineligible';
+      message: string;
+      detailsHeading: 'Details';
+      reasons: string[];
+      lateCaffeineDays: number;
+      knownExposureDays: number;
+      unknownExposureDays: number;
+      detailFacts: string[];
+      actions: ['Keep logging; re-check in 7 days', 'Not now'];
+    }
+  | {
+      kind: 'not_informative';
+      message: string;
+      detailsHeading: 'Details';
+      reasons: string[];
+      duration: number | null;
+      mde: MdeDirectMinutes;
+      actions: ['Keep logging; re-check in 7 days', 'Not now'];
+    }
+  | {
+      kind: 'informative' | 'long_shot';
+      message: null;
+      options: DurationOption[];
+      defaultDuration: number;
+      requiresAcknowledgement: boolean;
+      cutoffTime: string;
+      approximateLabel: 'Approximate';
+      simulationNote: string;
+      conservativeNote: string | null;
+      startInstruction: string;
+    };
 
 export interface EngineFacade {
   checkCaffeineEligibility: typeof checkCaffeineEligibility;

@@ -2,8 +2,8 @@ import * as realEngine from '../engine';
 import * as config from './config';
 import type {
   AdapterErrorCode, BaselineSummary, Condition, DailyEntry, DayRecord,
-  EngineFacade, ExperimentPlan, FeasibilityLookup, FeasibilityTier, FeasibilityViewModel,
-  MdeDirectMinutes, ProgressSummary, ResultViewModel,
+  EngineFacade, ExperimentPlan, FeasibilityLookup, FeasibilityScreenState, FeasibilityTier,
+  FeasibilityViewModel, MdeDirectMinutes, ProgressSummary, ResultViewModel,
 } from './types';
 
 export class ExperimentAdapterError extends Error {
@@ -13,7 +13,6 @@ export class ExperimentAdapterError extends Error {
   }
 }
 
-// Snapshots contain plain objects/arrays/primitives, including explicit nulls.
 function snapshot<T>(value: T): T {
   if (Array.isArray(value)) return value.map(item => snapshot(item)) as T;
   if (value !== null && typeof value === 'object') {
@@ -36,7 +35,6 @@ export function toEngineRecord(
     assignedCondition,
     exposure: {
       lastCaffeineTime: lastCaffeineTime === 'none' ? null : lastCaffeineTime,
-      // Only an explicit "none" supplies a known zero; a time never invents servings.
       servings: lastCaffeineTime === 'none' ? 0 : null,
     },
     covariates: { alcohol: null, illness: null, travel: null, lateWorkout: null },
@@ -54,14 +52,15 @@ export function computeBaseline(
   });
   const validDays = records.filter(record => record.outcome.sleepMinutes !== null).length;
   const reasons = [...result.reasons];
-  if (validDays < config.runInMinValidDays) {
-    reasons.push(`need ${config.runInMinValidDays - validDays} more valid days`);
-  }
+  if (validDays < config.runInMinValidDays) reasons.push(`need ${config.runInMinValidDays - validDays} more valid days`);
   return {
     validDays, targetDays: config.runInMinValidDays,
     sd: result.baselineOutcomeSd,
     eligible: result.eligible && validDays >= config.runInMinValidDays,
-    reasons,
+    reasons, engineReasons: [...result.reasons],
+    lateCaffeineDays: result.lateCaffeineDaysCount,
+    knownExposureDays: result.knownExposureDaysCount,
+    unknownExposureDays: result.unknownExposureDaysCount,
   };
 }
 
@@ -109,7 +108,6 @@ export function assessFeasibility(
       };
       return { input, output: snapshot(lookup({ ...input })) };
     });
-    // Selection over engine outputs only. Never combine different rho scenarios.
     const powers = rhoLookups.map(row => row.output.detectionProbabilityAtMinimumEffect);
     const minPlannedPowerAcrossRho = powers.some(power => power === null)
       ? null : Math.min(...powers.map(power => power as number));
@@ -161,6 +159,7 @@ export function startExperiment(
   baseline: BaselineSummary, feasibility: FeasibilityViewModel, chosenDuration: number,
   startDate: string, acknowledged: boolean, seed: number,
   engine: EngineFacade = realEngine,
+  cutoffTime = config.conditionRule.cutoffTime,
 ): ExperimentPlan {
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
     throw new ExperimentAdapterError('INVALID_SEED', 'An explicit uint32 seed is required.');
@@ -188,14 +187,14 @@ export function startExperiment(
   const definition = {
     name: config.experimentName, startDate, lengthDays: chosenDuration,
     design: { ...config.experimentDesign }, seed, outcomeMetric: config.outcomeMetric,
-    conditionRule: { ...config.conditionRule },
+    conditionRule: { ...config.conditionRule, cutoffTime },
   };
   const schedule = engine.generateSchedule(startDate, chosenDuration, definition.design, seed);
+  const analysisSeed = ((seed * 1664525 + 1013904223) >>> 0);
   return {
-    seed, schedule: snapshot(schedule), chosenDuration, startDate,
+    seed, analysisSeed, schedule: snapshot(schedule), chosenDuration, startDate,
     assumedAdherence: feasibility.inputs.assumedAdherence,
     assumedContamination: feasibility.inputs.assumedContamination,
-    // SD is the lookup input, including the conservative floor when applicable.
     baselineStats: {
       sd: feasibility.sdUsed, assumedAutocorrelation: selected.scenarioRho,
       validDays: baseline.validDays,
@@ -223,7 +222,8 @@ function endDate(plan: ExperimentPlan, engine: EngineFacade): string {
   const last = plan.schedule[plan.schedule.length - 1];
   if (!last || plan.schedule.length !== plan.chosenDuration ||
       plan.definition.lengthDays !== plan.chosenDuration || plan.definition.seed !== plan.seed ||
-      plan.definition.startDate !== plan.startDate) {
+      plan.definition.startDate !== plan.startDate ||
+      plan.analysisSeed !== ((plan.seed * 1664525 + 1013904223) >>> 0)) {
     throw new ExperimentAdapterError('INVALID_PLAN', 'Plan schedule and definition must match.');
   }
   const expected = engine.generateSchedule(
@@ -236,6 +236,70 @@ function endDate(plan: ExperimentPlan, engine: EngineFacade): string {
   return last.date;
 }
 
+export function getFeasibilityScreenState(
+  baseline: BaselineSummary,
+  feasibility: FeasibilityViewModel,
+  setup: { cutoffTime: string },
+): FeasibilityScreenState {
+  const actions: ['Keep logging; re-check in 7 days', 'Not now'] = [
+    'Keep logging; re-check in 7 days', 'Not now',
+  ];
+  if (!baseline.eligible || feasibility.tier === 'cannot_assess') {
+    const detailFacts = [
+      `You logged caffeine after noon on ${baseline.lateCaffeineDays} of ${baseline.knownExposureDays + baseline.unknownExposureDays} days.`,
+    ];
+    if (baseline.unknownExposureDays > 0) {
+      detailFacts.push(`${baseline.unknownExposureDays} days had no caffeine time logged. Those days count against eligibility, so logging it each day helps.`);
+    }
+    return {
+      kind: !baseline.eligible ? 'ineligible' : 'cannot_assess',
+      message: "We can't set up this experiment from your log yet.",
+      detailsHeading: 'Details', reasons: [...baseline.engineReasons],
+      lateCaffeineDays: baseline.lateCaffeineDays,
+      knownExposureDays: baseline.knownExposureDays,
+      unknownExposureDays: baseline.unknownExposureDays,
+      detailFacts, actions,
+    };
+  }
+  if (feasibility.tier === 'not_informative') {
+    const option = feasibility.options.find(item => item.duration === config.tierDuration);
+    const mde = option?.mdeDirectMinutes ?? null;
+    const message = mde === 'larger_than_60' || (typeof mde === 'number' && mde > 60)
+      ? option?.statement ?? ''
+      : typeof mde === 'number'
+        ? `With your current sleep variability, a ${option?.duration ?? config.tierDuration}-day experiment could only reliably detect changes of about ${mde} minutes or more if you follow the rule fully, which is larger than the ${feasibility.inputs.minimumMeaningfulEffectMinutes} minutes we treat as meaningful. We don't recommend starting.`
+        : 'The simulations could not provide a reliable estimate for this sleep variability. We do not recommend starting.';
+    return {
+      kind: 'not_informative', message, detailsHeading: 'Details',
+      reasons: [...baseline.engineReasons], duration: option?.duration ?? null,
+      mde, actions,
+    };
+  }
+  if (!feasibility.defaultDuration) {
+    return {
+      kind: 'cannot_assess', message: "We can't set up this experiment from your log yet.",
+      detailsHeading: 'Details', reasons: [...baseline.engineReasons],
+      lateCaffeineDays: baseline.lateCaffeineDays,
+      knownExposureDays: baseline.knownExposureDays,
+      unknownExposureDays: baseline.unknownExposureDays,
+      detailFacts: [], actions,
+    };
+  }
+  return {
+    kind: feasibility.tier, message: null,
+    options: snapshot(feasibility.options),
+    defaultDuration: feasibility.defaultDuration,
+    requiresAcknowledgement: feasibility.tier === 'long_shot',
+    cutoffTime: setup.cutoffTime,
+    approximateLabel: 'Approximate',
+    simulationNote: 'These numbers come from computer simulations and are approximate (about plus or minus 6 percentage points).',
+    conservativeNote: feasibility.conservative
+      ? 'Your sleep is more consistent than the range we tested, so these numbers are conservative.'
+      : null,
+    startInstruction: `Starting means 2-day blocks, assigned at random; you will be told each day whether to use your usual routine or a caffeine cutoff at ${setup.cutoffTime}.`,
+  };
+}
+
 export function evaluate(
   plan: ExperimentPlan, entries: readonly DailyEntry[], today: string,
   engine: EngineFacade = realEngine,
@@ -246,7 +310,7 @@ export function evaluate(
   const records = scheduledRecords(plan, entries, engine);
   const analysis = engine.analyzeExperiment(snapshot(plan.definition), records, {
     ...config.selectedPolicyOverrides.analysis,
-    seed: plan.seed,
+    seed: plan.analysisSeed,
     baseline: {
       mean: null, sd: plan.baselineStats.sd,
       lag1Autocorrelation: plan.baselineStats.assumedAutocorrelation,

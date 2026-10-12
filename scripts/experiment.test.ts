@@ -17,7 +17,10 @@ import type {
 } from '../src/experiment/types';
 import { verifyEngineFreeze } from './verify-engine-freeze';
 
-const baseline: BaselineSummary = { validDays: 14, targetDays: 14, sd: 25, eligible: true, reasons: [] };
+const baseline: BaselineSummary = {
+  validDays: 14, targetDays: 14, sd: 25, eligible: true, reasons: [], engineReasons: [],
+  lateCaffeineDays: 14, knownExposureDays: 14, unknownExposureDays: 0,
+};
 const startDate = '2026-02-01';
 const seed = 9988;
 function constantLookup(mde: number | 'not reachable within the duration' | null): FeasibilityLookup {
@@ -238,6 +241,10 @@ test('the same explicit seed reproduces the schedule and uint32 boundaries are a
     const first = startExperiment(baseline, feasibility, 42, startDate, false, explicitSeed);
     const second = startExperiment(baseline, feasibility, 42, startDate, false, explicitSeed);
     assert.equal(first.seed, explicitSeed);
+    assert.equal(first.analysisSeed, ((explicitSeed * 1664525 + 1013904223) >>> 0));
+    assert.equal(first.analysisSeed, second.analysisSeed);
+    assert.notEqual(first.analysisSeed, explicitSeed);
+    assert.ok(Number.isInteger(first.analysisSeed) && first.analysisSeed >= 0 && first.analysisSeed <= 0xffffffff);
     assert.deepEqual(first.schedule, second.schedule);
   }
 });
@@ -294,7 +301,14 @@ test('baseline preserves engine reasons and returns no autocorrelation, power, o
   const entries = runIn();
   const own = engine.checkCaffeineEligibility(entries.map(entry => toEngineRecord(entry, 'control')), { minRunInDays: 14, cutoffTime: '12:00' });
   const result = computeBaseline(entries);
-  assert.deepEqual(Object.keys(result).sort(), ['eligible', 'reasons', 'sd', 'targetDays', 'validDays']);
+  assert.deepEqual(Object.keys(result).sort(), [
+    'eligible', 'engineReasons', 'knownExposureDays', 'lateCaffeineDays', 'reasons',
+    'sd', 'targetDays', 'unknownExposureDays', 'validDays',
+  ]);
+  assert.deepEqual(result.engineReasons, own.reasons);
+  assert.equal(result.lateCaffeineDays, own.lateCaffeineDaysCount);
+  assert.equal(result.knownExposureDays, own.knownExposureDaysCount);
+  assert.equal(result.unknownExposureDays, own.unknownExposureDaysCount);
   assert.deepEqual(result.reasons, own.reasons);
   assert.equal(result.sd, own.baselineOutcomeSd);
   assert.equal(result.eligible, true);
@@ -338,6 +352,8 @@ test('evaluate refuses before end without calling analysis, accepts on end, pres
       assert.equal(options?.baseline?.sd, plan.baselineStats.sd);
       assert.equal(options?.baseline?.lag1Autocorrelation, plan.baselineStats.assumedAutocorrelation);
       assert.equal(options?.assumedAdherence, plan.assumedAdherence);
+      assert.equal(options?.seed, plan.analysisSeed);
+      assert.notEqual(options?.seed, plan.seed);
       assert.deepEqual({
         permutations: options?.permutations, bootstrapSamples: options?.bootstrapSamples,
         bootstrapMethod: options?.bootstrapMethod, bootstrapBlockLength: options?.bootstrapBlockLength,
@@ -367,6 +383,36 @@ test('evaluate refuses before end without calling analysis, accepts on end, pres
   assert.notEqual(result.plannedPowerRecomputed, null);
   assert.equal(result.plannedPowerRecomputed, result.plannedPowerSnapshot);
   assert.equal(plan.baselineStats.sd, 25); // Conservative lookup floor survives through analysis.
+});
+
+test('repeated evaluation of the same plan and entries has identical intervals', () => {
+  const plan = realPlan();
+  const entries = plan.schedule.map((day, index) => ({
+    date: day.date, sleepMinutes: 420 + (index % 7) * 5 + (day.condition === 'intervention' ? 20 : 0),
+    lastCaffeineTime: day.condition === 'intervention' ? '11:00' : '15:00',
+  }));
+  const end = plan.schedule.at(-1)!.date;
+  const first = evaluate(plan, entries, end);
+  const second = evaluate(plan, entries, end);
+  assert.notEqual(first.interval, null);
+  assert.deepEqual(first.interval, second.interval);
+  assert.deepEqual(first, second);
+});
+
+test('baseline uses all entries beyond 14, including unknown exposure in the eligibility denominator', () => {
+  const entries = runIn(21);
+  for (let i = 7; i < entries.length; i++) entries[i].lastCaffeineTime = null;
+  const own = engine.checkCaffeineEligibility(entries.map(entry => toEngineRecord(entry, 'control')), {
+    minRunInDays: 14, cutoffTime: '12:00',
+  });
+  const summary = computeBaseline(entries);
+  assert.equal(summary.validDays, 21);
+  assert.equal(summary.lateCaffeineDays, 7);
+  assert.equal(summary.knownExposureDays, 7);
+  assert.equal(summary.unknownExposureDays, 14);
+  assert.equal(summary.eligible, false);
+  assert.equal(summary.sd, own.baselineOutcomeSd);
+  assert.deepEqual(summary.engineReasons, own.reasons);
 });
 
 test('a modified schedule cannot bypass the interim-look guard', () => {
@@ -444,7 +490,7 @@ for (const [percent, adherentDays] of [[95, 38], [80, 32], [50, 20]] as const) {
     });
     const records = entries.map((entry, index) => toEngineRecord(entry, plan.schedule[index].condition));
     const ownAnalysis = engine.analyzeExperiment(plan.definition, records, {
-      ...config.selectedPolicyOverrides.analysis, seed: plan.seed,
+      ...config.selectedPolicyOverrides.analysis, seed: plan.analysisSeed,
       baseline: { mean: null, sd: plan.baselineStats.sd, lag1Autocorrelation: plan.baselineStats.assumedAutocorrelation },
       assumedAdherence: plan.assumedAdherence,
     });

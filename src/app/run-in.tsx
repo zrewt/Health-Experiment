@@ -9,6 +9,7 @@ import {
   saveEntry,
   syncUnsyncedEntries,
   getConsent,
+  getSetup,
   StoredDailyEntry,
 } from '@/data/experiment-store';
 import {
@@ -18,6 +19,7 @@ import {
   canEditDate,
 } from '@/experiment/dates';
 import { runInMinValidDays } from '@/experiment/config';
+import { isFeasibilityDue } from '@/experiment/start-attempt';
 import { getRunInDescriptiveStats, type RunInDescriptiveStats } from '@/experiment/view-model';
 
 export default function RunInScreen() {
@@ -27,6 +29,7 @@ export default function RunInScreen() {
   const [entries, setEntries] = useState<StoredDailyEntry[]>([]);
   const [activeDate, setActiveDate] = useState<string>('');
   const [storageError, setStorageError] = useState<string | null>(null);
+  const [nextCheckDate, setNextCheckDate] = useState<string | null>(null);
 
   // Morning check-in card input states
   const [sleepHours, setSleepHours] = useState<string>('');
@@ -57,6 +60,9 @@ export default function RunInScreen() {
           return;
         }
 
+        const setup = await getSetup(userId!);
+        if (!isCurrent) return;
+        setNextCheckDate(setup?.nextCheckDate ?? null);
         const loaded = await listEntries(userId!);
         if (!isCurrent) return;
         setEntries(loaded);
@@ -214,7 +220,7 @@ export default function RunInScreen() {
 
   // Calculations for progress & descriptive counts
   const validDaysCount = entries.filter((e) => e.sleepMinutes !== null).length;
-  const isRunInComplete = validDaysCount >= runInMinValidDays;
+  const isRunInComplete = isFeasibilityDue(validDaysCount, nextCheckDate, today);
   const descriptiveStats: RunInDescriptiveStats = getRunInDescriptiveStats(entries);
 
   // Past 3 editable days list (yesterday, -2 days, -3 days)
@@ -285,9 +291,12 @@ export default function RunInScreen() {
           <View style={styles.completeCard}>
             <Text variant="titleSmall" color="champagne">Run-in complete</Text>
             <Text variant="body" color="ivorySecondary" style={styles.paragraph}>
-              You have logged the required 14 valid baseline days. The feasibility check is the next step to assess whether an experiment can be run.
+              {nextCheckDate ? 'Your next feasibility check is ready.' : 'You have logged the required 14 valid baseline days. The feasibility check is the next step.'}
             </Text>
+            <Button label="Check feasibility" onPress={() => router.push('/feasibility')} />
           </View>
+        ) : nextCheckDate ? (
+          <Text color="ivorySecondary">Keep logging. Your next feasibility check is on {nextCheckDate}.</Text>
         ) : null}
 
         {/* Morning check-in card */}

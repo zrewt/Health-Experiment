@@ -55,7 +55,8 @@ export default function RootLayout() {
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="index" />
           <Stack.Screen name="setup-consent" />
-          <Stack.Screen name="run-in" />
+          <Stack.Screen name="run-in" options={{ animation: 'none' }} />
+          <Stack.Screen name="feasibility" options={{ animation: 'none' }} />
         </Stack.Protected>
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="auth/sign-in" />

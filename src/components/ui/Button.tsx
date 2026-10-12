@@ -98,6 +98,7 @@ export const Button: React.FC<ButtonProps> = ({
       ]}
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
     >
       {loading ? (
         <ActivityIndicator
@@ -122,8 +123,8 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    height: 54,
-    minHeight: 50,
+    minHeight: 54,
+    paddingVertical: spacing.md,
     borderRadius: radii.control,
     alignItems: 'center',
     justifyContent: 'center',
