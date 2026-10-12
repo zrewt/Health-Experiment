@@ -219,6 +219,8 @@ test('regular persistence and engine queries do not reference is_sample', () => 
 });
 
 test('clock offset affects only getToday while stored timestamps remain real current time', () => {
+  // The dev clock is now strictly fail-closed, so opt into dev mode explicitly.
+  (globalThis as { __DEV__?: boolean }).__DEV__ = true;
   const { getToday, __setDevClockOffset } = require('../src/experiment/clock');
   __setDevClockOffset(5);
   const fakeToday = getToday();
@@ -232,4 +234,5 @@ test('clock offset affects only getToday while stored timestamps remain real cur
 
   __setDevClockOffset(0);
   assert.equal(getToday(), realIsoDate);
+  delete (globalThis as { __DEV__?: boolean }).__DEV__;
 });

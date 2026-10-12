@@ -8,7 +8,7 @@ let devClockOffsetDays = 0;
  * In development (__DEV__ === true): can be shifted via dev clock tools.
  */
 export function getToday(now: Date = new Date()): string {
-  const isDev = (typeof __DEV__ !== 'undefined' ? Boolean(__DEV__) : process.env.NODE_ENV !== 'production');
+  const isDev = typeof __DEV__ !== 'undefined' && __DEV__ === true;
   if (isDev && devClockOffsetDays !== 0) {
     const base = formatLocalDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
     return addDaysToLocalDate(base, devClockOffsetDays);
@@ -18,7 +18,7 @@ export function getToday(now: Date = new Date()): string {
 
 /** Dev-only clock manipulation helpers */
 export function __setDevClockOffset(days: number): void {
-  const isDev = (typeof __DEV__ !== 'undefined' ? Boolean(__DEV__) : process.env.NODE_ENV !== 'production');
+  const isDev = typeof __DEV__ !== 'undefined' && __DEV__ === true;
   if (isDev) {
     devClockOffsetDays = days;
   }

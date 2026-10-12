@@ -198,10 +198,13 @@ test('getHomeState returns plan_ended_early when plan status is cancelled', () =
 });
 
 test('dev clock offset shifts getToday in dev environment', () => {
+  // The dev clock is now strictly fail-closed, so opt into dev mode explicitly.
+  (globalThis as { __DEV__?: boolean }).__DEV__ = true;
   __setDevClockOffset(0);
   const base = getToday();
   __setDevClockOffset(3);
   assert.notEqual(getToday(), base);
   __setDevClockOffset(0);
   assert.equal(getToday(), base);
+  delete (globalThis as { __DEV__?: boolean }).__DEV__;
 });

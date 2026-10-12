@@ -16,7 +16,8 @@ export default function DevToolsScreen() {
   const [status, setStatus] = useState<string | null>(null);
   const [offset, setOffset] = useState<number>(__getDevClockOffset());
 
-  if (typeof __DEV__ !== 'undefined' && !__DEV__) {
+  // Fail closed: this screen renders only when __DEV__ is strictly true.
+  if (typeof __DEV__ === 'undefined' || __DEV__ !== true) {
     return <Redirect href="/" />;
   }
 
