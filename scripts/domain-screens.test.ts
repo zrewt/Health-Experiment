@@ -8,10 +8,9 @@ import {
   daysBetween,
   canEditDate,
 } from '../src/experiment/dates';
-import {
-  getRunInDescriptiveStats,
-} from '../src/experiment/view-model';
+import { getRunInDescriptiveStats } from '../src/experiment/view-model';
 import type { DailyEntry } from '../src/experiment/types';
+import { mergePendingEntries, retryPendingEntries } from '../src/data/pending-entries';
 
 test('parseLocalDate and formatLocalDate handle standard dates', () => {
   const parts = parseLocalDate('2026-10-11');
@@ -27,17 +26,15 @@ test('parseLocalDate rejects invalid formats', () => {
 test('month end roll-overs work correctly without UTC skew', () => {
   assert.equal(addDaysToLocalDate('2026-01-31', 1), '2026-02-01');
   assert.equal(addDaysToLocalDate('2026-02-28', 1), '2026-03-01');
-  assert.equal(addDaysToLocalDate('2024-02-28', 1), '2024-02-29'); // Leap year
+  assert.equal(addDaysToLocalDate('2024-02-28', 1), '2024-02-29');
   assert.equal(addDaysToLocalDate('2024-02-29', 1), '2024-03-01');
   assert.equal(addDaysToLocalDate('2026-12-31', 1), '2027-01-01');
   assert.equal(addDaysToLocalDate('2026-03-01', -1), '2026-02-28');
 });
 
 test('DST changeover dates do not cause day slippage', () => {
-  // Spring forward in US: 2026-03-08
   assert.equal(addDaysToLocalDate('2026-03-07', 1), '2026-03-08');
   assert.equal(addDaysToLocalDate('2026-03-08', 1), '2026-03-09');
-  // Fall back in US: 2026-11-01
   assert.equal(addDaysToLocalDate('2026-10-31', 1), '2026-11-01');
   assert.equal(addDaysToLocalDate('2026-11-01', 1), '2026-11-02');
 });
@@ -55,45 +52,61 @@ test('daysBetween computes exact calendar day delta', () => {
 });
 
 test('canEditDate permits only current entry date and previous 3 days', () => {
-  // If today is 2026-10-15, morning check-in entry date is 2026-10-14.
   const today = '2026-10-15';
-  assert.equal(canEditDate(today, '2026-10-14'), true); // Day 0 (current)
-  assert.equal(canEditDate(today, '2026-10-13'), true); // Day -1
-  assert.equal(canEditDate(today, '2026-10-12'), true); // Day -2
-  assert.equal(canEditDate(today, '2026-10-11'), true); // Day -3
-  assert.equal(canEditDate(today, '2026-10-10'), false); // Day -4 (too old)
-  assert.equal(canEditDate(today, '2026-10-15'), false); // Future relative to entry date
+  assert.equal(canEditDate(today, '2026-10-14'), true);
+  assert.equal(canEditDate(today, '2026-10-13'), true);
+  assert.equal(canEditDate(today, '2026-10-12'), true);
+  assert.equal(canEditDate(today, '2026-10-11'), true);
+  assert.equal(canEditDate(today, '2026-10-10'), false);
+  assert.equal(canEditDate(today, '2026-10-15'), false);
   assert.equal(canEditDate(today, '2026-10-16'), false);
 });
 
-test('getRunInDescriptiveStats computes engine-native descriptive counts only and does not expose eligible, reasons, or thresholds', () => {
+test('getRunInDescriptiveStats exposes descriptive counts only', () => {
   const entries: DailyEntry[] = [
     { date: '2026-10-01', sleepMinutes: 480, lastCaffeineTime: '14:00' },
     { date: '2026-10-02', sleepMinutes: 450, lastCaffeineTime: '10:00' },
-    { date: '2026-10-03', sleepMinutes: null, lastCaffeineTime: 'none' }, // missing sleep
-    { date: '2026-10-04', sleepMinutes: 420, lastCaffeineTime: null }, // unknown caffeine
+    { date: '2026-10-03', sleepMinutes: null, lastCaffeineTime: 'none' },
+    { date: '2026-10-04', sleepMinutes: 420, lastCaffeineTime: null },
   ];
-
   const stats = getRunInDescriptiveStats(entries);
   assert.equal(stats.daysLogged, 4);
   assert.equal(stats.validDays, 3);
-  // Average sleep: (480 + 450 + 420) / 3 = 450
   assert.equal(stats.averageSleepMinutes, 450);
-  // Afternoon caffeine (cutoff 12:00): day 1 is 14:00 -> 1 day
   assert.equal(stats.afternoonCaffeineDays, 1);
-  // Unknown caffeine: day 4 -> 1 day
   assert.equal(stats.unknownCaffeineDays, 1);
-
-  // Exact key set assertion: must NOT expose eligible, reasons, thresholds, power, SD, or effect
-  const keys = Object.keys(stats).sort();
-  assert.deepEqual(keys, [
-    'afternoonCaffeineDays',
-    'averageSleepMinutes',
-    'daysLogged',
-    'unknownCaffeineDays',
-    'validDays',
+  assert.deepEqual(Object.keys(stats).sort(), [
+    'afternoonCaffeineDays', 'averageSleepMinutes', 'daysLogged', 'unknownCaffeineDays', 'validDays',
   ]);
-  assert.equal('eligible' in (stats as any), false);
-  assert.equal('reasons' in (stats as any), false);
-  assert.equal('threshold' in (stats as any), false);
+});
+
+test('pending cache entries remain visible beside server data and failed retries preserve nulls', async () => {
+  const pending = {
+    date: '2026-10-12', sleepMinutes: null, lastCaffeineTime: null,
+    editedAt: '2026-10-12T12:00:00.000Z', synced: false,
+  };
+  const serverEntry = {
+    date: '2026-10-11', sleepMinutes: 420, lastCaffeineTime: 'none' as const,
+    editedAt: '2026-10-11T12:00:00.000Z', synced: true,
+  };
+  assert.deepEqual(mergePendingEntries([serverEntry], [pending]), [serverEntry, pending]);
+
+  const result = await retryPendingEntries([pending], async () => false);
+  assert.equal(result.syncedCount, 0);
+  assert.equal(result.failedCount, 1);
+  assert.equal(result.entries[0].synced, false);
+  assert.equal(result.entries[0].sleepMinutes, null);
+  assert.equal(result.entries[0].lastCaffeineTime, null);
+});
+
+test('successful pending retry marks server persistence without inventing missing values', async () => {
+  const result = await retryPendingEntries([{
+    date: '2026-10-12', sleepMinutes: null, lastCaffeineTime: null,
+    editedAt: '2026-10-12T12:00:00.000Z', synced: false,
+  }], async entry => entry.sleepMinutes === null && entry.lastCaffeineTime === null);
+  assert.equal(result.syncedCount, 1);
+  assert.equal(result.failedCount, 0);
+  assert.equal(result.entries[0].synced, true);
+  assert.equal(result.entries[0].sleepMinutes, null);
+  assert.equal(result.entries[0].lastCaffeineTime, null);
 });

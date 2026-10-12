@@ -47,3 +47,27 @@ This milestone introduces:
    - [ ] Skip sleep (leave blank): verify progress count does not increment (missing is not zero).
    - [ ] Verify past 3 days list: yesterday and previous 3 days allow edit; older days display read-only.
    - [ ] Log 3 valid days: verify descriptive panel appears showing days logged, average sleep, afternoon caffeine days, and unknown days.
+
+## 7. Files Changed and Decisions
+- `src/app/_layout.tsx`: register setup and run-in routes.
+- `src/app/index.tsx`: route signed-in users into setup/run-in flow.
+- `src/app/setup-consent.tsx`: consent and setup form; agreement starts unchecked and “I don't agree” appends a decline record.
+- `src/app/run-in.tsx`: run-in check-in, visible local unsynced status and retry action.
+- `src/data/experiment-store.ts`: setup, consent, entry persistence and sync helpers.
+- `src/experiment/dates.ts`, `src/experiment/view-model.ts`: local calendar arithmetic and descriptive baseline summary.
+- `scripts/domain-screens.test.ts`: calendar and screen view-model tests.
+- `supabase/schema.sql`: initial schema for setup, entries and consent (provided as SQL text; not run).
+- `src/components/ui/Text.tsx`, `package.json`: platform/style and test-script adjustments.
+- Decision: null remains missing, eligibility is withheld on Screen 2, and pending local entries must stay visible until server sync succeeds.
+- Open questions: legal/privacy copy requires review; apply the provided Supabase schema in the project's deployment process before relying on cloud persistence.
+
+## 8. Persistence Failure Behavior
+- A daily entry is first written to AsyncStorage. A failed or unavailable Supabase upsert leaves it marked `synced: false`; the UI identifies it as “not synced yet” and attempts a retry, with a manual Retry Sync action if it remains pending. A successful server fetch preserves pending local entries instead of overwriting them.
+- Setup values are cached locally and a failed Supabase setup upsert throws, so the setup screen does not navigate as though the cloud write succeeded. Consent decisions are recorded locally and appended to Supabase; a failed server write throws and the UI does not report the action as complete.
+- The consent checkbox defaults to unchecked; “I don't agree” stores `granted: false` and displays the decline state after save succeeds.
+
+## 9. Follow-up Manual Checks
+- [ ] With Supabase writes unavailable, save a check-in: verify “not synced yet” remains visible and the cached entry survives reload.
+- [ ] Restore connectivity or tap Retry Sync: verify pending entries become synced only after successful upsert and null fields remain null.
+- [ ] Cause setup/consent writes to fail: verify no success navigation or decline confirmation is shown until the write succeeds.
+- [ ] Inspect the run-in summary object: exact keys are `daysLogged`, `averageSleepMinutes`, `afternoonCaffeineDays`, `unknownCaffeineDays`, and `validDays`; it exposes no eligibility, reason, or threshold fields.

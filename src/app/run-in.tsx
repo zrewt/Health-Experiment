@@ -34,6 +34,7 @@ export default function RunInScreen() {
   const [caffeineTime, setCaffeineTime] = useState<string>('');
   const [noCaffeine, setNoCaffeine] = useState(false);
   const [savingEntry, setSavingEntry] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<string | null>(null);
 
   const today = getLocalTodayDate();
@@ -192,7 +193,17 @@ export default function RunInScreen() {
       });
 
       if (saved.synced === false) {
-        setStorageError('Entry saved locally (not synced yet). Will retry automatically.');
+        setStorageError('Entry saved locally (not synced yet). Sync will be retried now.');
+        void syncUnsyncedEntries(user.id).then((result) => {
+          if (result.failedCount === 0) {
+            setStorageError(null);
+            setReloadTrigger((n) => n + 1);
+          } else {
+            setStorageError(`${result.failedCount} entries still not synced yet. You can retry sync.`);
+          }
+        }).catch(() => {
+          setStorageError('Entry saved locally (not synced yet). Sync failed; you can retry.');
+        });
       }
     } catch (err) {
       setStorageError(err instanceof Error ? err.message : 'Could not save entry. Please retry.');
@@ -244,15 +255,19 @@ export default function RunInScreen() {
         {/* Storage error / offline sync banner */}
         {storageError ? (
           <View style={styles.errorBanner}>
-            <Text variant="sub" color="garnet" weight="semiBold" style={{ flex: 1, marginRight: spacing.sm }}>
+            <Text variant="sub" color="garnet" weight="semiBold" accessibilityRole="alert" style={{ flex: 1, marginRight: spacing.sm }}>
               {storageError}
             </Text>
             <Button
               label="Retry Sync"
               variant="quiet"
+              loading={syncing}
               onPress={async () => {
                 if (user) {
+                  setSyncing(true);
                   const res = await syncUnsyncedEntries(user.id);
+                  setSyncing(false);
+                  setEntries(await listEntries(user.id));
                   if (res.failedCount === 0) {
                     setStorageError(null);
                   } else {

@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import type { DailyEntry } from '@/experiment/types';
+import { mergePendingEntries, retryPendingEntries } from './pending-entries';
 
 export const HEALTH_DATA_POLICY_VERSION = '2026-10-health-draft-v1';
 export const DEFAULT_EXPERIMENT_ID = 'caffeine-cutoff';
@@ -46,7 +47,6 @@ function consentKey(userId: string): string {
 export async function saveSetup(userId: string, setup: ExperimentSetupRecord): Promise<void> {
   const localVal = JSON.stringify(setup);
   await AsyncStorage.setItem(setupKey(userId), localVal);
-
   if (supabase) {
     const { error } = await supabase.from('experiment_setup').upsert({
       user_id: userId,
@@ -57,8 +57,8 @@ export async function saveSetup(userId: string, setup: ExperimentSetupRecord): P
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' });
     if (error) {
-      // Keep local record intact but throw so caller can notify if needed
-      console.warn('Supabase saveSetup warning:', error.message);
+      console.warn('Supabase saveSetup error:', error.message);
+      throw new Error(`Failed to save setup: ${error.message}`);
     }
   }
 }
@@ -158,16 +158,10 @@ export async function syncUnsyncedEntries(userId: string): Promise<{ syncedCount
   const rawEntries = await AsyncStorage.getItem(entriesKey(userId));
   if (!rawEntries) return { syncedCount: 0, failedCount: 0 };
   const entriesMap: Record<string, StoredDailyEntry> = JSON.parse(rawEntries);
-  const unsynced = Object.values(entriesMap).filter(e => e.synced === false);
+  const pending = Object.values(entriesMap).filter(e => e.synced === false);
 
-  if (!supabase || unsynced.length === 0) {
-    return { syncedCount: 0, failedCount: unsynced.length };
-  }
-
-  let syncedCount = 0;
-  let failedCount = 0;
-
-  for (const entry of unsynced) {
+  const result = await retryPendingEntries(pending, async entry => {
+    if (!supabase) return false;
     try {
       const { error } = await supabase.from('experiment_entries').upsert({
         user_id: userId,
@@ -176,21 +170,15 @@ export async function syncUnsyncedEntries(userId: string): Promise<{ syncedCount
         last_caffeine_time: entry.lastCaffeineTime,
         edited_at: entry.editedAt,
       }, { onConflict: 'user_id,date' });
-
-      if (!error) {
-        entry.synced = true;
-        entriesMap[entry.date] = entry;
-        syncedCount++;
-      } else {
-        failedCount++;
-      }
+      return !error;
     } catch {
-      failedCount++;
+      return false;
     }
-  }
+  });
 
+  for (const entry of result.entries) entriesMap[entry.date] = entry;
   await AsyncStorage.setItem(entriesKey(userId), JSON.stringify(entriesMap));
-  return { syncedCount, failedCount };
+  return { syncedCount: result.syncedCount, failedCount: result.failedCount };
 }
 
 /**
@@ -199,6 +187,8 @@ export async function syncUnsyncedEntries(userId: string): Promise<{ syncedCount
 export async function listEntries(userId: string): Promise<StoredDailyEntry[]> {
   if (supabase) {
     try {
+      const rawCache = await AsyncStorage.getItem(entriesKey(userId));
+      const localEntries: StoredDailyEntry[] = rawCache ? Object.values(JSON.parse(rawCache)) : [];
       const { data, error } = await supabase
         .from('experiment_entries')
         .select('date, sleep_minutes, last_caffeine_time, edited_at')
@@ -213,11 +203,11 @@ export async function listEntries(userId: string): Promise<StoredDailyEntry[]> {
           editedAt: d.edited_at,
           synced: true,
         }));
-        // Update local cache
+        const merged = mergePendingEntries(list, localEntries);
         const map: Record<string, StoredDailyEntry> = {};
-        for (const item of list) map[item.date] = item;
+        for (const item of merged) map[item.date] = item;
         await AsyncStorage.setItem(entriesKey(userId), JSON.stringify(map));
-        return list;
+        return merged;
       }
     } catch {
       // Fall through to local cache
