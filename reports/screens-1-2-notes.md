@@ -193,28 +193,59 @@ This milestone introduces:
   - "Reset completed plan (dev)": resets plan status to scheduled, clearing result and completed_at.
   - "Delete sample entries": removes entries with `is_sample: true`.
 - **Additive SQL:** [schema-screen5.sql](../schema-screen5.sql) provides additive columns `result jsonb` and `completed_at timestamptz` on `experiment_plans` and a status check constraint. Not executed.
+- **Server-side Edit Lock Trigger:** [schema-screen6.sql](../schema-screen6.sql) provides a PostgreSQL BEFORE UPDATE OR DELETE trigger on `experiment_entries` preventing modifications to entries matching scheduled dates of any completed experiment plan for that user. Not executed.
 
-## 17. Screen 5 Manual Checklist
-- **Path to Reach Each State via Dev Tools:**
+## 17. Screen 5 Manual Checklist & Test-Account Workflow
+- **Prerequisite SQL Migrations (in order):**
+  1. `supabase/schema.sql` (baseline tables: `experiment_setup`, `experiment_entries`, `experiment_consent`)
+  2. `schema-screen3.sql` (`next_check_date` column, `experiment_plans` table, RLS and unique partial index)
+  3. `schema-screen4.sql` (`is_sample` column, delete policy for sample entries)
+  4. `schema-screen5.sql` (`result`, `completed_at` columns on `experiment_plans`, status check constraint)
+  5. `schema-screen6.sql` (`check_entry_edit_lock` trigger function and trigger on `experiment_entries`)
+
+- **Path to Reach Each State via Dev Tools (Test Account Only):**
+  - *To complete Consent & Setup:*
+    1. Sign in with dedicated test account (e.g., `test-exp@example.com`).
+    2. Grant consent on Screen 1; complete cutoff setup on Screen 2.
+  - *To reach Screen 3 (Feasibility):*
+    1. Open Dev Tools -> Tap "Load sample run-in (14 days)". Confirmation dialog identifies test account email.
+    2. Return Home -> Status displays "Check Feasibility" (Screen 3).
+  - *To start Plan and test Screen 4 (Daily Instruction):*
+    1. Select duration (e.g. 42 or 56 days) and start experiment.
+    2. Return Home -> Status displays "Daily Instruction" (Screen 4).
+    3. Verify current day's instruction ("Today: no caffeine after [cutoff time]." or "Today: your usual routine.").
   - *To reach Screen 5A (`plan_awaiting_final`):*
-    1. Ensure a plan is active (via Run-in -> Feasibility -> Start).
-    2. Open Dev Tools -> "Load sample experiment entries" (fills all days up to E).
-    3. Tap "Jump to last exposure date + 1".
-    4. Return Home -> Screen 5A loads with "Your experiment is complete."
+    1. Open Dev Tools -> Tap "Load sample experiment entries" (fills schedule up to last exposure date E with deterministic sample entries).
+    2. Tap "Jump to last exposure date + 1".
+    3. Return Home -> Status displays "Final Check-in" (Screen 5A).
+    4. If final night (day E) is unlogged, check-in card for day E appears. Verify counts only (no statistical estimates).
   - *To reach Screen 5B (`plan_result_ready`):*
-    1. From Screen 5A, tap "See my result".
-    2. Result computes, persists to database, and transitions to Screen 5B.
-    3. Refreshing or re-entering always loads the stored snapshot.
-  - *To reset and test again:*
-    1. Open Dev Tools -> "Reset completed plan (dev)" & "Delete sample entries".
-    2. Clock reset to normal or re-run.
-- **Verification points:**
-  - [ ] Prior to clicking "See my result", Screen 5A displays counts only and zero statistical estimates.
-  - [ ] If final night (day E) is missing, check-in card for day E appears.
-  - [ ] "See my result" persists `status = 'completed'` and `result` snapshot. Double tap returns stored snapshot without recomputing.
-  - [ ] Screen 5B heading matches fixed mapping: Supported / No detectable effect / Inconclusive.
-  - [ ] Statement and limitations pass through VERBATIM from engine.
-  - [ ] Conservative estimate formatted: "Conservative estimate (lower end of the plausible range): X minutes".
-  - [ ] Collapsible "How to read this" includes "This app is not medical advice."
-  - [ ] Edit lock: attempting to edit days within the completed plan's schedule returns read-only / uneditable.
+    1. Tap "See my result".
+    2. Result is evaluated on `entriesForPlan` only, persisted to `experiment_plans`, and transitions to Screen 5B.
+    3. Refreshing or double-tapping returns the stored snapshot without recomputing.
+  - *To test Completed-Plan Edit Lock:*
+    1. Attempt to update an entry for any date within the completed plan's schedule.
+    2. Client check (`canEditDate`) returns false / disabled.
+    3. Direct Supabase query (simulating client bypass) is blocked by PostgreSQL trigger `trg_prevent_completed_entry_edits`.
+  - *To reset and test again (Test Account Only):*
+    1. Open Dev Tools -> Tap "Reset completed plan (dev)" (sets status back to `scheduled`, clears result and `completed_at`).
+    2. Tap "Delete sample entries" (removes entries where `is_sample = true`; real user entries are untouched).
+    3. Tap "Reset (0)" on clock.
+
+- **Safe Supabase Verification Queries (Run in SQL Editor):**
+  ```sql
+  -- Inspect active/completed plan for test user:
+  select id, status, completed_at, plan->>'chosenDuration' as duration, result->>'verdictLabel' as verdict
+  from public.experiment_plans
+  where user_id = auth.uid();
+
+  -- Verify sample entries count:
+  select count(*), is_sample
+  from public.experiment_entries
+  where user_id = auth.uid()
+  group by is_sample;
+  ```
+
+- **Cleanup Steps:**
+  - In Dev Tools, tap "Delete sample entries". This runs `delete from experiment_entries where user_id = auth.uid() and is_sample = true`, ensuring zero risk to real entries.
 

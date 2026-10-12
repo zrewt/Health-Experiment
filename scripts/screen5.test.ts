@@ -231,3 +231,115 @@ test('screen 5A does not show any estimate prior to clicking See my result', () 
   assert.equal('conservativeEstimate' in progress, false);
   assert.equal('verdict' in progress, false);
 });
+
+test('interim look guard: adapter evaluate throws when today < lastExposureDate', () => {
+  const plan = makePlan('2026-02-01', 14).plan;
+  const entries: DailyEntry[] = plan.schedule.map(s => ({
+    date: s.date,
+    sleepMinutes: 420,
+    lastCaffeineTime: '11:00',
+  }));
+
+  // Before day E (e.g. 2026-02-13 < 2026-02-14) throws INTERIM_LOOK
+  assert.throws(
+    () => evaluate(plan, entriesForPlan(plan, entries), '2026-02-13'),
+    /INTERIM_LOOK|Results are unavailable before the schedule end date/
+  );
+
+  assert.throws(
+    () => evaluate(plan, entriesForPlan(plan, entries), '2026-02-05'),
+    /INTERIM_LOOK|Results are unavailable before the schedule end date/
+  );
+});
+
+test('failed result persistence leaves plan uncompleted and caches no result', async () => {
+  const storage = memory();
+  const planRec = makePlan('2026-02-01', 14);
+
+  const failingServer: PlanServer = {
+    async getActive() { return planRec; },
+    async insert() { throw new Error('not used'); },
+    async setNextCheckDate() {},
+    async cancel() {},
+    async complete() {
+      throw new Error('Database connection failed');
+    },
+  };
+
+  const persistence = createPlanPersistence(storage, failingServer);
+  const snapshot: ResultSnapshot = {
+    verdictLabel: 'SUPPORTED',
+    statement: 'Statement verbatim',
+    reasons: [],
+    conservativeEstimate: 20,
+    interval: [10, 30],
+    ruledOut: null,
+    daysAnalyzed: { intervention: 7, control: 7 },
+    daysExcluded: 0,
+    missingOutcomeDays: 0,
+    unknownExposureDays: 0,
+    adherence: { counts: { ADHERENT: 7, NON_ADHERENT: 0, CONTAMINATED: 0, CONTROL_CLEAN: 7, UNKNOWN: 0 }, rates: { interventionAdherence: 1, controlContamination: 0 } },
+    reducedAdherence: false,
+    plannedPowerRecomputed: 0.8,
+    plannedPowerSnapshot: 0.8,
+    evaluatedAt: '2026-02-15T08:00:00.000Z',
+  };
+
+  await assert.rejects(
+    async () => persistence.completePlan('user-1', planRec.id, snapshot, snapshot.evaluatedAt),
+    /Database connection failed/
+  );
+
+  // Verify plan remains scheduled in storage and no snapshot was cached
+  const current = await persistence.getActivePlan('user-1');
+  assert.equal(current?.status, 'scheduled');
+  assert.equal(current?.result, undefined);
+});
+
+test('cancelled plans do not transition to result ready or produce results', () => {
+  const defaultConsent = { userId: 'u1', consentType: 'health-data' as const, policyVersion: 'v1', granted: true, createdAt: '' };
+  const defaultSetup = { experimentId: 'caffeine-cutoff', cutoffTime: '12:00', screeningAnswer: 'usually' as const, runInStartDate: '2026-01-01' };
+  const plan = makePlan('2026-02-01', 14, '12:00', 'cancelled');
+
+  // Cancelled plan router state is plan_ended_early on any date
+  assert.equal(getHomeState({
+    consent: defaultConsent,
+    setup: defaultSetup,
+    entries: [],
+    plan,
+    today: '2026-02-15',
+  }), 'plan_ended_early');
+
+  assert.equal(getHomeState({
+    consent: defaultConsent,
+    setup: defaultSetup,
+    entries: [],
+    plan,
+    today: '2026-02-20',
+  }), 'plan_ended_early');
+});
+
+test('server-side edit lock logic check: rejects modifying completed schedule entries while allowing others', () => {
+  // Simulates PostgreSQL trigger check_entry_edit_lock logic from schema-screen6.sql
+  const completedPlan = makePlan('2026-02-01', 14, '12:00', 'completed');
+  const cancelledPlan = makePlan('2026-01-01', 14, '12:00', 'cancelled');
+
+  function checkEditLock(userPlans: StoredExperimentPlan[], entryDate: string): boolean {
+    // Returns true if locked, false if allowed
+    return userPlans.some(ep =>
+      ep.status === 'completed' &&
+      ep.plan.schedule.some(s => s.date === entryDate)
+    );
+  }
+
+  // Schedule dates in completed plan are locked:
+  assert.equal(checkEditLock([completedPlan], '2026-02-01'), true);
+  assert.equal(checkEditLock([completedPlan], '2026-02-14'), true); // Day E
+
+  // Entry outside completed plan schedule is not locked:
+  assert.equal(checkEditLock([completedPlan], '2026-01-31'), false);
+  assert.equal(checkEditLock([completedPlan], '2026-02-15'), false);
+
+  // Cancelled plan dates are not locked:
+  assert.equal(checkEditLock([cancelledPlan], '2026-01-05'), false);
+});

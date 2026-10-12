@@ -102,6 +102,13 @@ export default function ResultScreen() {
 
   const handleComputeResult = async () => {
     if (!user || computing) return;
+
+    // Hard invariant: the result can never be computed before E+1
+    if (today <= lastExposureDate) {
+      setError('The experiment result cannot be computed before the day after your last experiment day (E+1).');
+      return;
+    }
+
     setComputing(true);
     setError(null);
     try {
