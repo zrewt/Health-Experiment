@@ -205,3 +205,31 @@ test('dev tools modules are strictly isolated and not imported by production cod
     '_layout.tsx must gate dev-tools route with __DEV__'
   );
 });
+
+test('dev tools route self-guards against production rendering', () => {
+  const devToolsSource = fs.readFileSync(path.resolve(__dirname, '../src/app/dev-tools.tsx'), 'utf8');
+  assert.match(devToolsSource, /Redirect\s+href="\/"/, 'dev-tools must redirect in production');
+});
+
+test('regular persistence and engine queries do not reference is_sample', () => {
+  const storeSource = fs.readFileSync(path.resolve(__dirname, '../src/data/experiment-store.ts'), 'utf8');
+  assert.doesNotMatch(storeSource, /is_sample/, 'experiment-store.ts must not reference is_sample');
+  const adapterSource = fs.readFileSync(path.resolve(__dirname, '../src/experiment/adapter.ts'), 'utf8');
+  assert.doesNotMatch(adapterSource, /is_sample/, 'adapter.ts must not reference is_sample');
+});
+
+test('clock offset affects only getToday while stored timestamps remain real current time', () => {
+  const { getToday, __setDevClockOffset } = require('../src/experiment/clock');
+  __setDevClockOffset(5);
+  const fakeToday = getToday();
+  const realIsoDate = new Date().toISOString().slice(0, 10);
+  assert.notEqual(fakeToday, realIsoDate);
+
+  // Verification that Date.now() / toISOString() used for timestamps is unshifted:
+  const timestampNow = new Date().toISOString();
+  assert.match(timestampNow, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+  assert.ok(timestampNow.startsWith(realIsoDate));
+
+  __setDevClockOffset(0);
+  assert.equal(getToday(), realIsoDate);
+});

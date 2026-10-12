@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
 import { Screen, Text, Button } from '@/components/ui';
 import { colors, spacing, radii } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
@@ -15,12 +15,7 @@ export default function DevToolsScreen() {
   const [offset, setOffset] = useState<number>(__getDevClockOffset());
 
   if (typeof __DEV__ !== 'undefined' && !__DEV__) {
-    return (
-      <Screen>
-        <Text variant="titleSmall" color="garnet">Unavailable</Text>
-        <Text color="ivorySecondary">Dev tools are excluded from production builds.</Text>
-      </Screen>
-    );
+    return <Redirect href="/" />;
   }
 
   const handleShift = (delta: number) => {
