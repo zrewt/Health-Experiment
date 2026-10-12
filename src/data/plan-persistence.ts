@@ -14,6 +14,7 @@ export interface PlanServer {
   getActive(userId: string): Promise<StoredExperimentPlan | null>;
   insert(userId: string, plan: ExperimentPlan): Promise<StoredExperimentPlan>;
   setNextCheckDate(userId: string, date: string): Promise<void>;
+  cancel(userId: string, planId: string): Promise<void>;
 }
 
 function canonical(value: unknown): string {
@@ -68,6 +69,11 @@ export function createPlanPersistence(storage: PlanStorage, server: PlanServer) 
       const key = `@experiment_setup:${userId}`;
       const raw = await storage.getItem(key);
       if (raw !== null) await storage.setItem(key, JSON.stringify({ ...JSON.parse(raw), nextCheckDate: date }));
+    },
+    async cancelPlan(userId: string, planId: string): Promise<void> {
+      await server.cancel(userId, planId);
+      await storage.removeItem(activeKey(userId));
+      await storage.removeItem(pendingKey(userId));
     },
   };
 }

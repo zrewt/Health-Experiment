@@ -30,9 +30,15 @@ const planPersistence = createPlanPersistence(AsyncStorage, {
       .update({ next_check_date: date }).eq('user_id', userId).select('user_id').single();
     if (error || !data) throw new Error(`Could not save re-check date: ${error?.message ?? 'setup not found'}`);
   },
+  async cancel(userId, planId) {
+    if (!supabase) throw new Error('Server storage is unavailable. Plan cannot be cancelled.');
+    const { data, error } = await supabase.from('experiment_plans')
+      .update({ status: 'cancelled' }).eq('id', planId).eq('user_id', userId).select('id').single();
+    if (error || !data) throw new Error(`Could not cancel experiment plan: ${error?.message ?? 'plan not found'}`);
+  },
 });
 
-export const { getActivePlan, savePlan, saveNextCheckDate, getPendingPlan } = planPersistence;
+export const { getActivePlan, savePlan, saveNextCheckDate, getPendingPlan, cancelPlan } = planPersistence;
 
 export type ScreeningAnswer = 'usually' | 'sometimes' | 'rarely_or_never';
 

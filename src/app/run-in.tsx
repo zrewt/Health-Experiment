@@ -12,8 +12,8 @@ import {
   getSetup,
   StoredDailyEntry,
 } from '@/data/experiment-store';
+import { getToday } from '@/experiment/clock';
 import {
-  getLocalTodayDate,
   getMorningEntryDate,
   addDaysToLocalDate,
   canEditDate,
@@ -40,7 +40,7 @@ export default function RunInScreen() {
   const [syncing, setSyncing] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<string | null>(null);
 
-  const today = getLocalTodayDate();
+  const today = getToday();
   const defaultEntryDate = getMorningEntryDate(today);
 
   const [reloadTrigger, setReloadTrigger] = useState(0);

@@ -1,4 +1,4 @@
-# Manual Testing & Implementation Notes: Screens 1–3
+# Manual Testing & Implementation Notes: Screens 1–4
 
 ## 1. Overview & Architecture
 This milestone introduces:
@@ -116,3 +116,42 @@ This milestone introduces:
 - At 320px, document width stayed 320px; the Approximate label stayed above the scrolling content. Browser accessibility snapshots expose radio/checkbox checked state and disabled Start. Console had no app errors.
 - Screenshot capture was unavailable (preview webview produced no frames), so no screenshot-based visual review is claimed. Native Dynamic Type, VoiceOver/TalkBack and actual Supabase isolation/unique-index enforcement remain manual checks.
 - Step A was already completed and pushed as `38d9337` before Part B/C. Saved clean-clone result used default `core.autocrlf=true`; LF attributes resolved the line-ending verification issue. The clone was already removed; audit scratch files are intentionally not included in the Part B/C commit.
+
+## 14. Screen 4 & Dev Tools Contracts
+- **Home state router:** [home-state.ts](../src/experiment/home-state.ts) pure function `getHomeState` computes:
+  - `needs_consent` / `needs_setup`: missing records or ungranted consent
+  - `run_in`: ongoing baseline logging
+  - `feasibility_ready`: 14 valid days logged or `nextCheckDate` reached
+  - `plan_scheduled`: active plan, today < startDate
+  - `plan_active`: startDate <= today <= lastExposureDate
+  - `plan_awaiting_final`: today is the day after last exposure date, waiting on final sleep night log
+  - `plan_result_ready`: today after last exposure date and final night logged (or subsequent days)
+  - `plan_ended_early`: plan status is cancelled
+- **Dev-only test tools:** [clock.ts](../src/experiment/clock.ts), [sample-loader.ts](../src/dev/sample-loader.ts), [dev-tools.tsx](../src/app/dev-tools.tsx):
+  - Shared clock `getToday()` uses real local calendar date in production, shiftable in dev by +1 / +7 / reset.
+  - Dev-only loader writes 14 valid entries ending yesterday with ~31m SD.
+  - Dev-only cleaner deletes sample entries.
+  - Guarded strictly by `__DEV__` and excluded from production routing.
+- **Screen 4 (Daily Instruction):** [daily-instruction.tsx](../src/app/daily-instruction.tsx):
+  - Shows today's rule: "Today: no caffeine after [cutoff time]." (intervention) or "Today: your usual routine." (control).
+  - Derived from plan condition rule cutoff time, never hardcoded.
+  - Exposes no other day assignments.
+  - Reusable [CheckInCard.tsx](../src/components/CheckInCard.tsx) for yesterday's check-in.
+  - "End experiment early" confirms with the user, sets plan status to cancelled with server confirmation, and transitions to `plan_ended_early`.
+- **Additive SQL:** [schema-screen4.sql](../schema-screen4.sql) provides additive column `is_sample boolean default false` on `experiment_entries`. Not executed.
+
+## 15. Dev Tools & Screen 4 Manual Checklist
+- [ ] Open Dev Tools from Home Screen (in development build).
+- [ ] Tap "+1 Day" / "+7 Days" / "Reset": verify `getToday()` shifts and home screen state updates accordingly.
+- [ ] Tap "Load sample run-in (14 days)": verify confirmation dialog appears naming account; check-in progress updates to 14 valid days.
+- [ ] Tap "Delete sample entries": verify sample entries removed.
+- [ ] Navigate to Daily Instruction during active experiment:
+  - [ ] Intervention day displays exact "Today: no caffeine after [cutoff time]."
+  - [ ] Control day displays exact "Today: your usual routine."
+  - [ ] No future day assignments visible.
+  - [ ] Displays "Day n of N", days logged, days remaining, adherence counts. No p-values or effect estimates.
+- [ ] Test "End experiment early":
+  - [ ] Confirmation prompt appears stating entries stay and cannot be resumed.
+  - [ ] On confirm, plan status updates to cancelled.
+  - [ ] Route displays ended early state with no option to start new experiment yet.
+

@@ -5,7 +5,7 @@ import { Screen, Text, Button } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import { saveConsent, saveSetup, type ScreeningAnswer } from '@/data/experiment-store';
-import { getLocalTodayDate } from '@/experiment/dates';
+import { getToday } from '@/experiment/clock';
 import { conditionRule } from '@/experiment/config';
 
 // DRAFT NOTICE:
@@ -50,7 +50,7 @@ export default function SetupConsentScreen() {
         experimentId: 'caffeine-cutoff',
         cutoffTime,
         screeningAnswer: screening,
-        runInStartDate: getLocalTodayDate(),
+        runInStartDate: getToday(),
       });
 
       router.replace('/run-in');

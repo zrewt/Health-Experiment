@@ -11,7 +11,8 @@ import {
 import { computeBaseline, assessFeasibility } from '@/experiment/adapter';
 import { getFeasibilityScreenState } from '@/experiment/view-model';
 import { getStartAttempt, isFeasibilityDue } from '@/experiment/start-attempt';
-import { addDaysToLocalDate, getLocalTodayDate } from '@/experiment/dates';
+import { getToday } from '@/experiment/clock';
+import { addDaysToLocalDate } from '@/experiment/dates';
 import type { BaselineSummary, ExperimentPlan, FeasibilityScreenState, FeasibilityViewModel } from '@/experiment/types';
 
 interface Assessment {
@@ -59,7 +60,7 @@ export default function FeasibilityScreen() {
         const entries = await listEntries(userId);
         if (!current) return;
         const baseline = pending?.feasibilitySnapshot.inputs.baseline ?? computeBaseline(entries);
-        if (!pending && !isFeasibilityDue(baseline.validDays, setup.nextCheckDate ?? null, getLocalTodayDate())) {
+        if (!pending && !isFeasibilityDue(baseline.validDays, setup.nextCheckDate ?? null, getToday())) {
           router.replace('/run-in');
           return;
         }
@@ -89,7 +90,7 @@ export default function FeasibilityScreen() {
     try {
       const plan = getStartAttempt(attemptRef.current, {
         baseline: assessment.baseline, feasibility: assessment.feasibility,
-        duration, today: getLocalTodayDate(), acknowledged, cutoffTime: assessment.setup.cutoffTime,
+        duration, today: getToday(), acknowledged, cutoffTime: assessment.setup.cutoffTime,
       });
       attemptRef.current = plan;
       setAttempt(plan);
@@ -109,7 +110,7 @@ export default function FeasibilityScreen() {
     setSaving(true);
     setError(null);
     try {
-      await saveNextCheckDate(userId, addDaysToLocalDate(getLocalTodayDate(), 7));
+      await saveNextCheckDate(userId, addDaysToLocalDate(getToday(), 7));
       router.replace('/run-in');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not save the re-check date. Please retry.');
