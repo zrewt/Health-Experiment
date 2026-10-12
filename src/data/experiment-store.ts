@@ -4,6 +4,7 @@ import type { DailyEntry } from '@/experiment/types';
 import { mergePendingEntries, retryPendingEntries } from './pending-entries';
 import { createPlanPersistence, type StoredExperimentPlan } from './plan-persistence';
 import { parseLocalDate } from '@/experiment/dates';
+import { sanitizeCaffeineTimeForWrite } from '@/experiment/caffeine-time';
 
 export const HEALTH_DATA_POLICY_VERSION = '2026-10-health-draft-v1';
 export const DEFAULT_EXPERIMENT_ID = 'caffeine-cutoff';
@@ -179,7 +180,9 @@ export async function getSetup(userId: string): Promise<ExperimentSetupRecord | 
  */
 export async function saveEntry(userId: string, entry: DailyEntry): Promise<StoredDailyEntry> {
   const sleepMinutes = entry.sleepMinutes ?? null;
-  const lastCaffeineTime = entry.lastCaffeineTime ?? null;
+  // Write-side policy: a malformed time is never persisted; it is stored as unknown (null),
+  // never padded and never turned into 'none'.
+  const lastCaffeineTime = sanitizeCaffeineTimeForWrite(entry.lastCaffeineTime ?? null);
   const editedAt = new Date().toISOString();
 
   const record: StoredDailyEntry = {
@@ -236,6 +239,8 @@ export async function syncUnsyncedEntries(userId: string): Promise<{ syncedCount
   const result = await retryPendingEntries(pending, async entry => {
     if (!supabase) return false;
     try {
+      // The retry queue re-writes already-stored values verbatim on purpose: it must
+      // never modify, pad or drop stored data, so it does no caffeine-time validation.
       const { error } = await supabase.from('experiment_entries').upsert({
         user_id: userId,
         date: entry.date,

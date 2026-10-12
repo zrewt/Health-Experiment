@@ -21,6 +21,13 @@ import {
 import { runInMinValidDays } from '@/experiment/config';
 import { isFeasibilityDue } from '@/experiment/start-attempt';
 import { getRunInDescriptiveStats, type RunInDescriptiveStats } from '@/experiment/view-model';
+import {
+  CAFFEINE_TIME_FORMAT_MESSAGE,
+  CAFFEINE_TIME_UNREADABLE_MARKER,
+  CAFFEINE_TIME_UNREADABLE_MESSAGE,
+  isValidCaffeineTime,
+  readCaffeineTime,
+} from '@/experiment/caffeine-time';
 
 export default function RunInScreen() {
   const router = useRouter();
@@ -39,6 +46,7 @@ export default function RunInScreen() {
   const [savingEntry, setSavingEntry] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const today = getToday();
   const defaultEntryDate = getMorningEntryDate(today);
@@ -78,13 +86,15 @@ export default function RunInScreen() {
             setSleepHours('');
             setSleepMins('');
           }
-          if (existing.lastCaffeineTime === 'none') {
+          const storedCaffeine = readCaffeineTime(existing.lastCaffeineTime);
+          if (storedCaffeine.kind === 'none') {
             setNoCaffeine(true);
             setCaffeineTime('');
-          } else if (existing.lastCaffeineTime) {
+          } else if (storedCaffeine.kind === 'valid') {
             setNoCaffeine(false);
-            setCaffeineTime(existing.lastCaffeineTime);
+            setCaffeineTime(storedCaffeine.time ?? '');
           } else {
+            // 'unset' or 'unreadable': never prefill a guessed or malformed value.
             setNoCaffeine(false);
             setCaffeineTime('');
           }
@@ -119,12 +129,16 @@ export default function RunInScreen() {
         setSleepHours('');
         setSleepMins('');
       }
-      if (existing.lastCaffeineTime === 'none') {
+      const storedCaffeine = readCaffeineTime(existing.lastCaffeineTime);
+      if (storedCaffeine.kind === 'none') {
         setNoCaffeine(true);
         setCaffeineTime('');
+      } else if (storedCaffeine.kind === 'valid') {
+        setNoCaffeine(false);
+        setCaffeineTime(storedCaffeine.time ?? '');
       } else {
         setNoCaffeine(false);
-        setCaffeineTime(existing.lastCaffeineTime || '');
+        setCaffeineTime('');
       }
     } else {
       setSleepHours('');
@@ -133,6 +147,7 @@ export default function RunInScreen() {
       setNoCaffeine(false);
     }
     setFieldErrors(null);
+    setStatusMessage(null);
   };
 
   const handleSaveEntry = async () => {
@@ -174,16 +189,22 @@ export default function RunInScreen() {
       }
     }
 
-    // Caffeine value
+    // Caffeine value: strict HH:MM only; single-digit hours are not padded.
+    // On rejection the typed text is kept and nothing is saved for this field.
     let finalCaffeine: string | 'none' | null = null;
     if (noCaffeine) {
       finalCaffeine = 'none';
     } else if (caffeineTime.trim() !== '') {
+      if (!isValidCaffeineTime(caffeineTime.trim())) {
+        setFieldErrors(CAFFEINE_TIME_FORMAT_MESSAGE);
+        return;
+      }
       finalCaffeine = caffeineTime.trim();
     }
 
     setSavingEntry(true);
     setStorageError(null);
+    setStatusMessage(null);
     try {
       const saved = await saveEntry(user.id, {
         date: activeDate,
@@ -197,6 +218,9 @@ export default function RunInScreen() {
         next.push(saved);
         return next.sort((a, b) => a.date.localeCompare(b.date));
       });
+      // Distinct from the "not synced yet" banner below: claim a full save only once the
+      // write is confirmed, never while it is still local-only.
+      setStatusMessage(saved.synced === false ? null : 'Check-in saved.');
 
       if (saved.synced === false) {
         setStorageError('Entry saved locally (not synced yet). Sync will be retried now.');
@@ -211,8 +235,9 @@ export default function RunInScreen() {
           setStorageError('Entry saved locally (not synced yet). Sync failed; you can retry.');
         });
       }
-    } catch (err) {
-      setStorageError(err instanceof Error ? err.message : 'Could not save entry. Please retry.');
+    } catch {
+      // Plain failure message: no raw technical text is surfaced to the user.
+      setStorageError('Could not save this check-in. Please try again.');
     } finally {
       setSavingEntry(false);
     }
@@ -230,10 +255,20 @@ export default function RunInScreen() {
     addDaysToLocalDate(defaultEntryDate, -2),
   ];
 
+  // Read-side guard surfaced in the card: the active day's stored value could not be read.
+  const activeEntry = entries.find((e) => e.date === activeDate);
+  const activeCaffeineUnreadable = activeEntry
+    ? readCaffeineTime(activeEntry.lastCaffeineTime).kind === 'unreadable'
+    : false;
+
   const getDayStatus = (d: string) => {
     const entry = entries.find((e) => e.date === d);
     if (!entry) return 'Missing';
     const syncSuffix = entry.synced === false ? ' (not synced yet)' : '';
+    if (readCaffeineTime(entry.lastCaffeineTime).kind === 'unreadable') {
+      const base = entry.sleepMinutes !== null ? 'Partly logged' : 'Missing';
+      return `${base}${syncSuffix} — ${CAFFEINE_TIME_UNREADABLE_MARKER}`;
+    }
     if (entry.sleepMinutes !== null && entry.lastCaffeineTime !== null) return `Logged${syncSuffix}`;
     if (entry.sleepMinutes !== null || entry.lastCaffeineTime !== null) return `Partly logged${syncSuffix}`;
     return `Missing${syncSuffix}`;
@@ -366,9 +401,32 @@ export default function RunInScreen() {
             </Pressable>
           </View>
 
+          {activeCaffeineUnreadable ? (
+            <Text
+              variant="caption"
+              color="garnet"
+              style={styles.errorNotice}
+              accessibilityRole="alert"
+            >
+              {CAFFEINE_TIME_UNREADABLE_MESSAGE}
+            </Text>
+          ) : null}
+
           {fieldErrors ? (
-            <Text variant="caption" color="garnet" style={styles.errorNotice}>
+            <Text variant="caption" color="garnet" style={styles.errorNotice} accessibilityRole="alert">
               {fieldErrors}
+            </Text>
+          ) : null}
+
+          {statusMessage ? (
+            <Text
+              variant="caption"
+              color="champagneLight"
+              style={styles.successNotice}
+              accessibilityRole="alert"
+              accessibilityLiveRegion="polite"
+            >
+              {statusMessage}
             </Text>
           ) : null}
 
@@ -556,6 +614,9 @@ const styles = StyleSheet.create({
     borderColor: colors.champagneLight,
   },
   errorNotice: {
+    marginTop: spacing.xs,
+  },
+  successNotice: {
     marginTop: spacing.xs,
   },
   checkInActions: {

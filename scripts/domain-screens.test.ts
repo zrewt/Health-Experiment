@@ -11,6 +11,7 @@ import {
 import { getRunInDescriptiveStats } from '../src/experiment/view-model';
 import type { DailyEntry } from '../src/experiment/types';
 import { mergePendingEntries, retryPendingEntries } from '../src/data/pending-entries';
+import { isValidCaffeineTime, readCaffeineTime } from '../src/experiment/caffeine-time';
 
 test('parseLocalDate and formatLocalDate handle standard dates', () => {
   const parts = parseLocalDate('2026-10-11');
@@ -109,4 +110,41 @@ test('successful pending retry marks server persistence without inventing missin
   assert.equal(result.entries[0].synced, true);
   assert.equal(result.entries[0].sleepMinutes, null);
   assert.equal(result.entries[0].lastCaffeineTime, null);
+});
+
+test('caffeine time validator accepts only strict 24-hour HH:mm', () => {
+  for (const value of ['00:00', '09:05', '14:30', '23:59']) {
+    assert.equal(isValidCaffeineTime(value), true, `accepts ${value}`);
+  }
+  for (const value of ['2:30', '9:30', '14:0', '2pm', '24:00', '12:60', ' 14:30', '14:30 ', '14:30:00', '', '14.30']) {
+    assert.equal(isValidCaffeineTime(value), false, `rejects ${JSON.stringify(value)}`);
+  }
+});
+
+test('caffeine time reading separates none, unset, valid and unreadable without guessing', () => {
+  assert.deepEqual(readCaffeineTime(null), { kind: 'unset', time: null });
+  assert.deepEqual(readCaffeineTime(''), { kind: 'unset', time: null });
+  assert.deepEqual(readCaffeineTime('none'), { kind: 'none', time: null });
+  assert.deepEqual(readCaffeineTime('14:30'), { kind: 'valid', time: '14:30' });
+  assert.deepEqual(readCaffeineTime('9:30'), { kind: 'unreadable', time: null });
+  assert.deepEqual(readCaffeineTime('nope'), { kind: 'unreadable', time: null });
+});
+
+test('run-in descriptive panel never throws and counts malformed caffeine times as unknown without padding', () => {
+  const entries: DailyEntry[] = [
+    { date: '2026-10-01', sleepMinutes: 480, lastCaffeineTime: '14:30' },
+    { date: '2026-10-02', sleepMinutes: 450, lastCaffeineTime: 'none' },
+    { date: '2026-10-03', sleepMinutes: 420, lastCaffeineTime: '9:30' },
+    { date: '2026-10-04', sleepMinutes: 430, lastCaffeineTime: ' 14:30' },
+    { date: '2026-10-05', sleepMinutes: 440, lastCaffeineTime: '09:30' },
+    { date: '2026-10-06', sleepMinutes: null, lastCaffeineTime: null },
+  ];
+  const stats = getRunInDescriptiveStats(entries);
+  assert.equal(stats.daysLogged, 6);
+  assert.equal(stats.validDays, 5);
+  assert.equal(stats.averageSleepMinutes, (480 + 450 + 420 + 430 + 440) / 5);
+  // Only 14:30 is after cutoff; 'none' and the valid 09:30 stay known but are not late.
+  assert.equal(stats.afternoonCaffeineDays, 1);
+  // Malformed '9:30', malformed ' 14:30' and unset null are unknown; nothing is padded.
+  assert.equal(stats.unknownCaffeineDays, 3);
 });

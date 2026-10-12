@@ -297,6 +297,28 @@ test('missing sleep and servings stay null, explicit none alone maps to zero ser
   assert.equal(called, true);
 });
 
+test('caffeine times are read strictly: only two-digit HH:mm survives, malformed is unknown and never padded', () => {
+  // CHANGED ON PURPOSE (policy: single-digit hours are NOT padded):
+  // Was '9:30' -> lastCaffeineTime '09:30' + adherence 'ADHERENT'.
+  // Now '9:30' -> malformed -> lastCaffeineTime null + adherence 'UNKNOWN'.
+  const singleDigit = toEngineRecord({ date: startDate, sleepMinutes: 420, lastCaffeineTime: '9:30' }, 'intervention');
+  assert.equal(singleDigit.exposure.lastCaffeineTime, null);
+  assert.equal(singleDigit.exposure.servings, null);
+  assert.equal(engine.adherenceStatus(singleDigit), 'UNKNOWN');
+
+  // A two-digit time is valid and stays verbatim (no padding, no guessing).
+  const valid = toEngineRecord({ date: startDate, sleepMinutes: 420, lastCaffeineTime: '09:30' }, 'intervention');
+  assert.equal(valid.exposure.lastCaffeineTime, '09:30');
+  assert.equal(valid.exposure.servings, null);
+  assert.equal(engine.adherenceStatus(valid), 'ADHERENT');
+
+  for (const raw of ['', '25:00', '9:5', 'nope', ' 14:30', '14:30 ', '14:30:00', '2:30', '12:60', '14.30'] as const) {
+    const record = toEngineRecord({ date: startDate, sleepMinutes: 420, lastCaffeineTime: raw }, 'control');
+    assert.deepEqual(record.exposure, { servings: null, lastCaffeineTime: null }, `raw ${JSON.stringify(raw)}`);
+    assert.equal(engine.adherenceStatus(record), 'UNKNOWN');
+  }
+});
+
 test('baseline preserves engine reasons and returns no autocorrelation, power, or effect fields', () => {
   const entries = runIn();
   const own = engine.checkCaffeineEligibility(entries.map(entry => toEngineRecord(entry, 'control')), { minRunInDays: 14, cutoffTime: '12:00' });

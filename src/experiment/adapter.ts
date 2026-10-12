@@ -1,5 +1,6 @@
 import * as realEngine from '../engine';
 import * as config from './config';
+import { engineCaffeineTime, engineCaffeineServings } from './caffeine-time';
 import type {
   AdapterErrorCode, BaselineSummary, Condition, DailyEntry, DayRecord,
   EngineFacade, ExperimentPlan, FeasibilityLookup, FeasibilityScreenState, FeasibilityTier,
@@ -26,16 +27,20 @@ export function toEngineRecord(
 ): DayRecord {
   engine.parseDate(entry.date);
   const sleepMinutes = entry.sleepMinutes ?? null;
-  const lastCaffeineTime = entry.lastCaffeineTime ?? null;
   if (sleepMinutes !== null && (!Number.isFinite(sleepMinutes) || sleepMinutes < 0)) {
     throw new ExperimentAdapterError('INVALID_ENTRY', 'Sleep minutes must be nonnegative, finite, or null.');
   }
+  // Read-side policy: a malformed stored time is unknown for the engine, never padded
+  // and never treated as 'none' (explicit zero servings). Single-digit hours are rejected.
+  const lastCaffeineTime = engineCaffeineTime(entry.lastCaffeineTime ?? null);
+  const servings = engineCaffeineServings(entry.lastCaffeineTime ?? null);
+
   return {
     date: entry.date,
     assignedCondition,
     exposure: {
-      lastCaffeineTime: lastCaffeineTime === 'none' ? null : lastCaffeineTime,
-      servings: lastCaffeineTime === 'none' ? 0 : null,
+      lastCaffeineTime,
+      servings,
     },
     covariates: { alcohol: null, illness: null, travel: null, lateWorkout: null },
     outcome: { sleepMinutes, hrvMs: null },
