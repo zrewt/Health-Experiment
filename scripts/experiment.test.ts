@@ -407,6 +407,31 @@ test('evaluate refuses before end without calling analysis, accepts on end, pres
   assert.equal(plan.baselineStats.sd, 25); // Conservative lookup floor survives through analysis.
 });
 
+test('result passes engine limitations through verbatim (copied, never fabricated or dropped)', () => {
+  const plan = realPlan();
+  const entries: DailyEntry[] = plan.schedule.map(day => ({
+    date: day.date, sleepMinutes: day.condition === 'intervention' ? 450 : 420,
+    lastCaffeineTime: day.condition === 'intervention' ? '11:00' : '15:00',
+  }));
+  entries[1].sleepMinutes = null; // exercise the missing-outcome path
+  const end = plan.schedule[plan.schedule.length - 1].date;
+  const result = evaluate(plan, entries, end);
+  const records = entries.map((entry, index) => toEngineRecord(entry, plan.schedule[index].condition));
+  const own = engine.analyzeExperiment(plan.definition, records, {
+    ...config.selectedPolicyOverrides.analysis,
+    seed: plan.analysisSeed,
+    baseline: {
+      mean: null, sd: plan.baselineStats.sd,
+      lag1Autocorrelation: plan.baselineStats.assumedAutocorrelation,
+    },
+    assumedAdherence: plan.assumedAdherence,
+  });
+  const expected = own.limitations ? [...own.limitations] : [];
+  assert.ok(Array.isArray(result.limitations));
+  assert.deepEqual(result.limitations, expected);
+  assert.notEqual(result.limitations, own.limitations); // copied, not the engine's own array
+});
+
 test('repeated evaluation of the same plan and entries has identical intervals', () => {
   const plan = realPlan();
   const entries = plan.schedule.map((day, index) => ({

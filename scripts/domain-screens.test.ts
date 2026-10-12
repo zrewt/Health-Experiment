@@ -11,7 +11,14 @@ import {
 import { getRunInDescriptiveStats } from '../src/experiment/view-model';
 import type { DailyEntry } from '../src/experiment/types';
 import { mergePendingEntries, retryPendingEntries } from '../src/data/pending-entries';
-import { isValidCaffeineTime, readCaffeineTime } from '../src/experiment/caffeine-time';
+import {
+  isValidCaffeineTime,
+  readCaffeineTime,
+  engineCaffeineTime,
+  engineCaffeineServings,
+  sanitizeCaffeineTimeForWrite,
+  type StoredCaffeineTime,
+} from '../src/experiment/caffeine-time';
 
 test('parseLocalDate and formatLocalDate handle standard dates', () => {
   const parts = parseLocalDate('2026-10-11');
@@ -128,6 +135,30 @@ test('caffeine time reading separates none, unset, valid and unreadable without 
   assert.deepEqual(readCaffeineTime('14:30'), { kind: 'valid', time: '14:30' });
   assert.deepEqual(readCaffeineTime('9:30'), { kind: 'unreadable', time: null });
   assert.deepEqual(readCaffeineTime('nope'), { kind: 'unreadable', time: null });
+});
+
+test('caffeine helpers never turn a malformed or blank value into zero servings or a padded time', () => {
+  const cases: Array<[string, StoredCaffeineTime, string | null, number | null, string | 'none' | null]> = [
+    ['valid time', '14:30', '14:30', null, '14:30'],
+    ['none', 'none', null, 0, 'none'],
+    ['null (skipped)', null, null, null, null],
+    ['blank', '', null, null, null],
+    ['malformed single-digit', '9:30', null, null, null],
+    ['malformed am/pm', '2pm', null, null, null],
+    ['malformed leading space', ' 14:30', null, null, null],
+    ['malformed trailing space', '14:30 ', null, null, null],
+  ];
+  for (const [label, input, expectedTime, expectedServings, expectedWrite] of cases) {
+    assert.equal(engineCaffeineTime(input), expectedTime, `${label}: engine time`);
+    assert.equal(engineCaffeineServings(input), expectedServings, `${label}: engine servings`);
+    assert.equal(sanitizeCaffeineTimeForWrite(input), expectedWrite, `${label}: write value`);
+  }
+  // A malformed value must never become zero servings (that would read as "no caffeine").
+  for (const malformed of ['9:30', '2pm', ' 14:30', '14:30 ', '25:00', 'nope', '14.30']) {
+    assert.notEqual(engineCaffeineServings(malformed), 0, `malformed ${JSON.stringify(malformed)} must not be zero servings`);
+    assert.notEqual(sanitizeCaffeineTimeForWrite(malformed), 'none', `malformed ${JSON.stringify(malformed)} must not become none`);
+    assert.equal(sanitizeCaffeineTimeForWrite(malformed), null, `malformed ${JSON.stringify(malformed)} must not be persisted`);
+  }
 });
 
 test('run-in descriptive panel never throws and counts malformed caffeine times as unknown without padding', () => {
