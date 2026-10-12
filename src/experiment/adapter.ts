@@ -300,6 +300,14 @@ export function getFeasibilityScreenState(
   };
 }
 
+export function entriesForPlan(
+  plan: ExperimentPlan,
+  entries: readonly DailyEntry[],
+): DailyEntry[] {
+  const scheduleDates = new Set(plan.schedule.map(d => d.date));
+  return entries.filter(e => scheduleDates.has(e.date));
+}
+
 export function evaluate(
   plan: ExperimentPlan, entries: readonly DailyEntry[], today: string,
   engine: EngineFacade = realEngine,
@@ -335,6 +343,7 @@ export function evaluate(
     reducedAdherence: verdict.effect_likely_understated,
     plannedPowerRecomputed: analysis.feasibility.plannedPowerAtMinimumEffect,
     plannedPowerSnapshot: selected?.plannedPowerAtMinimumEffect ?? null,
+    limitations: analysis.limitations ? [...analysis.limitations] : [],
   };
 }
 

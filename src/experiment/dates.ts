@@ -90,8 +90,18 @@ export function daysBetween(earlierDateStr: string, laterDateStr: string): numbe
  * Rule:
  * True ONLY for the current entry date (the date of the morning check-in on `today`)
  * and the previous 3 days. Older days are read-only. Future days cannot be edited.
+ *
+ * If plan is provided and plan.status === 'completed', all dates in the plan's schedule
+ * are locked and read-only (returns false).
  */
-export function canEditDate(today: string, date: string): boolean {
+export function canEditDate(today: string, date: string, plan?: { status: string; plan: { schedule: { date: string }[] } } | null): boolean {
+  if (plan && plan.status === 'completed') {
+    const inSchedule = plan.plan.schedule.some(s => s.date === date);
+    if (inSchedule) {
+      return false;
+    }
+  }
+
   const currentEntryDate = getMorningEntryDate(today);
   const diff = daysBetween(date, currentEntryDate);
   // diff === 0: current entry date (yesterday)

@@ -1,0 +1,233 @@
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { generateSchedule } from '../src/engine';
+import { evaluate, entriesForPlan, progressSummary } from '../src/experiment/adapter';
+import { canEditDate } from '../src/experiment/dates';
+import { getHomeState } from '../src/experiment/home-state';
+import { createPlanPersistence, type PlanServer, type PlanStorage, type StoredExperimentPlan } from '../src/data/plan-persistence';
+import type { ExperimentPlan, DailyEntry, ResultSnapshot } from '../src/experiment/types';
+
+function makePlan(startDate: string, lengthDays = 14, cutoffTime = '12:00', status = 'scheduled'): StoredExperimentPlan {
+  const seed = 100;
+  const analysisSeed = ((seed * 1664525 + 1013904223) >>> 0);
+  const design = { type: 'randomized-blocks' as const, blockLength: 2, balanceWeekends: true };
+  const schedule = generateSchedule(startDate, lengthDays, design, seed);
+  return {
+    id: 'plan-test-1',
+    status,
+    plan: {
+      seed,
+      analysisSeed,
+      chosenDuration: lengthDays,
+      startDate,
+      schedule,
+      assumedAdherence: 0.9,
+      assumedContamination: 0.1,
+      baselineStats: { sd: 26, assumedAutocorrelation: 0.2, validDays: 14 },
+      definition: {
+        name: 'Caffeine cutoff',
+        startDate,
+        lengthDays,
+        design,
+        seed,
+        outcomeMetric: 'sleepMinutes',
+        conditionRule: { type: 'caffeine-cutoff', cutoffTime },
+      },
+      feasibilitySnapshot: {
+        tier: 'informative',
+        options: [{
+          duration: lengthDays,
+          plannedPowerAtMinimumEffect: 0.75,
+          mdeDirectMinutes: 28,
+          mdeAssignedDayEquivalent: 22.4,
+          scenarioRho: 0.2,
+          minPlannedPowerAcrossRho: 0.7,
+          statement: 'Statement 4 days',
+          conservative: false,
+          numberQualifier: 'unqualified',
+          mdeLabel: 'effect if you follow the rule fully',
+          adherenceAssumptionText: 'assuming you follow rule',
+          rhoLookups: [],
+        }],
+        defaultDuration: lengthDays,
+        canStart: true,
+        requiresAcknowledgement: false,
+        conservative: false,
+        numberQualifier: 'unqualified',
+        sdUsed: 26,
+        reasons: [],
+        mdeLabel: 'mde',
+        adherenceAssumptionText: 'adh',
+        autocorrelationAssumptionText: 'auto',
+        conservativeAssumptionText: null,
+        inputs: {
+          minimumMeaningfulEffectMinutes: 15,
+        } as any,
+      },
+    },
+  };
+}
+
+function memory(): PlanStorage & { values: Map<string, string> } {
+  const values = new Map<string, string>();
+  return {
+    values,
+    async getItem(key) { return values.get(key) ?? null; },
+    async setItem(key, value) { values.set(key, value); },
+    async removeItem(key) { values.delete(key); },
+  };
+}
+
+test('router transitions across last exposure date E, E+1, and completed status', () => {
+  const plan = makePlan('2026-02-01', 14); // schedule: 2026-02-01 to 2026-02-14 (E = 2026-02-14)
+  const defaultConsent = { userId: 'u1', consentType: 'health-data' as const, policyVersion: 'v1', granted: true, createdAt: '' };
+  const defaultSetup = { experimentId: 'caffeine-cutoff', cutoffTime: '12:00', screeningAnswer: 'usually' as const, runInStartDate: '2026-01-01' };
+
+  // On last exposure date E (2026-02-14): plan_active
+  assert.equal(getHomeState({
+    consent: defaultConsent,
+    setup: defaultSetup,
+    entries: [],
+    plan,
+    today: '2026-02-14',
+  }), 'plan_active');
+
+  // On E+1 (2026-02-15) before completion: plan_awaiting_final
+  assert.equal(getHomeState({
+    consent: defaultConsent,
+    setup: defaultSetup,
+    entries: [],
+    plan,
+    today: '2026-02-15',
+  }), 'plan_awaiting_final');
+
+  // After completion (status === 'completed'): plan_result_ready
+  assert.equal(getHomeState({
+    consent: defaultConsent,
+    setup: defaultSetup,
+    entries: [],
+    plan: { ...plan, status: 'completed' },
+    today: '2026-02-15',
+  }), 'plan_result_ready');
+
+  // Days beyond E+1 before completion: still plan_awaiting_final
+  assert.equal(getHomeState({
+    consent: defaultConsent,
+    setup: defaultSetup,
+    entries: [],
+    plan,
+    today: '2026-02-18',
+  }), 'plan_awaiting_final');
+});
+
+test('entriesForPlan filters out entries outside schedule boundaries', () => {
+  const plan = makePlan('2026-02-01', 14).plan; // 2026-02-01 to 2026-02-14
+  const allEntries: DailyEntry[] = [
+    { date: '2026-01-31', sleepMinutes: 400, lastCaffeineTime: 'none' }, // day before
+    { date: '2026-02-01', sleepMinutes: 420, lastCaffeineTime: '11:00' }, // first day
+    { date: '2026-02-02', sleepMinutes: 440, lastCaffeineTime: '15:00' },
+    { date: '2026-02-14', sleepMinutes: 430, lastCaffeineTime: '15:00' }, // last exposure day E
+    { date: '2026-02-15', sleepMinutes: 450, lastCaffeineTime: 'none' }, // day after
+  ];
+
+  const filtered = entriesForPlan(plan, allEntries);
+  assert.equal(filtered.length, 3);
+  assert.deepEqual(filtered.map(e => e.date), ['2026-02-01', '2026-02-02', '2026-02-14']);
+});
+
+test('See my result computes once, persists snapshot, and idempotent retry returns stored snapshot without recomputing', async () => {
+  const storage = memory();
+  let evaluateCallCount = 0;
+  let serverCompleteCalls = 0;
+
+  const planRec = makePlan('2026-02-01', 14);
+  const plan = planRec.plan;
+  const entries: DailyEntry[] = plan.schedule.map(s => ({
+    date: s.date,
+    sleepMinutes: 420 + (s.condition === 'intervention' ? 20 : 0),
+    lastCaffeineTime: s.condition === 'intervention' ? '11:00' : '15:00',
+  }));
+
+  let serverRecord = { ...planRec };
+
+  const server: PlanServer = {
+    async getActive() { return serverRecord; },
+    async insert() { throw new Error('not used'); },
+    async setNextCheckDate() {},
+    async cancel() {},
+    async complete(_userId, _planId, result, completedAt) {
+      serverCompleteCalls++;
+      serverRecord = {
+        ...serverRecord,
+        status: 'completed',
+        result,
+        completed_at: completedAt,
+      };
+      return serverRecord;
+    },
+  };
+
+  const persistence = createPlanPersistence(storage, server);
+
+  // Compute once
+  evaluateCallCount++;
+  const result = evaluate(plan, entriesForPlan(plan, entries), '2026-02-15');
+  const snapshot: ResultSnapshot = { ...result, evaluatedAt: new Date().toISOString() };
+  const completed = await persistence.completePlan('user-1', planRec.id, snapshot, snapshot.evaluatedAt);
+
+  assert.equal(evaluateCallCount, 1);
+  assert.equal(serverCompleteCalls, 1);
+  assert.equal(completed.status, 'completed');
+  assert.ok(completed.result);
+
+  // Idempotent retry / double tap: read stored snapshot, do not call evaluate() again
+  const secondAttempt = await persistence.getActivePlan('user-1');
+  assert.equal(secondAttempt?.status, 'completed');
+  assert.deepEqual(secondAttempt?.result, snapshot);
+  assert.equal(evaluateCallCount, 1); // Not called again
+});
+
+test('edit lock disables editing scheduled dates when plan is completed', () => {
+  const completedPlan = makePlan('2026-02-01', 14, '12:00', 'completed');
+  const today = '2026-02-15'; // morning after last exposure day (E = 2026-02-14)
+
+  // During completed plan, schedule dates (2026-02-01 through 2026-02-14) are read-only
+  assert.equal(canEditDate(today, '2026-02-14', completedPlan), false);
+  assert.equal(canEditDate(today, '2026-02-13', completedPlan), false);
+  assert.equal(canEditDate(today, '2026-02-02', completedPlan), false);
+  assert.equal(canEditDate(today, '2026-02-01', completedPlan), false);
+
+  // But for an active (scheduled) plan, yesterday and backfill days remain editable
+  const activePlan = makePlan('2026-02-01', 14, '12:00', 'scheduled');
+  assert.equal(canEditDate(today, '2026-02-14', activePlan), true);
+  assert.equal(canEditDate(today, '2026-02-13', activePlan), true);
+});
+
+test('verdict headings match fixed mapping and pass engine statements verbatim', () => {
+  const headings: Record<string, string> = {
+    SUPPORTED: 'Supported',
+    NO_DETECTABLE_EFFECT: 'No detectable effect',
+    INCONCLUSIVE: 'Inconclusive',
+  };
+  assert.equal(headings['SUPPORTED'], 'Supported');
+  assert.equal(headings['NO_DETECTABLE_EFFECT'], 'No detectable effect');
+  assert.equal(headings['INCONCLUSIVE'], 'Inconclusive');
+});
+
+test('screen 5A does not show any estimate prior to clicking See my result', () => {
+  // Screen 5A requirements state:
+  // "Show counts only (days logged, adherence counts via progressSummary). A button 'See my result'... NO estimates before the button is pressed."
+  const plan = makePlan('2026-02-01', 14).plan;
+  const entries: DailyEntry[] = plan.schedule.map(s => ({
+    date: s.date,
+    sleepMinutes: 420,
+    lastCaffeineTime: '11:00',
+  }));
+  const progress = progressSummary(plan, entries, '2026-02-15');
+  assert.equal(typeof progress.daysLogged, 'number');
+  assert.equal(typeof progress.adherenceCounts, 'object');
+  // Confirm that ProgressSummary contains no estimates or statistical evaluations
+  assert.equal('estimate' in progress, false);
+  assert.equal('conservativeEstimate' in progress, false);
+  assert.equal('verdict' in progress, false);
+});

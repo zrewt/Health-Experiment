@@ -1,9 +1,11 @@
-import type { ExperimentPlan } from '../experiment/types';
+import type { ExperimentPlan, ResultSnapshot } from '../experiment/types';
 
 export interface StoredExperimentPlan {
   id: string;
   plan: ExperimentPlan;
   status: string;
+  result?: ResultSnapshot | null;
+  completed_at?: string | null;
 }
 export interface PlanStorage {
   getItem(key: string): Promise<string | null>;
@@ -15,6 +17,8 @@ export interface PlanServer {
   insert(userId: string, plan: ExperimentPlan): Promise<StoredExperimentPlan>;
   setNextCheckDate(userId: string, date: string): Promise<void>;
   cancel(userId: string, planId: string): Promise<void>;
+  complete(userId: string, planId: string, result: ResultSnapshot, completedAt: string): Promise<StoredExperimentPlan>;
+  resetCompleted?(userId: string, planId: string): Promise<StoredExperimentPlan>;
 }
 
 function canonical(value: unknown): string {
@@ -74,6 +78,17 @@ export function createPlanPersistence(storage: PlanStorage, server: PlanServer) 
       await server.cancel(userId, planId);
       await storage.removeItem(activeKey(userId));
       await storage.removeItem(pendingKey(userId));
+    },
+    async completePlan(userId: string, planId: string, result: ResultSnapshot, completedAt: string): Promise<StoredExperimentPlan> {
+      const stored = await server.complete(userId, planId, result, completedAt);
+      await confirm(userId, stored);
+      return stored;
+    },
+    async resetCompletedPlan(userId: string, planId: string): Promise<StoredExperimentPlan> {
+      if (!server.resetCompleted) throw new Error('resetCompleted not supported');
+      const reset = await server.resetCompleted(userId, planId);
+      await confirm(userId, reset);
+      return reset;
     },
   };
 }

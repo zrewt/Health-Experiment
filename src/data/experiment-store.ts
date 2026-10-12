@@ -12,14 +12,14 @@ const planPersistence = createPlanPersistence(AsyncStorage, {
   async getActive(userId) {
     if (!supabase) throw new Error('Server storage is unavailable. Your experiment has not been started.');
     const { data, error } = await supabase.from('experiment_plans')
-      .select('id, plan, status').eq('user_id', userId).neq('status', 'cancelled').maybeSingle();
+      .select('id, plan, status, result, completed_at').eq('user_id', userId).neq('status', 'cancelled').maybeSingle();
     if (error) throw new Error(`Could not load experiment plan: ${error.message}`);
     return data as StoredExperimentPlan | null;
   },
   async insert(userId, plan) {
     if (!supabase) throw new Error('Server storage is unavailable. Your experiment has not been started.');
     const { data, error } = await supabase.from('experiment_plans')
-      .insert({ user_id: userId, plan, status: 'scheduled' }).select('id, plan, status').single();
+      .insert({ user_id: userId, plan, status: 'scheduled' }).select('id, plan, status, result, completed_at').single();
     if (error) throw new Error(`Could not save experiment plan: ${error.message}`);
     return data as StoredExperimentPlan;
   },
@@ -36,9 +36,45 @@ const planPersistence = createPlanPersistence(AsyncStorage, {
       .update({ status: 'cancelled' }).eq('id', planId).eq('user_id', userId).select('id').single();
     if (error || !data) throw new Error(`Could not cancel experiment plan: ${error?.message ?? 'plan not found'}`);
   },
+  async complete(userId, planId, result, completedAt) {
+    if (!supabase) throw new Error('Server storage is unavailable. Plan result cannot be saved.');
+    // First, try conditional update: update only if status is not already completed
+    const { data, error } = await supabase.from('experiment_plans')
+      .update({ status: 'completed', result, completed_at: completedAt })
+      .eq('id', planId)
+      .eq('user_id', userId)
+      .neq('status', 'completed')
+      .select('id, plan, status, result, completed_at')
+      .maybeSingle();
+
+    if (error) throw new Error(`Could not complete experiment plan: ${error.message}`);
+    if (data) return data as StoredExperimentPlan;
+
+    // If no row returned, row might already be completed (idempotent / double tap / lost response)
+    const { data: existing, error: fetchErr } = await supabase.from('experiment_plans')
+      .select('id, plan, status, result, completed_at')
+      .eq('id', planId)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchErr || !existing) throw new Error('Could not verify completed plan.');
+    return existing as StoredExperimentPlan;
+  },
+  async resetCompleted(userId, planId) {
+    if (!supabase) throw new Error('Server storage is unavailable.');
+    const { data, error } = await supabase.from('experiment_plans')
+      .update({ status: 'scheduled', result: null, completed_at: null })
+      .eq('id', planId)
+      .eq('user_id', userId)
+      .select('id, plan, status, result, completed_at')
+      .single();
+
+    if (error) throw new Error(`Could not reset plan: ${error.message}`);
+    return data as StoredExperimentPlan;
+  },
 });
 
-export const { getActivePlan, savePlan, saveNextCheckDate, getPendingPlan, cancelPlan } = planPersistence;
+export const { getActivePlan, savePlan, saveNextCheckDate, getPendingPlan, cancelPlan, completePlan, resetCompletedPlan } = planPersistence;
 
 export type ScreeningAnswer = 'usually' | 'sometimes' | 'rarely_or_never';
 

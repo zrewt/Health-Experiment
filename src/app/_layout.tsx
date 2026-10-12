@@ -58,6 +58,7 @@ export default function RootLayout() {
           <Stack.Screen name="run-in" options={{ animation: 'none' }} />
           <Stack.Screen name="feasibility" options={{ animation: 'none' }} />
           <Stack.Screen name="daily-instruction" options={{ animation: 'none' }} />
+          <Stack.Screen name="result" options={{ animation: 'none' }} />
           {typeof __DEV__ !== 'undefined' && __DEV__ ? (
             <Stack.Screen name="dev-tools" options={{ animation: 'none' }} />
           ) : null}

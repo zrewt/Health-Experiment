@@ -75,8 +75,11 @@ export default function HomeScreen() {
         break;
       case 'plan_scheduled':
       case 'plan_active':
-      case 'plan_awaiting_final':
         router.push('/daily-instruction');
+        break;
+      case 'plan_awaiting_final':
+      case 'plan_result_ready':
+        router.push('/result');
         break;
       case 'run_in':
       default:
@@ -106,12 +109,6 @@ export default function HomeScreen() {
                 Your experiment was ended early without a result. Your logged entries have been preserved.
               </Text>
             </View>
-          ) : homeState === 'plan_result_ready' ? (
-            <View style={styles.resultBox}>
-              <Text variant="sub" color="champagneLight" weight="medium">
-                Your result is available in the next app update.
-              </Text>
-            </View>
           ) : (
             <Button
               label={
@@ -119,8 +116,12 @@ export default function HomeScreen() {
                   ? 'Setup & Consent'
                   : homeState === 'feasibility_ready'
                   ? 'Check Feasibility'
-                  : homeState === 'plan_scheduled' || homeState === 'plan_active' || homeState === 'plan_awaiting_final'
+                  : homeState === 'plan_scheduled' || homeState === 'plan_active'
                   ? 'Daily Instruction'
+                  : homeState === 'plan_awaiting_final'
+                  ? 'Final Check-in'
+                  : homeState === 'plan_result_ready'
+                  ? 'See Result'
                   : 'Run-in Check-in'
               }
               variant="primary"

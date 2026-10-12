@@ -1,5 +1,5 @@
 import type {
-  AdherenceStatus, AdherenceSummary, AnalysisResult, BaselineStatistics,
+  AdherenceSummary, AnalysisResult, BaselineStatistics,
   CaffeineExposure, Condition, DayRecord, ExperimentDefinition,
   FeasibilityLookupInput, FeasibilityLookupResult, ScheduledDay, Verdict,
   checkCaffeineEligibility, lookupFeasibility, generateSchedule,
@@ -107,13 +107,18 @@ export interface ResultViewModel {
   reducedAdherence: boolean | null;
   plannedPowerRecomputed: number | null;
   plannedPowerSnapshot: number | null;
+  limitations?: string[];
 }
 
 export interface ProgressSummary {
   daysLogged: number;
   daysRemaining: number;
-  adherenceCounts: Record<AdherenceStatus, number>;
+  adherenceCounts: Record<'ADHERENT' | 'NON_ADHERENT' | 'CONTAMINATED' | 'CONTROL_CLEAN' | 'UNKNOWN', number>;
 }
+
+// Engine-native types are reused rather than recreating statistical contracts.
+export type { BaselineStatistics, CaffeineExposure, Condition, DayRecord };
+
 
 export type FeasibilityScreenState =
   | {
@@ -175,5 +180,16 @@ export type AdapterErrorCode = 'CANNOT_START' | 'ACKNOWLEDGEMENT_REQUIRED' |
   'INVALID_DURATION' | 'INTERIM_LOOK' | 'INVALID_ENTRY' | 'INVALID_PLAN' |
   'INVALID_FEASIBILITY' | 'INVALID_SEED' | 'MISSING_ENGINE_STATEMENT';
 
-// Engine-native types are reused rather than recreating statistical contracts.
-export type { BaselineStatistics, CaffeineExposure, Condition, DayRecord };
+export interface ResultSnapshot extends ResultViewModel {
+  evaluatedAt: string;
+  adapterVersion?: string;
+  engineVersion?: string;
+}
+
+export interface StoredExperimentPlanRecord {
+  id: string;
+  plan: ExperimentPlan;
+  status: 'scheduled' | 'completed' | 'cancelled' | string;
+  result?: ResultSnapshot | null;
+  completed_at?: string | null;
+}

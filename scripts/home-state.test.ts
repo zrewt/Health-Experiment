@@ -167,22 +167,22 @@ test('getHomeState transitions across scheduled, active, awaiting final, and res
     today: '2026-01-19',
   }), 'plan_awaiting_final');
 
-  // Day after last exposure date with final night logged
+  // Day after last exposure date, not yet completed: plan_awaiting_final
   assert.equal(getHomeState({
     consent: defaultConsent,
     setup: defaultSetup,
     entries: [{ date: '2026-01-18', sleepMinutes: 440, lastCaffeineTime: 'none' }],
     plan,
     today: '2026-01-19',
-  }), 'plan_result_ready');
+  }), 'plan_awaiting_final');
 
-  // Later days after experiment
+  // Completed status (stored snapshot exists): plan_result_ready
   assert.equal(getHomeState({
     consent: defaultConsent,
     setup: defaultSetup,
-    entries: [],
-    plan,
-    today: '2026-01-20',
+    entries: [{ date: '2026-01-18', sleepMinutes: 440, lastCaffeineTime: 'none' }],
+    plan: { ...plan, status: 'completed' },
+    today: '2026-01-19',
   }), 'plan_result_ready');
 });
 

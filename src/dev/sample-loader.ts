@@ -57,6 +57,53 @@ export async function loadSampleRunIn(userId: string): Promise<number> {
 }
 
 /**
+ * Dev-only tool to load deterministic sample experiment entries for the active plan up to last exposure date E.
+ * Uses NO random generator.
+ * sleepMinutes = 420 + (intervention ? 25 : 0) + fixed repeating pattern [-15, 0, 10, -5, 20, 5, -10]
+ * lastCaffeineTime: "11:30" on intervention days except every 7th day "15:00"; "15:30" on control days.
+ */
+export async function loadSampleExperimentEntries(userId: string, plan: { schedule: { date: string; condition: string }[] }): Promise<number> {
+  if (typeof __DEV__ === 'undefined' || !__DEV__) {
+    throw new Error('Dev tools cannot run in production.');
+  }
+
+  const offsetPattern = [-15, 0, 10, -5, 20, 5, -10];
+  let count = 0;
+
+  if (supabase) {
+    const rows = plan.schedule.map((day, idx) => {
+      const isIntervention = day.condition === 'intervention';
+      const offset = offsetPattern[idx % offsetPattern.length];
+      const sleep = 420 + (isIntervention ? 25 : 0) + offset;
+      const lastCaff = isIntervention
+        ? (idx % 7 === 6 ? '15:00' : '11:30')
+        : '15:30';
+
+      return {
+        user_id: userId,
+        date: day.date,
+        sleep_minutes: sleep,
+        last_caffeine_time: lastCaff,
+        edited_at: new Date().toISOString(),
+        is_sample: true,
+      };
+    });
+
+    const { error, data } = await supabase
+      .from('experiment_entries')
+      .upsert(rows, { onConflict: 'user_id,date' })
+      .select('date');
+
+    if (error) {
+      throw new Error(`Failed to insert sample experiment entries: ${error.message}`);
+    }
+    count = data?.length ?? rows.length;
+  }
+
+  return count;
+}
+
+/**
  * Dev-only tool to delete sample entries.
  * Deletes rows where is_sample = true.
  * Surfaces "deleted 0 rows" as an error if nothing was deleted.

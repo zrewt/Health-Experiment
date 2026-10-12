@@ -155,3 +155,66 @@ This milestone introduces:
   - [ ] On confirm, plan status updates to cancelled.
   - [ ] Route displays ended early state with no option to start new experiment yet.
 
+## 16. Screen 5 & Dev Tools Extension Contracts
+- **Timing & Alignment (Critical):**
+  - Last exposure date is E. Final night's sleep outcome is logged on the morning of E+1 (pairs with exposure on E).
+  - The result can NEVER be computed before E+1 (`plan_awaiting_final`).
+  - Calls to `evaluate()` receive ONLY `entriesForPlan(plan, entries)` filtered strictly to dates within the plan's schedule.
+- **Router States:**
+  - `plan_active`: startDate through E.
+  - `plan_awaiting_final`: `today >= E+1` and plan status is neither `completed` nor `cancelled`.
+  - `plan_result_ready`: plan status is `completed` with a stored result snapshot.
+  - `plan_ended_early`: plan status is `cancelled`.
+- **Screen 5A (plan_awaiting_final):**
+  - Title: "Final Check-in". Notice: "Your experiment is complete."
+  - If entry for date E is missing or incomplete, renders the shared [CheckInCard](../src/components/CheckInCard.tsx) for date E (3-day backfill window).
+  - Displays counts only: days logged, adherence counts via `progressSummary()`. Absolutely NO effect estimates before clicking "See my result".
+  - Locking warning: "Once you view your result, the days in this experiment are locked, so log or fix any days first."
+  - Actions: "See my result" and "Go back".
+- **Result Computation & Snapshot Persistence:**
+  - On clicking "See my result": computes once via `evaluate(plan, entriesForPlan(plan, entries), today)`, creates a `ResultSnapshot`, and executes ONE server-confirmed update setting `status = 'completed'`, `result = snapshot`, and `completed_at`.
+  - Conditional update (`where id = ... and status <> 'completed'`): if plan is already completed, reads stored snapshot and NEVER recomputes.
+  - Never displays a result that was not stored: displays a clear retry state on network failure; retry reuses the same snapshot.
+- **Screen 5B (plan_result_ready):**
+  - Always renders strictly from stored `result` snapshot.
+  - Verdict heading from fixed mapping: `SUPPORTED` -> "Supported", `NO_DETECTABLE_EFFECT` -> "No detectable effect", `INCONCLUSIVE` -> "Inconclusive".
+  - Engine statement displayed VERBATIM.
+  - Conservative estimate: "Conservative estimate (lower end of the plausible range): X minutes".
+  - Plain-language adherence summary from snapshot counts (cutoff followed on X of Y assigned days; caffeine after cutoff on W of Z routine days).
+  - Days analyzed, days excluded, days with no sleep logged from snapshot.
+  - Engine limitations displayed VERBATIM if present.
+  - Collapsible "How to read this": "This compares days assigned to the caffeine cutoff with days assigned to your usual routine. It describes the difference between those assigned days; it cannot tell you why it happened." plus "This app is not medical advice."
+  - Next experiment note: "New experiments will arrive in a future update."
+- **Edit Lock:**
+  - `canEditDate(today, date, plan)` returns `false` for any schedule date if the plan is completed.
+- **Dev Tools Extensions:**
+  - "Load sample experiment entries": writes deterministic entries up to date E marked `is_sample: true` for the active plan.
+  - "Jump to last exposure date + 1": sets simulated clock offset to reach E+1.
+  - "Reset completed plan (dev)": resets plan status to scheduled, clearing result and completed_at.
+  - "Delete sample entries": removes entries with `is_sample: true`.
+- **Additive SQL:** [schema-screen5.sql](../schema-screen5.sql) provides additive columns `result jsonb` and `completed_at timestamptz` on `experiment_plans` and a status check constraint. Not executed.
+
+## 17. Screen 5 Manual Checklist
+- **Path to Reach Each State via Dev Tools:**
+  - *To reach Screen 5A (`plan_awaiting_final`):*
+    1. Ensure a plan is active (via Run-in -> Feasibility -> Start).
+    2. Open Dev Tools -> "Load sample experiment entries" (fills all days up to E).
+    3. Tap "Jump to last exposure date + 1".
+    4. Return Home -> Screen 5A loads with "Your experiment is complete."
+  - *To reach Screen 5B (`plan_result_ready`):*
+    1. From Screen 5A, tap "See my result".
+    2. Result computes, persists to database, and transitions to Screen 5B.
+    3. Refreshing or re-entering always loads the stored snapshot.
+  - *To reset and test again:*
+    1. Open Dev Tools -> "Reset completed plan (dev)" & "Delete sample entries".
+    2. Clock reset to normal or re-run.
+- **Verification points:**
+  - [ ] Prior to clicking "See my result", Screen 5A displays counts only and zero statistical estimates.
+  - [ ] If final night (day E) is missing, check-in card for day E appears.
+  - [ ] "See my result" persists `status = 'completed'` and `result` snapshot. Double tap returns stored snapshot without recomputing.
+  - [ ] Screen 5B heading matches fixed mapping: Supported / No detectable effect / Inconclusive.
+  - [ ] Statement and limitations pass through VERBATIM from engine.
+  - [ ] Conservative estimate formatted: "Conservative estimate (lower end of the plausible range): X minutes".
+  - [ ] Collapsible "How to read this" includes "This app is not medical advice."
+  - [ ] Edit lock: attempting to edit days within the completed plan's schedule returns read-only / uneditable.
+

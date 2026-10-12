@@ -1,6 +1,6 @@
 import type { DailyEntry } from './types';
 import { runInMinValidDays, conditionRule } from './config';
-import { toEngineRecord, getFeasibilityScreenState } from './adapter';
+import { toEngineRecord, getFeasibilityScreenState, entriesForPlan } from './adapter';
 import { checkCaffeineEligibility } from '../engine';
 
 export interface RunInDescriptiveStats {
@@ -28,4 +28,4 @@ export function getRunInDescriptiveStats(entries: readonly DailyEntry[]): RunInD
   };
 }
 
-export { getFeasibilityScreenState };
+export { getFeasibilityScreenState, entriesForPlan };

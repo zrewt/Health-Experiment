@@ -5,7 +5,9 @@ import { Screen, Text, Button } from '@/components/ui';
 import { colors, spacing, radii } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import { getToday, __setDevClockOffset, __getDevClockOffset } from '@/experiment/clock';
-import { loadSampleRunIn, deleteSampleEntries } from '@/dev/sample-loader';
+import { loadSampleRunIn, loadSampleExperimentEntries, deleteSampleEntries } from '@/dev/sample-loader';
+import { getActivePlan, resetCompletedPlan } from '@/data/experiment-store';
+import { addDaysToLocalDate, daysBetween } from '@/experiment/dates';
 
 export default function DevToolsScreen() {
   const router = useRouter();
@@ -69,6 +71,72 @@ export default function DevToolsScreen() {
     }
   };
 
+  const handleLoadSampleExperiment = async () => {
+    if (!user) return;
+    const planRec = await getActivePlan(user.id);
+    if (!planRec) {
+      setStatus('No active plan found. Start an experiment first.');
+      return;
+    }
+
+    const email = user.email || 'Current user';
+    const message = `This will write sample experiment entries for ${email} across the full plan schedule. Proceed?`;
+    const proceed = Platform.OS === 'web'
+      ? window.confirm(message)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert('Load Experiment Data', message, [
+            { text: 'Cancel', onPress: () => resolve(false), style: 'cancel' },
+            { text: 'Confirm', onPress: () => resolve(true) },
+          ]);
+        });
+    if (!proceed) return;
+
+    setLoading(true);
+    try {
+      const count = await loadSampleExperimentEntries(user.id, planRec.plan);
+      setStatus(`Loaded ${count} sample experiment entries for the active plan.`);
+    } catch (e) {
+      setStatus(e instanceof Error ? e.message : 'Error loading sample experiment entries.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleJumpToEPlusOne = async () => {
+    if (!user) return;
+    const planRec = await getActivePlan(user.id);
+    if (!planRec) {
+      setStatus('No active plan found.');
+      return;
+    }
+    const lastExposureDate = planRec.plan.schedule[planRec.plan.schedule.length - 1]?.date;
+    if (!lastExposureDate) return;
+    const target = addDaysToLocalDate(lastExposureDate, 1);
+    const realToday = new Date().toISOString().slice(0, 10);
+    const diff = daysBetween(realToday, target);
+    __setDevClockOffset(diff);
+    setOffset(diff);
+    setStatus(`Clock jumped to E+1 (${target}). Offset: ${diff} days.`);
+  };
+
+  const handleResetCompleted = async () => {
+    if (!user) return;
+    const planRec = await getActivePlan(user.id);
+    if (!planRec) {
+      setStatus('No plan found to reset.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await resetCompletedPlan(user.id, planRec.id);
+      setStatus('Reset completed plan back to scheduled.');
+    } catch (e) {
+      setStatus(e instanceof Error ? e.message : 'Error resetting plan.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
@@ -95,6 +163,23 @@ export default function DevToolsScreen() {
             variant="primary"
             loading={loading}
             onPress={() => void handleLoadSample()}
+          />
+          <Button
+            label="Load sample experiment entries"
+            variant="secondary"
+            loading={loading}
+            onPress={() => void handleLoadSampleExperiment()}
+          />
+          <Button
+            label="Jump to last exposure date + 1"
+            variant="secondary"
+            onPress={() => void handleJumpToEPlusOne()}
+          />
+          <Button
+            label="Reset completed plan (dev)"
+            variant="secondary"
+            loading={loading}
+            onPress={() => void handleResetCompleted()}
           />
           <Button
             label="Delete sample entries"

@@ -2,7 +2,6 @@ import type { DailyEntry } from './types';
 import type { StoredExperimentPlan } from '../data/plan-persistence';
 import type { ConsentRecord, ExperimentSetupRecord } from '../data/experiment-store';
 import { isFeasibilityDue } from './start-attempt';
-import { addDaysToLocalDate } from './dates';
 
 export type HomeState =
   | 'needs_consent'
@@ -30,10 +29,10 @@ export interface HomeStateInputs {
  * - needs_consent: no consent or granted === false
  * - needs_setup: no setup record
  * - plan_ended_early: plan status is 'cancelled'
+ * - plan_result_ready: plan status is 'completed' (a stored result snapshot exists)
  * - plan_scheduled: active plan exists, but today < plan.startDate
  * - plan_active: active plan exists, startDate <= today <= lastExposureDate
- * - plan_awaiting_final: today === lastExposureDate + 1 day (final sleep outcome night to be logged)
- * - plan_result_ready: today > lastExposureDate + 1 day
+ * - plan_awaiting_final: today >= lastExposureDate + 1 day and plan not completed/cancelled
  * - feasibility_ready: no active plan, run-in has >= 14 valid days OR nextCheckDate reached
  * - run_in: run-in in progress
  */
@@ -53,6 +52,10 @@ export function getHomeState(inputs: HomeStateInputs): HomeState {
       return 'plan_ended_early';
     }
 
+    if (plan.status === 'completed') {
+      return 'plan_result_ready';
+    }
+
     const { startDate, schedule } = plan.plan;
     const lastExposureDate = schedule.length > 0 ? schedule[schedule.length - 1].date : startDate;
 
@@ -64,19 +67,8 @@ export function getHomeState(inputs: HomeStateInputs): HomeState {
       return 'plan_active';
     }
 
-    const dayAfterLastExposure = addDaysToLocalDate(lastExposureDate, 1);
-    if (today === dayAfterLastExposure) {
-      const finalEntry = entries.find(e => e.date === lastExposureDate);
-      const hasFinalSleep = finalEntry && finalEntry.sleepMinutes !== null;
-      if (!hasFinalSleep) {
-        return 'plan_awaiting_final';
-      }
-      return 'plan_result_ready';
-    }
-
-    if (today > dayAfterLastExposure) {
-      return 'plan_result_ready';
-    }
+    // today >= lastExposureDate + 1 and status is not completed/cancelled
+    return 'plan_awaiting_final';
   }
 
   // No active/running plan
