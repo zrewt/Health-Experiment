@@ -14,7 +14,7 @@ import {
 import type { StoredExperimentPlan } from '@/data/plan-persistence';
 import { getToday } from '@/experiment/clock';
 import { getMorningEntryDate } from '@/experiment/dates';
-import { progressSummary } from '@/experiment/adapter';
+import { progressSummary, entriesForPlan } from '@/experiment/adapter';
 import type { DailyEntry, ProgressSummary } from '@/experiment/types';
 import { CheckInCard } from '@/components/CheckInCard';
 import { clearDailyReminder } from '@/notifications/reminders';
@@ -87,8 +87,10 @@ export default function DailyInstructionScreen() {
     ? (rule as any).cutoffTime
     : '12:00';
 
-  // Progress summary
-  const progress: ProgressSummary = progressSummary(plan, entries, today);
+  // Progress summary. The entries MUST be narrowed to this plan's schedule first: the
+  // user's log legitimately also holds their run-in days, and those fall outside the
+  // experiment window, which progressSummary rejects rather than silently counting.
+  const progress: ProgressSummary = progressSummary(plan, entriesForPlan(plan, entries), today);
   const dayIndex = plan.schedule.findIndex(s => s.date === today);
   const currentDayNum = dayIndex >= 0 ? dayIndex + 1 : isScheduled ? 0 : plan.chosenDuration;
 

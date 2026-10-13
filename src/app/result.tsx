@@ -82,7 +82,9 @@ export default function ResultScreen() {
   const lastEntry = entries.find(e => e.date === lastExposureDate);
   const isFinalMissing = !lastEntry || lastEntry.sleepMinutes === null;
 
-  const progress: ProgressSummary = progressSummary(plan, entries, today);
+  // Narrowed to this plan's schedule for the same reason as the daily screen: the user's
+  // log also holds their run-in days, which sit outside the experiment window.
+  const progress: ProgressSummary = progressSummary(plan, entriesForPlan(plan, entries), today);
 
   const handleSaveFinalCheckIn = async (entry: DailyEntry) => {
     if (!user) return;
