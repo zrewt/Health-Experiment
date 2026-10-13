@@ -2,11 +2,13 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import type { HomeState } from '../experiment/home-state';
+import { parseLocalDate } from '../experiment/dates';
 import {
   DAILY_REMINDER_DATA_KEY,
+  buildReminderSchedule,
   pickReminderIds,
-  reminderForState,
-  type ReminderPlan,
+  type ReminderPlanContext,
+  type ReminderSpec,
 } from './reminder-plan';
 
 /** Android delivers through a channel; it must exist before the Android 13+ permission prompt. */
@@ -18,6 +20,15 @@ export const REMINDER_CHANNEL_ID = 'daily-checkin';
  */
 export const REMINDER_ASKED_KEY = 'aevum-reminder-asked-v1';
 
+export type ReminderPermission = 'granted' | 'denied' | 'undetermined' | 'unavailable';
+
+export type ReminderSyncOutcome =
+  | { status: 'scheduled'; count: number; dated: number }
+  | { status: 'cancelled'; cancelled: number }
+  | { status: 'skipped'; permission: ReminderPermission }
+  | { status: 'unavailable'; platform: string }
+  | { status: 'failed'; message: string };
+
 async function hasAskedForPermission(): Promise<boolean> {
   try {
     return (await AsyncStorage.getItem(REMINDER_ASKED_KEY)) === 'true';
@@ -28,15 +39,6 @@ async function hasAskedForPermission(): Promise<boolean> {
   }
 }
 
-export type ReminderPermission = 'granted' | 'denied' | 'undetermined' | 'unavailable';
-
-export type ReminderSyncOutcome =
-  | { status: 'scheduled'; identifier: string }
-  | { status: 'cancelled'; cancelled: number }
-  | { status: 'skipped'; permission: ReminderPermission }
-  | { status: 'unavailable'; platform: string }
-  | { status: 'failed'; message: string };
-
 /**
  * expo-notifications has no web implementation, and scheduling throws UnavailabilityError
  * there. Every native entry point below is gated on this so web keeps working untouched.
@@ -46,7 +48,7 @@ export function remindersSupported(): boolean {
 }
 
 // Foreground presentation. Without a handler the OS shows nothing while the app is open,
-// even on the day the reminder fires while the user already has Aevum in front of them.
+// even on the day a reminder fires while the user already has Aevum in front of them.
 if (remindersSupported()) {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -114,7 +116,7 @@ export async function cancelDailyReminder(): Promise<number> {
  *
  * Never throws: the caller has already committed a real state change, so a failed
  * notification call must not be reported as a failed experiment edit. A miss is
- * self-healing, because the next home-screen visit re-syncs and clears the reminder.
+ * self-healing, because the next home-screen visit re-syncs and clears the remainder.
  */
 export async function clearDailyReminder(): Promise<number> {
   if (!remindersSupported()) return 0;
@@ -125,45 +127,60 @@ export async function clearDailyReminder(): Promise<number> {
   }
 }
 
-/** One repeating daily notification at a fixed local time. */
-export async function scheduleDailyReminder(plan: ReminderPlan): Promise<string> {
-  return Notifications.scheduleNotificationAsync({
-    content: {
-      title: plan.title,
-      body: plan.body,
-      data: { [DAILY_REMINDER_DATA_KEY]: true },
-    },
-    trigger: {
+function triggerFor(spec: ReminderSpec): Notifications.NotificationTriggerInput {
+  const channelId = Platform.OS === 'android' ? REMINDER_CHANNEL_ID : undefined;
+
+  if (spec.trigger.kind === 'daily') {
+    return {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,
-      hour: plan.hour,
-      minute: plan.minute,
-      ...(Platform.OS === 'android' ? { channelId: REMINDER_CHANNEL_ID } : {}),
-    },
-  });
+      hour: spec.trigger.hour,
+      minute: spec.trigger.minute,
+      ...(channelId ? { channelId } : {}),
+    };
+  }
+
+  // Built from local components so the reminder lands at the local wall-clock time the
+  // user was promised rather than at the same instant in UTC.
+  const { year, month, day } = parseLocalDate(spec.trigger.date);
+  return {
+    type: Notifications.SchedulableTriggerInputTypes.DATE,
+    date: new Date(year, month - 1, day, spec.trigger.hour, spec.trigger.minute, 0, 0),
+    ...(channelId ? { channelId } : {}),
+  };
 }
 
 export interface ReminderSyncInput {
   state: HomeState;
-  startDate?: string | null;
+  /** Local calendar date from the app clock. */
+  today: string;
+  plan?: ReminderPlanContext | null;
   reminderTime?: string | null;
   /** Ask the OS when the decision has not been made yet. Never re-prompts when denied. */
   requestPermission?: boolean;
 }
 
 /**
- * Make the OS queue match the state: exactly zero or one reminder of our own, never a
- * duplicate, and never any notification this app did not schedule.
+ * Make the OS queue match the state: the full set of reminders for this state, and never
+ * any duplicate or any notification this app did not schedule.
  *
  * Resolves to an outcome instead of throwing: a missed reminder must never break a screen.
  */
-export async function syncDailyReminder(input: ReminderSyncInput): Promise<ReminderSyncOutcome> {
+export async function syncReminders(input: ReminderSyncInput): Promise<ReminderSyncOutcome> {
   if (!remindersSupported()) {
     return { status: 'unavailable', platform: Platform.OS };
   }
 
   try {
-    const desired = reminderForState(input);
-    if (!desired) {
+    const now = new Date();
+    const specs = buildReminderSchedule({
+      state: input.state,
+      today: input.today,
+      plan: input.plan ?? null,
+      reminderTime: input.reminderTime,
+      nowMinutes: now.getHours() * 60 + now.getMinutes(),
+    });
+
+    if (specs.length === 0) {
       return { status: 'cancelled', cancelled: await cancelDailyReminder() };
     }
 
@@ -181,9 +198,22 @@ export async function syncDailyReminder(input: ReminderSyncInput): Promise<Remin
       return { status: 'skipped', permission };
     }
 
-    // Replace rather than add, so repeated launches cannot stack duplicates.
+    // Replaced wholesale rather than added to, so repeated launches cannot stack duplicates.
     await cancelDailyReminder();
-    return { status: 'scheduled', identifier: await scheduleDailyReminder(desired) };
+    const identifiers = await Promise.all(specs.map((spec) => Notifications.scheduleNotificationAsync({
+      content: {
+        title: spec.title,
+        body: spec.body,
+        data: { [DAILY_REMINDER_DATA_KEY]: true, slot: spec.slot },
+      },
+      trigger: triggerFor(spec),
+    })));
+
+    return {
+      status: 'scheduled',
+      count: identifiers.length,
+      dated: specs.filter((spec) => spec.trigger.kind === 'date').length,
+    };
   } catch (error) {
     return { status: 'failed', message: error instanceof Error ? error.message : String(error) };
   }

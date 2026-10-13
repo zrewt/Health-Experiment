@@ -13,7 +13,7 @@ import {
 } from '@/data/experiment-store';
 import { getToday } from '@/experiment/clock';
 import { getHomeState, HomeState } from '@/experiment/home-state';
-import { syncDailyReminder } from '@/notifications/reminders';
+import { syncReminders } from '@/notifications/reminders';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -49,9 +49,17 @@ export default function HomeScreen() {
 
         // Keep the scheduled reminder in step with the state. This resolves to an outcome
         // rather than throwing, so a notification problem can never break the home screen.
-        const reminder = await syncDailyReminder({
+        const reminder = await syncReminders({
           state,
-          startDate: plan?.plan.startDate ?? null,
+          today,
+          plan: plan
+            ? {
+              startDate: plan.plan.startDate,
+              chosenDuration: plan.plan.chosenDuration,
+              schedule: plan.plan.schedule,
+              conditionRule: plan.plan.definition.conditionRule,
+            }
+            : null,
         });
         if (!current) return;
         setReminderNotice(
