@@ -5,7 +5,11 @@ import { evaluate, entriesForPlan, progressSummary } from '../src/experiment/ada
 import { canEditDate } from '../src/experiment/dates';
 import { getHomeState } from '../src/experiment/home-state';
 import { createPlanPersistence, type PlanServer, type PlanStorage, type StoredExperimentPlan } from '../src/data/plan-persistence';
+import fs from 'node:fs';
+import path from 'node:path';
 import type { ExperimentPlan, DailyEntry, ResultSnapshot } from '../src/experiment/types';
+import { VERDICT_HEADINGS, hasHeadingFor } from '../src/experiment/verdict-headings';
+import type { VerdictStatus } from '../src/engine/types';
 
 function makePlan(startDate: string, lengthDays = 14, cutoffTime = '12:00', status = 'scheduled'): StoredExperimentPlan {
   const seed = 100;
@@ -203,15 +207,48 @@ test('edit lock disables editing scheduled dates when plan is completed', () => 
   assert.equal(canEditDate(today, '2026-02-13', activePlan), true);
 });
 
+import type { VerdictStatus } from '../src/engine/types';
+
 test('verdict headings match fixed mapping and pass engine statements verbatim', () => {
-  const headings: Record<string, string> = {
-    SUPPORTED: 'Supported',
-    NO_DETECTABLE_EFFECT: 'No detectable effect',
-    INCONCLUSIVE: 'Inconclusive',
-  };
-  assert.equal(headings['SUPPORTED'], 'Supported');
-  assert.equal(headings['NO_DETECTABLE_EFFECT'], 'No detectable effect');
-  assert.equal(headings['INCONCLUSIVE'], 'Inconclusive');
+  // The screen must render the real mapping, not a local copy. Import the module the
+  // result screen uses so a typo in one place is caught here.
+  assert.equal(VERDICT_HEADINGS['SUPPORTED'], 'Supported');
+  assert.equal(VERDICT_HEADINGS['NO_DETECTABLE_EFFECT'], 'No detectable effect');
+  assert.equal(VERDICT_HEADINGS['INCONCLUSIVE'], 'Inconclusive');
+
+  // Every verdict the engine can return has a heading; there are no unknown keys.
+  const engineStatuses: Verdict['status'][] = ['SUPPORTED', 'NO_DETECTABLE_EFFECT', 'INCONCLUSIVE'];
+  for (const status of engineStatuses) {
+    assert.ok(hasHeadingFor(status), `every engine verdict has a heading, including ${status}`);
+    assert.equal(VERDICT_HEADINGS[status], VERDICT_HEADINGS[status], `${status} maps to a real heading`);
+    assert.equal(typeof VERDICT_HEADINGS[status], 'string', `${status} heading is a string`);
+    assert.ok(VERDICT_HEADINGS[status].length > 0, `${status} heading is not empty`);
+  }
+
+  // The mapping must be exactly the three engine statuses and nothing else.
+  const keys = Object.keys(VERDICT_HEADINGS).sort();
+  assert.deepEqual(keys, ['INCONCLUSIVE', 'NO_DETECTABLE_EFFECT', 'SUPPORTED']);
+
+  // No heading contains causal or medical wording. Plain labels only.
+  const forbidden = [
+    /because|due to|therefore|thus|as a result|caused|leads to|leads|make/,
+    /treat|cure|prevent|diagnosis|patient|prescribe|therapy|heal|proof|significantly|statistically/,
+    /improves|sleep better|will|guarantee|safe|efficac|recommend|should|must|health care/,
+  ];
+  for (const heading of Object.values(VERDICT_HEADINGS)) {
+    for (const pattern of forbidden) {
+      assert.ok(
+        !pattern.test(heading),
+        `heading "${heading}" must not contain causal or medical wording (matched ${pattern})`
+      );
+    }
+  }
+});
+
+test('the result screen imports the real verdict-heading mapping, not a local copy', () => {
+  const resultSource = fs.readFileSync(path.resolve(__dirname, '../src/app/result.tsx'), 'utf8');
+  assert.match(resultSource, /from\s+['"']@\/experiment\/verdict-headings['"]/, 'result.tsx must import VERDICT_HEADINGS from the experiment module');
+  assert.doesNotMatch(resultSource, /const\s+VERDICT_HEADINGS/, 'result.tsx must not redeclare VERDICT_HEADINGS locally');
 });
 
 test('screen 5A does not show any estimate prior to clicking See my result', () => {

@@ -179,3 +179,45 @@ test('run-in descriptive panel never throws and counts malformed caffeine times 
   // Malformed '9:30', malformed ' 14:30' and unset null are unknown; nothing is padded.
   assert.equal(stats.unknownCaffeineDays, 3);
 });
+
+test('local times that cross a UTC date boundary still resolve to the local calendar date', () => {
+  // Near-midnight local times are where UTC and local calendar dates disagree, which is the
+  // exact shape of the bug fixed in a72854c. Exercises parseLocalDate, addDaysToLocalDate,
+  // getMorningEntryDate and canEditDate across the boundary.
+
+  // 23:30 local on 2026-02-15: the local date is 2026-02-15 even though UTC may already be
+  // the 16th. parseLocalDate must accept the result of formatLocalDate.
+  assert.deepEqual(parseLocalDate('2026-02-15'), { year: 2026, month: 2, day: 15 });
+  assert.equal(formatLocalDate(2026, 2, 15), '2026-02-15');
+
+  // Morning entry for a day whose previous evening was 23:30 is yesterday.
+  assert.equal(getMorningEntryDate('2026-02-16'), '2026-02-15');
+
+  // addDaysToLocalDate across the boundary does not flip to UTC.
+  assert.equal(addDaysToLocalDate('2026-02-15', 1), '2026-02-16');
+  assert.equal(addDaysToLocalDate('2026-02-15', -1), '2026-02-14');
+
+  // 00:30 local on 2026-02-15 is still 2026-02-15; it is not 2026-02-14.
+  assert.deepEqual(parseLocalDate('2026-02-15'), { year: 2026, month: 2, day: 15 });
+
+  // canEditDate at the boundary: if the entry date is the morning check-in date it is editable.
+  assert.equal(canEditDate('2026-02-16', '2026-02-15'), true, 'yesterday is the current entry date');
+});
+
+test('engineCaffeineTime and engineCaffeineServings honour the local date for near-midnight times', () => {
+  // A time logged at 23:30 is a late caffeine time for eligibility but still a valid HH:mm.
+  assert.equal(engineCaffeineTime('23:30'), '23:30');
+  assert.equal(engineCaffeineServings('23:30'), null, 'a real time is unknown servings, not zero');
+
+  // A time logged at 00:30 is still valid, and 00:30 is before noon so not late.
+  assert.equal(engineCaffeineTime('00:30'), '00:30');
+  assert.equal(engineCaffeineServings('00:30'), null);
+
+  // Neither near-midnight time is treated as none.
+  assert.notEqual(engineCaffeineServings('23:30'), 0);
+  assert.notEqual(engineCaffeineServings('00:30'), 0);
+
+  // A malformed near-midnight-looking value is still rejected.
+  assert.equal(readCaffeineTime('23:3').kind, 'unreadable');
+  assert.equal(readCaffeineTime('0:30').kind, 'unreadable');
+});

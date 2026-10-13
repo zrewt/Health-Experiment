@@ -286,3 +286,84 @@ test('both experiment screens narrow the log to the plan before computing progre
     );
   }
 });
+
+test('progressSummary with realistic run-in + in-window log: no throw and correct counts', () => {
+  // A real user's log: 14 run-in days before the experiment starts, then some in-window
+  // days with a mix of logged and unlogged. The daily-instruction and result screens are
+  // asked to render while the experiment is in flight, so today sits inside the window.
+  const plan = makeTestPlan('2026-02-15', 6, '12:00');
+
+  // 14 run-in days, all before the start date. They are legitimate logged history.
+  const runIn: DailyEntry[] = [];
+  for (let i = 0; i < 14; i++) {
+    runIn.push({
+      date: `2026-01-${String(15 + i).padStart(2, '0')}`,
+      sleepMinutes: 420 + (i % 3) * 10,
+      lastCaffeineTime: i % 4 === 0 ? '14:00' : '11:30',
+    });
+  }
+
+  // In-window days, some logged, some not. today is the 4th in-window day.
+  const today = '2026-02-18';
+  const inWindow: DailyEntry[] = [
+    { date: '2026-02-15', sleepMinutes: 450, lastCaffeineTime: '11:00' },     // logged, intervention? depends on seed
+    { date: '2026-02-16', sleepMinutes: 440, lastCaffeineTime: '12:30' },     // logged
+    { date: '2026-02-17', sleepMinutes: null, lastCaffeineTime: null },        // unlogged
+    { date: '2026-02-18', sleepMinutes: 460, lastCaffeineTime: '10:00' },     // today, logged
+    { date: '2026-02-19', sleepMinutes: null, lastCaffeineTime: null },        // not yet reached
+  ];
+
+  const log = [...runIn, ...inWindow];
+
+  // Negative control: the raw log still throws, proving the adapter guard is intact.
+  assert.throws(
+    () => progressSummary(plan, log, today),
+    (error: unknown) => error instanceof ExperimentAdapterError && error.code === 'INVALID_ENTRY',
+    'the raw log with run-in days still throws — the guard is deliberate',
+  );
+
+  // Positive: narrowed with entriesForPlan, it does not throw and counts correctly.
+  const summary = progressSummary(plan, entriesForPlan(plan, log), today);
+  assert.equal(typeof summary.daysLogged, 'number');
+  assert.equal(typeof summary.daysRemaining, 'number');
+  assert.equal(typeof summary.adherenceCounts.ADHERENT, 'number');
+  assert.equal(typeof summary.adherenceCounts.UNKNOWN, 'number');
+
+  // daysRemaining counts schedule days strictly after today (2026-02-18).
+  // The 6-day, 2026-02-15 start means the last day is 2026-02-20, so after today only
+  // 2026-02-19 and 2026-02-20 remain.
+  assert.equal(summary.daysRemaining, 2, 'two schedule days remain after today');
+});
+
+test('progressSummary counts unlogged in-window days as unknown, never zero or default', () => {
+  const plan = makeTestPlan('2026-02-15', 4, '12:00');
+  const today = '2026-02-16';
+
+  // Two in-window days, both unlogged.
+  const entries: DailyEntry[] = [
+    { date: '2026-02-15', sleepMinutes: null, lastCaffeineTime: null },
+    { date: '2026-02-16', sleepMinutes: null, lastCaffeineTime: null },
+  ];
+
+  const summary = progressSummary(plan, entriesForPlan(plan, entries), today);
+
+  // MISSING IS NOT ZERO: an unlogged day is unknown, not zero servings and not a default time.
+  assert.equal(summary.adherenceCounts.UNKNOWN, 2, 'unlogged in-window days are unknown');
+  assert.equal(summary.adherenceCounts.CONTAMINATED, 0);
+  assert.equal(summary.adherenceCounts.ADHERENT, 0);
+});
+
+test('progressSummary does not leak statistical estimates on the pre-result screen', () => {
+  const plan = makeTestPlan('2026-02-15', 4, '12:00');
+  const entries: DailyEntry[] = [
+    { date: '2026-02-15', sleepMinutes: 450, lastCaffeineTime: '11:00' },
+  ];
+  const summary = progressSummary(plan, entriesForPlan(plan, entries), '2026-02-16');
+
+  // progressSummary is counts only. Any keys beyond those three are a regression.
+  assert.deepEqual(Object.keys(summary).sort(), ['adherenceCounts', 'daysLogged', 'daysRemaining']);
+  assert.equal('pVal' in summary, false);
+  assert.equal('effect' in summary, false);
+  assert.equal('verdict' in summary, false);
+  assert.equal('statement' in summary, false);
+});

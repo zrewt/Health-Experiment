@@ -14,15 +14,10 @@ import {
 import type { StoredExperimentPlan } from '@/data/plan-persistence';
 import { getToday } from '@/experiment/clock';
 import { progressSummary, evaluate, entriesForPlan } from '@/experiment/adapter';
+import { VERDICT_HEADINGS } from '@/experiment/verdict-headings';
 import type { DailyEntry, ProgressSummary, ResultSnapshot } from '@/experiment/types';
 import { CheckInCard } from '@/components/CheckInCard';
 import { clearDailyReminder } from '@/notifications/reminders';
-
-const VERDICT_HEADINGS: Record<string, string> = {
-  SUPPORTED: 'Supported',
-  NO_DETECTABLE_EFFECT: 'No detectable effect',
-  INCONCLUSIVE: 'Inconclusive',
-};
 
 export default function ResultScreen() {
   const router = useRouter();

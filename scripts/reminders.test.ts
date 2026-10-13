@@ -421,3 +421,174 @@ test('a tapped reminder lands on the screen it is about', () => {
   assert.equal(resolveReminderTap('morning-check-in', null), null);
   assert.equal(resolveReminderTap(null, 'plan_active'), null);
 });
+
+test('buildReminderSchedule never throws across every home state with a realistic plan', () => {
+  // Realistic 8-day plan, 4 assigned days, with the kind of mixed schedule a real user sees.
+  const schedule = [
+    { date: '2026-11-01', condition: 'intervention' },
+    { date: '2026-11-02', condition: 'control' },
+    { date: '2026-11-03', condition: 'intervention' },
+    { date: '2026-11-04', condition: 'control' },
+    { date: '2026-11-05', condition: 'intervention' },
+    { date: '2026-11-06', condition: 'intervention' },
+    { date: '2026-11-07', condition: 'control' },
+    { date: '2026-11-08', condition: 'intervention' },
+  ];
+  const plan = mkPlan(schedule, CAFFEINE_12, { startDate: '2026-11-01' });
+
+  // Every home state must return a queue or an empty array, never throw.
+  const states: HomeState[] = [
+    'needs_consent', 'needs_setup', 'run_in', 'feasibility_ready',
+    'plan_scheduled', 'plan_active', 'plan_awaiting_final', 'plan_ended_early', 'plan_result_ready',
+  ];
+  for (const state of states) {
+    // eslint-disable-next-line no-await-in-loop
+    const specs = buildReminderSchedule({ state, today: TODAY, plan: state === 'plan_active' || state === 'plan_scheduled' ? plan : null, nowMinutes: 0 });
+    assert.ok(Array.isArray(specs), `${state} must return an array`);
+  }
+});
+
+test('no-plan states yield only the repeating morning reminder, never day-specific copy', () => {
+  for (const state of ['run_in', 'plan_scheduled', 'plan_awaiting_final'] as HomeState[]) {
+    const specs = buildReminderSchedule({ state, today: TODAY, plan: null, nowMinutes: 0 });
+    assert.equal(specs.length, 1, `${state} with no plan yields exactly the morning reminder`);
+    assert.equal(specs[0].slot, 'morning-check-in');
+    assert.equal(specs[0].trigger.kind, 'daily');
+    // No dated reminder can appear when there is no plan to read day assignments from.
+    for (const spec of specs) {
+      assert.equal(spec.trigger.kind, 'daily', `${state} must not produce a dated reminder without a plan`);
+    }
+  }
+});
+
+test('run-in state cannot schedule the wrong thing when entries hold 14 run-in days', () => {
+  // The reminder scheduler reads getHomeState, which counts validDays from the full entry log
+  // including run-in days. It must still return run_in when there is no active plan, and only
+  // the morning reminder — never something encoded from the run-in dates.
+  const runInEntries = [
+    { date: '2026-01-01', sleepMinutes: 430, lastCaffeineTime: '14:00' },
+    { date: '2026-01-02', sleepMinutes: 450, lastCaffeineTime: 'none' },
+    { date: '2026-01-03', sleepMinutes: 420, lastCaffeineTime: '11:00' },
+    { date: '2026-01-04', sleepMinutes: 440, lastCaffeineTime: null },
+  ];
+
+  // simulate the storage shape the home screen and reminder sync actually see: a list of
+  // DailyEntry with dates both before and inside an experiment window.
+  interface EntryLike { date: string; sleepMinutes: number | null; lastCaffeineTime: string | 'none' | null }
+  const mixedLog: EntryLike[] = [
+    ...runInEntries,
+    { date: '2026-11-01', sleepMinutes: 440, lastCaffeineTime: '10:00' },
+    { date: '2026-11-02', sleepMinutes: 450, lastCaffeineTime: '11:30' },
+    { date: '2026-11-03', sleepMinutes: null, lastCaffeineTime: null },
+  ];
+
+  // The validDays count used by getHomeState only cares about sleepMinutes !== null.
+  const validDays = mixedLog.filter(e => e.sleepMinutes !== null).length;
+  assert.equal(validDays, 6, 'six logged days in the mixed log');
+
+  // With no active plan, even a log holding run-in days plus in-window days lands in run_in
+  // (assuming nextCheckDate not reached). buildReminderSchedule for run_in is independent of
+  // the log contents and must not schedule anything shaped by the run-in dates.
+  const specs = buildReminderSchedule({ state: 'run_in', today: TODAY, plan: null, nowMinutes: 0 });
+  assert.equal(specs.length, 1);
+  assert.equal(specs[0].slot, 'morning-check-in');
+  assert.equal(specs[0].trigger.kind, 'daily');
+  // The body must not mention any run-in date or in-window date — it is day-agnostic.
+  assert.doesNotMatch(specs[0].body, /2026-/);
+});
+
+test('plan_scheduled reminder names the start date and schedules nothing day-specific', () => {
+  const specs = buildReminderSchedule({
+    state: 'plan_scheduled', today: TODAY,
+    plan: mkPlan([], CAFFEINE_12, { startDate: '2026-11-10' }),
+    nowMinutes: 0,
+  });
+  assert.equal(specs.length, 1, 'nothing day-specific before the experiment starts');
+  assert.equal(specs[0].slot, 'morning-check-in');
+  assert.match(specs[0].body, /2026-11-10/);
+  assert.equal(specs[0].trigger.kind, 'daily');
+});
+
+test('plan_ended_early and plan_result_ready schedule nothing', () => {
+  const plan = mkPlan([
+    { date: '2026-11-01', condition: 'intervention' },
+    { date: '2026-11-02', condition: 'control' },
+  ], CAFFEINE_12);
+
+  for (const state of ['plan_ended_early', 'plan_result_ready'] as HomeState[]) {
+    const specs = buildReminderSchedule({ state, today: TODAY, plan: state === 'plan_result_ready' ? plan : null, nowMinutes: 0 });
+    assert.deepEqual(specs, [], `${state} schedules nothing`);
+  }
+});
+
+test('an 8-day plan with 4 assigned days schedules exactly the expected dated reminders', () => {
+  // Start the plan two days before today so no evening-before falls before today.
+  // Today is 2026-11-01. Use a schedule whose first intervention day is the day after today,
+  // so every evening-before lands on today or later and nothing is dropped by the today filter.
+  const schedule = [
+    { date: '2026-11-02', condition: 'control' },
+    { date: '2026-11-03', condition: 'intervention' },
+    { date: '2026-11-04', condition: 'intervention' },
+    { date: '2026-11-05', condition: 'control' },
+    { date: '2026-11-06', condition: 'intervention' },
+    { date: '2026-11-07', condition: 'control' },
+    { date: '2026-11-08', condition: 'intervention' },
+    { date: '2026-11-09', condition: 'control' },
+  ];
+  const specs = buildReminderSchedule({
+    state: 'plan_active', today: TODAY, plan: mkPlan(schedule, CAFFEINE_12, { startDate: '2026-11-02' }), nowMinutes: 0,
+  });
+
+  // 4 intervention days => 4 before-cutoff + 4 next-day-preview (evening before each).
+  // Evening-before of 2026-11-03 is 2026-11-02 (>= today). Evening-before of 2026-11-04 is
+  // 2026-11-03 (>= today). All four previews survive.
+  const beforeCutoff = specs.filter(s => s.slot === 'before-cutoff');
+  const previews = specs.filter(s => s.slot === 'next-day-preview');
+  assert.equal(beforeCutoff.length, 4, 'one before-cutoff per intervention day');
+  assert.equal(previews.length, 4, 'one preview per intervention day whose evening-before is today or later');
+  assert.equal(specs.filter(s => s.trigger.kind === 'daily').length, 1, 'the repeating check-in survives');
+  assert.ok(specs.length <= MAX_SCHEDULED_REMINDERS);
+
+  // A control day never carries before-cutoff.
+  for (const day of schedule) {
+    if (day.condition === 'control') {
+      const daySpecs = specs.filter(s => s.trigger.kind === 'date' && s.trigger.date === day.date);
+      for (const spec of daySpecs) {
+        assert.equal(spec.slot, 'next-day-preview', `${day.date} control day may only carry a preview`);
+      }
+    }
+  }
+});
+
+test('a 14-day plan with all days assigned schedules within the cap and never duplicates', () => {
+  const schedule = Array.from({ length: 14 }, (_, i) => ({
+    date: `2026-11-${String(i + 1).padStart(2, '0')}`,
+    condition: 'intervention',
+  }));
+  const specs = buildReminderSchedule({
+    state: 'plan_active', today: TODAY, plan: mkPlan(schedule, CAFFEINE_12), nowMinutes: 0,
+  });
+
+  // One repeating plus up to 2 dated per intervention day (before-cutoff + evening preview).
+  assert.ok(specs.length <= MAX_SCHEDULED_REMINDERS, `queue length ${specs.length} within cap`);
+
+  // No identifier collision: every dated reminder has a distinct date+time key.
+  const keys = new Set<string>();
+  for (const spec of specs) {
+    if (spec.trigger.kind === 'date') {
+      const key = `${spec.trigger.date}T${String(spec.trigger.hour).padStart(2, '0')}:${String(spec.trigger.minute).padStart(2, '0')}`;
+      assert.ok(!keys.has(key), `no duplicate reminder at ${key}`);
+      keys.add(key);
+    }
+  }
+
+  // Per-day cap.
+  const perDate = new Map<string, number>();
+  for (const spec of specs) {
+    if (spec.trigger.kind !== 'date') continue;
+    perDate.set(spec.trigger.date, (perDate.get(spec.trigger.date) ?? 0) + 1);
+  }
+  for (const [date, count] of perDate) {
+    assert.ok(count <= MAX_REMINDERS_PER_DAY, `${date} carried ${count}, cap is ${MAX_REMINDERS_PER_DAY}`);
+  }
+});
