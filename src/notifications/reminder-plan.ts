@@ -52,11 +52,6 @@ export function parseReminderTime(value: string): { hour: number; minute: number
   return { hour, minute };
 }
 
-/** Resolve a stored or default time, falling back to the default when the value is unusable. */
-export function resolveReminderTime(value: string | null | undefined): { hour: number; minute: number } | null {
-  return parseReminderTime(value ?? '') ?? parseReminderTime(DEFAULT_REMINDER_TIME);
-}
-
 /**
  * States in which the user is expected to log something every day.
  *
@@ -96,6 +91,48 @@ export interface ReminderScheduleDay {
   condition: string;
 }
 
+/**
+ * What the user chose. Deliberately device-local for now: an account-level copy needs a
+ * server column, and a preference that silently fails to save would be worse than one
+ * that is honestly per-device.
+ */
+export interface ReminderPreferences {
+  /** Master switch. Off means nothing is scheduled at all. */
+  enabled: boolean;
+  /** Local 'HH:mm' for the daily check-in reminder. */
+  morningTime: string;
+  /** The nudge shortly before an assigned day's moment. */
+  actionEnabled: boolean;
+  /** The evening heads-up before an assigned day. */
+  previewEnabled: boolean;
+  /** Local 'HH:mm' for the evening heads-up. */
+  previewTime: string;
+}
+
+export const DEFAULT_REMINDER_PREFERENCES: ReminderPreferences = Object.freeze({
+  enabled: true,
+  morningTime: DEFAULT_REMINDER_TIME,
+  actionEnabled: true,
+  previewEnabled: true,
+  previewTime: EVENING_PREVIEW_TIME,
+});
+
+/** Coerce anything read from storage into a usable preference set, field by field. */
+export function normalizeReminderPreferences(value: unknown): ReminderPreferences {
+  const raw = (value && typeof value === 'object' ? value : {}) as Partial<ReminderPreferences>;
+
+  const safeTime = (candidate: unknown, fallback: string): string =>
+    typeof candidate === 'string' && parseReminderTime(candidate) ? candidate : fallback;
+
+  return {
+    enabled: raw.enabled !== false,
+    morningTime: safeTime(raw.morningTime, DEFAULT_REMINDER_PREFERENCES.morningTime),
+    actionEnabled: raw.actionEnabled !== false,
+    previewEnabled: raw.previewEnabled !== false,
+    previewTime: safeTime(raw.previewTime, DEFAULT_REMINDER_PREFERENCES.previewTime),
+  };
+}
+
 /** The parts of a stored plan the reminder layer needs, and nothing else. */
 export interface ReminderPlanContext {
   startDate: string;
@@ -109,8 +146,8 @@ export interface ReminderScheduleInput {
   /** Local calendar date from the app clock (which dev tools can shift). */
   today: string;
   plan?: ReminderPlanContext | null;
-  /** Stored preference as 'HH:mm'. An unusable value falls back to the default time. */
-  reminderTime?: string | null;
+  /** User choices. Omitted means the defaults, which is what the tests exercise. */
+  preferences?: ReminderPreferences | null;
   /** Minutes past local midnight; when supplied, reminders whose moment has passed are skipped. */
   nowMinutes?: number | null;
   windowDays?: number;
@@ -215,6 +252,7 @@ function conditionReminders(
   action: ConditionAction,
   windowDays: number,
   nowMinutes: number | null,
+  preferences: ReminderPreferences,
 ): ReminderSpec[] {
   const specs: ReminderSpec[] = [];
 
@@ -223,7 +261,7 @@ function conditionReminders(
   // than fire at a nonsense hour.
   if (!lead) return specs;
 
-  const evening = resolveReminderTime(EVENING_PREVIEW_TIME);
+  const evening = parseReminderTime(preferences.previewTime) ?? parseReminderTime(EVENING_PREVIEW_TIME);
   if (!evening) return specs;
 
   const windowEnd = addDaysToLocalDate(today, windowDays);
@@ -235,7 +273,8 @@ function conditionReminders(
     // Outside the window it is not scheduled, and once the app is reopened the window rolls.
     if (day.date < today || day.date > windowEnd) continue;
 
-    if (day.date > today || nowMinutes === null || leadMinutes > nowMinutes) {
+    if (preferences.actionEnabled &&
+        (day.date > today || nowMinutes === null || leadMinutes > nowMinutes)) {
       specs.push({
         slot: 'before-cutoff',
         trigger: { kind: 'date', date: day.date, ...lead },
@@ -245,6 +284,7 @@ function conditionReminders(
     }
 
     // The evening before is when a user can still act on tomorrow's assignment.
+    if (!preferences.previewEnabled) continue;
     const eveningBefore = addDaysToLocalDate(day.date, -1);
     if (eveningBefore < today) continue;
     if (eveningBefore === today && nowMinutes !== null && eveningMinutes <= nowMinutes) continue;
@@ -268,14 +308,17 @@ function conditionReminders(
  */
 export function buildReminderSchedule(input: ReminderScheduleInput): ReminderSpec[] {
   const { state, today, plan = null } = input;
+  const preferences = input.preferences ?? DEFAULT_REMINDER_PREFERENCES;
+
+  if (!preferences.enabled) return [];
   if (!needsDailyCheckIn(state)) return [];
 
-  const time = resolveReminderTime(input.reminderTime);
+  const time = parseReminderTime(preferences.morningTime) ?? parseReminderTime(DEFAULT_REMINDER_TIME);
   if (!time) return [];
 
   const specs: ReminderSpec[] = [morningReminder(state, plan, time)];
 
-  if (state === 'plan_active' && plan) {
+  if (state === 'plan_active' && plan && (preferences.actionEnabled || preferences.previewEnabled)) {
     const action = conditionAction(plan.conditionRule);
     if (action) {
       specs.push(...conditionReminders(
@@ -284,6 +327,7 @@ export function buildReminderSchedule(input: ReminderScheduleInput): ReminderSpe
         action,
         input.windowDays ?? REMINDER_WINDOW_DAYS,
         input.nowMinutes ?? null,
+        preferences,
       ));
     }
   }

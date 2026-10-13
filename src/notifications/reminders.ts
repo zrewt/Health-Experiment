@@ -1,13 +1,19 @@
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import type { HomeState } from '../experiment/home-state';
+import { getHomeState } from '../experiment/home-state';
 import { parseLocalDate } from '../experiment/dates';
+import { getToday } from '../experiment/clock';
+import { getActivePlan, getConsent, getSetup, listEntries } from '@/data/experiment-store';
+import { loadReminderPreferences } from './reminder-preferences';
+import { reminderSlotFrom, resolveReminderTap } from './tap-target';
 import {
   DAILY_REMINDER_DATA_KEY,
   buildReminderSchedule,
   pickReminderIds,
   type ReminderPlanContext,
+  type ReminderPreferences,
   type ReminderSpec,
 } from './reminder-plan';
 
@@ -154,9 +160,75 @@ export interface ReminderSyncInput {
   /** Local calendar date from the app clock. */
   today: string;
   plan?: ReminderPlanContext | null;
-  reminderTime?: string | null;
+  /** Loaded from storage when omitted, so every caller honours the saved preferences. */
+  preferences?: ReminderPreferences | null;
   /** Ask the OS when the decision has not been made yet. Never re-prompts when denied. */
   requestPermission?: boolean;
+}
+
+/** Open the OS settings for this app, for a user who previously declined notifications. */
+export async function openNotificationSettings(): Promise<void> {
+  await Linking.openSettings();
+}
+
+/**
+ * Everything syncing needs, read from storage. Used by the settings screen, which has no
+ * data loaded of its own; a screen that already holds these values passes them directly
+ * instead of paying for the reads twice.
+ */
+export async function loadReminderSyncInput(userId: string): Promise<ReminderSyncInput> {
+  const [consent, setup, entries, plan] = await Promise.all([
+    getConsent(userId),
+    getSetup(userId),
+    listEntries(userId),
+    getActivePlan(userId),
+  ]);
+  const today = getToday();
+
+  return {
+    state: getHomeState({ consent, setup, entries, plan, today }),
+    today,
+    plan: plan
+      ? {
+        startDate: plan.plan.startDate,
+        chosenDuration: plan.plan.chosenDuration,
+        schedule: plan.plan.schedule,
+        conditionRule: plan.plan.definition.conditionRule,
+      }
+      : null,
+  };
+}
+
+/**
+ * Where a tapped reminder should land, or null when it should be ignored.
+ *
+ * The state is only read for the morning check-in, whose destination depends on how far
+ * along the user is; the other slots go to one known screen.
+ */
+export async function resolveReminderRoute(data: unknown, userId: string | null): Promise<string | null> {
+  const slot = reminderSlotFrom(data);
+  if (!slot) return null;
+
+  const known = resolveReminderTap(slot, null);
+  if (known) return known;
+
+  // Only the morning check-in needs the current state, and without a user there is no state.
+  if (slot !== 'morning-check-in' || !userId) return null;
+
+  try {
+    const [consent, setup, entries, plan] = await Promise.all([
+      getConsent(userId),
+      getSetup(userId),
+      listEntries(userId),
+      getActivePlan(userId),
+    ]);
+    const today = getToday();
+    return resolveReminderTap(slot, getHomeState({ consent, setup, entries, plan, today }));
+  } catch {
+    // Reading the state failed: give up rather than guide the user to a screen that does
+    // not match where they actually are.
+    return null;
+  }
 }
 
 /**
@@ -172,11 +244,12 @@ export async function syncReminders(input: ReminderSyncInput): Promise<ReminderS
 
   try {
     const now = new Date();
+    const preferences = input.preferences ?? await loadReminderPreferences();
     const specs = buildReminderSchedule({
       state: input.state,
       today: input.today,
       plan: input.plan ?? null,
-      reminderTime: input.reminderTime,
+      preferences,
       nowMinutes: now.getHours() * 60 + now.getMinutes(),
     });
 

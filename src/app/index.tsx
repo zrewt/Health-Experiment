@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { Screen, Text, Button } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
@@ -14,6 +14,7 @@ import {
 import { getToday } from '@/experiment/clock';
 import { getHomeState, HomeState } from '@/experiment/home-state';
 import { syncReminders } from '@/notifications/reminders';
+import { routeForHomeState } from '@/notifications/tap-target';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -88,27 +89,13 @@ export default function HomeScreen() {
   };
 
   const navigateToStateScreen = () => {
-    switch (homeState) {
-      case 'needs_consent':
-      case 'needs_setup':
-        router.push('/setup-consent');
-        break;
-      case 'feasibility_ready':
-        router.push('/feasibility');
-        break;
-      case 'plan_scheduled':
-      case 'plan_active':
-        router.push('/daily-instruction');
-        break;
-      case 'plan_awaiting_final':
-      case 'plan_result_ready':
-        router.push('/result');
-        break;
-      case 'run_in':
-      default:
-        router.push('/run-in');
-        break;
-    }
+    if (!homeState) return;
+    // One shared map with the reminder tap handler, so a tapped reminder and this button can
+    // never disagree about where a state lives. 'plan_ended_early' maps to home and renders
+    // no button at all, so there is nothing to navigate to.
+    const route = routeForHomeState(homeState);
+    if (route === '/') return;
+    router.push(route as Href);
   };
 
   return (
@@ -154,6 +141,15 @@ export default function HomeScreen() {
               onPress={navigateToStateScreen}
             />
           )}
+        </View>
+
+        <View style={styles.devCard}>
+          <Text variant="overline" color="champagneMuted">REMINDERS</Text>
+          <Button
+            label="Reminder settings"
+            variant="quiet"
+            onPress={() => router.push('/reminder-settings' as Href)}
+          />
         </View>
 
         {typeof __DEV__ !== 'undefined' && __DEV__ ? (

@@ -14,6 +14,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { tokens } from '../design/tokens';
 import { useAuthHydration, useAuthStore } from '../store/auth';
+import { NotificationTapHandler } from '../notifications/notification-tap-handler';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,19 +33,24 @@ export default function RootLayout() {
   const session = useAuthStore((state) => state.session);
   const signedIn = !!session && !session.user.is_anonymous;
 
+  const appReady = (loaded || error) && !authLoading;
+
   useEffect(() => {
     if ((loaded || error) && !authLoading) {
       SplashScreen.hideAsync();
     }
   }, [loaded, error, authLoading]);
 
-  if ((!loaded && !error) || authLoading) {
+  if (!appReady) {
     return null;
   }
 
   return (
     <>
       <StatusBar style="light" />
+      {/* Mounted inside the render that also mounts the navigator, and only when signed in,
+          so it can never navigate before the routes it targets exist. */}
+      {signedIn ? <NotificationTapHandler /> : null}
       <Stack
         screenOptions={{
           headerShown: false,
@@ -59,6 +65,7 @@ export default function RootLayout() {
           <Stack.Screen name="feasibility" options={{ animation: 'none' }} />
           <Stack.Screen name="daily-instruction" options={{ animation: 'none' }} />
           <Stack.Screen name="result" options={{ animation: 'none' }} />
+          <Stack.Screen name="reminder-settings" options={{ animation: 'none' }} />
           {typeof __DEV__ !== 'undefined' && __DEV__ ? (
             <Stack.Screen name="dev-tools" options={{ animation: 'none' }} />
           ) : null}
