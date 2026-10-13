@@ -17,6 +17,7 @@ import { getMorningEntryDate } from '@/experiment/dates';
 import { progressSummary } from '@/experiment/adapter';
 import type { DailyEntry, ProgressSummary } from '@/experiment/types';
 import { CheckInCard } from '@/components/CheckInCard';
+import { clearDailyReminder } from '@/notifications/reminders';
 
 export default function DailyInstructionScreen() {
   const router = useRouter();
@@ -128,6 +129,9 @@ export default function DailyInstructionScreen() {
     setCancelling(true);
     try {
       await cancelPlan(user.id, planRecord.id);
+      // Terminal state: no more daily check-ins, so clear the reminder now instead of
+      // waiting for the next home-screen visit to notice.
+      await clearDailyReminder();
       router.replace('/');
     } catch (e) {
       setStatusMessage(e instanceof Error ? e.message : 'Could not end experiment early.');

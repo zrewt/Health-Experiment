@@ -13,6 +13,7 @@ import {
 } from '@/data/experiment-store';
 import { getToday } from '@/experiment/clock';
 import { getHomeState, HomeState } from '@/experiment/home-state';
+import { syncDailyReminder } from '@/notifications/reminders';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [homeState, setHomeState] = useState<HomeState | null>(null);
+  const [reminderNotice, setReminderNotice] = useState<string | null>(null);
 
   const today = getToday();
 
@@ -44,6 +46,19 @@ export default function HomeScreen() {
           today,
         });
         setHomeState(state);
+
+        // Keep the scheduled reminder in step with the state. This resolves to an outcome
+        // rather than throwing, so a notification problem can never break the home screen.
+        const reminder = await syncDailyReminder({
+          state,
+          startDate: plan?.plan.startDate ?? null,
+        });
+        if (!current) return;
+        setReminderNotice(
+          reminder.status === 'skipped' && reminder.permission === 'denied'
+            ? 'Daily reminders are off. Turn notifications on for Aevum in Settings to get a check-in nudge.'
+            : null,
+        );
       } catch (e) {
         if (current) setError(e instanceof Error ? e.message : 'Could not determine status.');
       }
@@ -96,6 +111,9 @@ export default function HomeScreen() {
           <Button label="Sign out" variant="quiet" loading={loading} onPress={() => void handleSignOut()} />
         </View>
         {error ? <Text color="garnet" accessibilityRole="alert">{error}</Text> : null}
+        {reminderNotice ? (
+          <Text variant="caption" color="ivoryMuted">{reminderNotice}</Text>
+        ) : null}
 
         <View style={styles.actionCard}>
           <Text variant="titleSmall" style={styles.cardTitle}>Self-Experiment</Text>

@@ -18,6 +18,10 @@ const config: ExpoConfig = {
     'expo-router',
     'expo-font',
     ['expo-splash-screen', { backgroundColor: tokens.colors.ground }],
+    // Local daily check-in reminders. No `icon` option: the plugin's icon is Android-only
+    // and needs a 96x96 all-white asset, which this project does not ship, so the tray
+    // icon falls back to the default rather than pointing at a file that does not exist.
+    ['expo-notifications', { color: tokens.colors.champagne }],
   ],
   experiments: { typedRoutes: true },
 };

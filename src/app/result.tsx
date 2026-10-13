@@ -16,6 +16,7 @@ import { getToday } from '@/experiment/clock';
 import { progressSummary, evaluate, entriesForPlan } from '@/experiment/adapter';
 import type { DailyEntry, ProgressSummary, ResultSnapshot } from '@/experiment/types';
 import { CheckInCard } from '@/components/CheckInCard';
+import { clearDailyReminder } from '@/notifications/reminders';
 
 const VERDICT_HEADINGS: Record<string, string> = {
   SUPPORTED: 'Supported',
@@ -129,6 +130,9 @@ export default function ResultScreen() {
 
       const updated = await completePlan(user.id, planRecord.id, snapshot, snapshot.evaluatedAt);
       setPlanRecord(updated);
+      // The experiment is complete: stop the daily check-in reminder as soon as the
+      // result is stored, without waiting for the next home-screen visit to clear it.
+      await clearDailyReminder();
     } catch (e) {
       setError(`${e instanceof Error ? e.message : 'Could not compute result.'} Retry viewing result.`);
     } finally {
