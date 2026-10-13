@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateSchedule } from '../src/engine';
-import { progressSummary } from '../src/experiment/adapter';
+import { progressSummary, entriesForPlan, ExperimentAdapterError } from '../src/experiment/adapter';
 import { canEditDate, addDaysToLocalDate, formatLocalDate } from '../src/experiment/dates';
 import { createPlanPersistence, type PlanServer, type PlanStorage, type StoredExperimentPlan } from '../src/data/plan-persistence';
 import type { ExperimentPlan, DailyEntry } from '../src/experiment/types';
@@ -244,4 +244,45 @@ test('clock offset affects only getToday while stored timestamps remain real cur
   __setDevClockOffset(0);
   assert.equal(getToday(), realLocalDate);
   delete (globalThis as { __DEV__?: boolean }).__DEV__;
+});
+
+test('a log holding run-in days is rejected raw, which is why the screens must narrow it first', () => {
+  const plan = makeTestPlan('2026-02-15', 4);
+
+  // Every real user's log looks like this: the run-in days they already logged, all dated
+  // before the experiment starts, alongside the days inside it.
+  const log: DailyEntry[] = [
+    { date: '2026-02-01', sleepMinutes: 430, lastCaffeineTime: '14:00' },
+    { date: '2026-02-02', sleepMinutes: 450, lastCaffeineTime: 'none' },
+    { date: '2026-02-15', sleepMinutes: 460, lastCaffeineTime: '11:00' },
+  ];
+
+  assert.throws(
+    () => progressSummary(plan, log, '2026-02-16'),
+    (error: unknown) => error instanceof ExperimentAdapterError && error.code === 'INVALID_ENTRY',
+    'the unfiltered log is rejected, so passing it straight through crashes the screen',
+  );
+
+  const summary = progressSummary(plan, entriesForPlan(plan, log), '2026-02-16');
+  assert.equal(summary.daysLogged, 1);
+  assert.equal(summary.daysRemaining, 2);
+});
+
+test('both experiment screens narrow the log to the plan before computing progress', () => {
+  // Source-level, mirroring the dev-isolation check above. The adapter guard is deliberate
+  // and stays, so the invariant to hold is at the call sites: a screen that passes the raw
+  // log crashes for any user who completed a run-in before starting their experiment.
+  for (const screen of ['daily-instruction', 'result']) {
+    const source = fs.readFileSync(path.resolve(__dirname, `../src/app/${screen}.tsx`), 'utf8');
+    assert.match(
+      source,
+      /progressSummary\(\s*plan,\s*entriesForPlan\(plan,\s*entries\)/,
+      `${screen}.tsx must narrow the log to the plan before progressSummary`
+    );
+    assert.doesNotMatch(
+      source,
+      /progressSummary\(\s*plan,\s*entries,/,
+      `${screen}.tsx must not pass the raw entry log to progressSummary`
+    );
+  }
 });
