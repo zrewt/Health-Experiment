@@ -2,19 +2,28 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   DAILY_REMINDER_DATA_KEY,
+  DEFAULT_REMINDER_PREFERENCES,
   DEFAULT_REMINDER_TIME,
+  EVENING_PREVIEW_TIME,
   MAX_REMINDERS_PER_DAY,
   MAX_SCHEDULED_REMINDERS,
   applyDailyCap,
   buildReminderSchedule,
   conditionAction,
   needsDailyCheckIn,
+  normalizeReminderPreferences,
   parseReminderTime,
   pickReminderIds,
-  resolveReminderTime,
   type ReminderPlanContext,
   type ReminderSpec,
 } from '../src/notifications/reminder-plan';
+import {
+  REMINDER_SLOTS,
+  ROUTE_FOR_HOME_STATE,
+  reminderSlotFrom,
+  resolveReminderTap,
+  routeForHomeState,
+} from '../src/notifications/tap-target';
 import type { ConditionRuleConfig } from '../src/engine';
 import type { HomeState } from '../src/experiment/home-state';
 
@@ -55,11 +64,24 @@ test('reminder time parser accepts only strict 24-hour HH:mm', () => {
   assert.deepEqual(parseReminderTime('23:59'), { hour: 23, minute: 59 });
 });
 
-test('an unusable stored reminder time falls back to the default instead of disabling the reminder', () => {
-  assert.deepEqual(resolveReminderTime(undefined), parseReminderTime(DEFAULT_REMINDER_TIME));
-  assert.deepEqual(resolveReminderTime(null), parseReminderTime(DEFAULT_REMINDER_TIME));
-  assert.deepEqual(resolveReminderTime('nonsense'), parseReminderTime(DEFAULT_REMINDER_TIME));
-  assert.deepEqual(resolveReminderTime('06:30'), { hour: 6, minute: 30 });
+test('an unusable stored preference falls back to the default instead of disabling the reminder', () => {
+  assert.deepEqual(normalizeReminderPreferences(null), DEFAULT_REMINDER_PREFERENCES);
+  assert.deepEqual(normalizeReminderPreferences('not an object'), DEFAULT_REMINDER_PREFERENCES);
+  assert.deepEqual(normalizeReminderPreferences({}), DEFAULT_REMINDER_PREFERENCES);
+
+  const salvaged = normalizeReminderPreferences({
+    enabled: 'yes', morningTime: 'nonsense', actionEnabled: 0, previewEnabled: null, previewTime: '25:00',
+  });
+  assert.equal(salvaged.enabled, true, 'only an explicit false disables reminders');
+  assert.equal(salvaged.morningTime, DEFAULT_REMINDER_TIME);
+  assert.equal(salvaged.previewTime, EVENING_PREVIEW_TIME);
+  assert.equal(salvaged.actionEnabled, true);
+  assert.equal(salvaged.previewEnabled, true);
+
+  assert.deepEqual(
+    normalizeReminderPreferences({ morningTime: '06:30', previewTime: '20:15' }),
+    { ...DEFAULT_REMINDER_PREFERENCES, morningTime: '06:30', previewTime: '20:15' },
+  );
 });
 
 test('only states with a daily logging habit carry a reminder', () => {
@@ -119,11 +141,47 @@ test('a scheduled experiment reminder names the start date, and still works with
   assert.doesNotMatch(withoutDate[0].body, /\d{4}-\d{2}-\d{2}/);
 });
 
-test('a stored reminder time is honoured for every state that carries one', () => {
+test('the saved morning time is honoured for every state that carries a reminder', () => {
+  const preferences = normalizeReminderPreferences({ morningTime: '06:30' });
   for (const state of ['run_in', 'plan_scheduled', 'plan_active', 'plan_awaiting_final'] as HomeState[]) {
-    const specs = buildReminderSchedule({ state, today: TODAY, reminderTime: '06:30' });
+    const specs = buildReminderSchedule({ state, today: TODAY, preferences });
     assert.deepEqual(specs[0].trigger, { kind: 'daily', hour: 6, minute: 30 });
   }
+});
+
+test('preferences turn reminders off, per type, and nothing is scheduled at all when disabled', () => {
+  const schedule = [
+    { date: '2026-11-01', condition: 'intervention' },
+    { date: '2026-11-02', condition: 'intervention' },
+  ];
+  const base = { state: 'plan_active' as HomeState, today: TODAY, plan: mkPlan(schedule, CAFFEINE_12), nowMinutes: 0 };
+
+  assert.deepEqual(
+    buildReminderSchedule({ ...base, preferences: normalizeReminderPreferences({ enabled: false }) }),
+    [],
+    'the master switch clears everything, including the repeating reminder',
+  );
+
+  const noAction = buildReminderSchedule({
+    ...base, preferences: normalizeReminderPreferences({ actionEnabled: false }),
+  });
+  assert.equal(noAction.some((spec) => spec.slot === 'before-cutoff'), false);
+  assert.equal(noAction.some((spec) => spec.slot === 'next-day-preview'), true, 'the other type survives');
+
+  const noPreview = buildReminderSchedule({
+    ...base, preferences: normalizeReminderPreferences({ previewEnabled: false }),
+  });
+  assert.equal(noPreview.some((spec) => spec.slot === 'next-day-preview'), false);
+  assert.equal(noPreview.some((spec) => spec.slot === 'before-cutoff'), true);
+  assert.equal(noPreview.filter((spec) => spec.trigger.kind === 'daily').length, 1, 'the check-in remains');
+
+  const moved = buildReminderSchedule({
+    ...base,
+    preferences: normalizeReminderPreferences({ previewTime: '20:15' }),
+  });
+  const preview = moved.find((spec) => spec.slot === 'next-day-preview')!;
+  assert.equal(preview.trigger.kind === 'date' && preview.trigger.hour, 20);
+  assert.equal(preview.trigger.kind === 'date' && preview.trigger.minute, 15);
 });
 
 test('an active experiment adds a warning before each assigned day and a heads-up the evening before', () => {
@@ -308,4 +366,58 @@ test('only reminders carrying our marker are adopted, so foreign notifications s
 
   assert.deepEqual(pickReminderIds(requests), ['ours-1', 'ours-2']);
   assert.deepEqual(pickReminderIds([]), []);
+});
+
+test('every home state has a real destination', () => {
+  const states: HomeState[] = [
+    'needs_consent', 'needs_setup', 'run_in', 'feasibility_ready', 'plan_scheduled',
+    'plan_active', 'plan_awaiting_final', 'plan_ended_early', 'plan_result_ready',
+  ];
+  for (const state of states) {
+    const route = routeForHomeState(state);
+    assert.ok(route.startsWith('/'), `${state} must map to a route, got ${JSON.stringify(route)}`);
+    assert.equal(ROUTE_FOR_HOME_STATE[state], route);
+  }
+  // The four states that actually carry reminders must land somewhere that can act on them.
+  assert.equal(routeForHomeState('run_in'), '/run-in');
+  assert.equal(routeForHomeState('plan_active'), '/daily-instruction');
+  assert.equal(routeForHomeState('plan_awaiting_final'), '/result');
+});
+
+test('only expected reminder slots are read back out of a payload', () => {
+  for (const slot of REMINDER_SLOTS) {
+    assert.equal(reminderSlotFrom({ slot }), slot);
+  }
+  assert.equal(reminderSlotFrom({ slot: 'not-a-slot' }), null);
+  assert.equal(reminderSlotFrom({ slot: 7 }), null);
+  assert.equal(reminderSlotFrom({}), null);
+  assert.equal(reminderSlotFrom(null), null);
+  assert.equal(reminderSlotFrom('morning-check-in'), null, 'a bare string is not a payload');
+
+  // Anything the scheduler writes must be readable again, or a tap would silently do nothing.
+  const schedule = [{ date: '2026-11-02', condition: 'intervention' }];
+  const specs = buildReminderSchedule({
+    state: 'plan_active', today: TODAY, plan: mkPlan(schedule, CAFFEINE_12), nowMinutes: 0,
+  });
+  assert.ok(specs.length > 0);
+  for (const spec of specs) {
+    assert.equal(reminderSlotFrom({ slot: spec.slot }), spec.slot, `${spec.slot} must round-trip`);
+  }
+});
+
+test('a tapped reminder lands on the screen it is about', () => {
+  // The two experiment reminders are about one specific thing, so they do not depend on state.
+  for (const state of [null, 'run_in', 'plan_active'] as (HomeState | null)[]) {
+    assert.equal(resolveReminderTap('before-cutoff', state), '/daily-instruction');
+    assert.equal(resolveReminderTap('next-day-preview', state), '/daily-instruction');
+  }
+
+  // The morning check-in is about logging, and logging lives in different places over time.
+  assert.equal(resolveReminderTap('morning-check-in', 'run_in'), '/run-in');
+  assert.equal(resolveReminderTap('morning-check-in', 'plan_active'), '/daily-instruction');
+  assert.equal(resolveReminderTap('morning-check-in', 'plan_awaiting_final'), '/result');
+
+  // An unreadable state must not be guessed at: the caller falls back to home instead.
+  assert.equal(resolveReminderTap('morning-check-in', null), null);
+  assert.equal(resolveReminderTap(null, 'plan_active'), null);
 });
