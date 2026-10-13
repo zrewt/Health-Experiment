@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/auth';
 import { getToday, __setDevClockOffset, __getDevClockOffset } from '@/experiment/clock';
 import { loadSampleRunIn, loadSampleExperimentEntries, deleteSampleEntries } from '@/dev/sample-loader';
 import { getActivePlan, resetCompletedPlan } from '@/data/experiment-store';
-import { addDaysToLocalDate, daysBetween } from '@/experiment/dates';
+import { addDaysToLocalDate, daysBetween, formatLocalDate } from '@/experiment/dates';
 
 export default function DevToolsScreen() {
   const router = useRouter();
@@ -113,7 +113,10 @@ export default function DevToolsScreen() {
     const lastExposureDate = planRec.plan.schedule[planRec.plan.schedule.length - 1]?.date;
     if (!lastExposureDate) return;
     const target = addDaysToLocalDate(lastExposureDate, 1);
-    const realToday = new Date().toISOString().slice(0, 10);
+    // Local, not UTC: getToday() (which this offset is applied to) is a local calendar
+    // date, so a UTC basis lands the jump a day out for part of every day.
+    const now = new Date();
+    const realToday = formatLocalDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
     const diff = daysBetween(realToday, target);
     __setDevClockOffset(diff);
     setOffset(diff);

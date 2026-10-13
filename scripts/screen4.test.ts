@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { generateSchedule } from '../src/engine';
 import { progressSummary } from '../src/experiment/adapter';
-import { canEditDate, addDaysToLocalDate } from '../src/experiment/dates';
+import { canEditDate, addDaysToLocalDate, formatLocalDate } from '../src/experiment/dates';
 import { createPlanPersistence, type PlanServer, type PlanStorage, type StoredExperimentPlan } from '../src/data/plan-persistence';
 import type { ExperimentPlan, DailyEntry } from '../src/experiment/types';
 
@@ -222,17 +222,26 @@ test('clock offset affects only getToday while stored timestamps remain real cur
   // The dev clock is now strictly fail-closed, so opt into dev mode explicitly.
   (globalThis as { __DEV__?: boolean }).__DEV__ = true;
   const { getToday, __setDevClockOffset } = require('../src/experiment/clock');
+  // getToday() returns a LOCAL calendar date, while the stored edited_at timestamps come
+  // from toISOString(), which is UTC. Those two disagree for part of every day (in a
+  // UTC-negative zone, every evening), so each comparison below is made against the basis
+  // it actually means instead of whichever one happened to be handy.
+  const now = new Date();
+  const realLocalDate = formatLocalDate(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const realUtcDate = now.toISOString().slice(0, 10);
+
   __setDevClockOffset(5);
   const fakeToday = getToday();
-  const realIsoDate = new Date().toISOString().slice(0, 10);
-  assert.notEqual(fakeToday, realIsoDate);
+  assert.notEqual(fakeToday, realLocalDate, 'the offset must move getToday');
+  assert.equal(fakeToday, addDaysToLocalDate(realLocalDate, 5));
 
   // Verification that Date.now() / toISOString() used for timestamps is unshifted:
   const timestampNow = new Date().toISOString();
   assert.match(timestampNow, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-  assert.ok(timestampNow.startsWith(realIsoDate));
+  assert.ok(timestampNow.startsWith(realUtcDate));
+  assert.notEqual(timestampNow.slice(0, 10), fakeToday, 'stored timestamps must not follow the dev clock');
 
   __setDevClockOffset(0);
-  assert.equal(getToday(), realIsoDate);
+  assert.equal(getToday(), realLocalDate);
   delete (globalThis as { __DEV__?: boolean }).__DEV__;
 });
