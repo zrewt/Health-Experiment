@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { generateSchedule } from '../src/engine';
+import { CAFFEINE_TIME_UNREADABLE_MARKER } from '../src/experiment/caffeine-time';
 import { evaluate, entriesForPlan, progressSummary } from '../src/experiment/adapter';
 import { canEditDate } from '../src/experiment/dates';
 import { getHomeState } from '../src/experiment/home-state';
@@ -9,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { ExperimentPlan, DailyEntry, ResultSnapshot } from '../src/experiment/types';
 import { VERDICT_HEADINGS, hasHeadingFor } from '../src/experiment/verdict-headings';
+import { getExperimentLifecycleModel, getResultExplanationModel } from '../src/experiment/lifecycle';
 import type { VerdictStatus } from '../src/engine/types';
 
 function makePlan(startDate: string, lengthDays = 14, cutoffTime = '12:00', status = 'scheduled'): StoredExperimentPlan {
@@ -379,4 +381,111 @@ test('server-side edit lock logic check: rejects modifying completed schedule en
 
   // Cancelled plan dates are not locked:
   assert.equal(checkEditLock([cancelledPlan], '2026-01-05'), false);
+});
+
+test('getResultExplanationModel preserves engine statement verbatim and explains estimate, contributing days, and underlying log', () => {
+  const planRec = makePlan('2026-02-01', 4, '12:00', 'completed');
+  const entries: DailyEntry[] = [
+    { date: '2026-02-01', sleepMinutes: 450, lastCaffeineTime: '11:00' },
+    { date: '2026-02-02', sleepMinutes: null, lastCaffeineTime: '14:00' },
+    { date: '2026-02-03', sleepMinutes: 420, lastCaffeineTime: 'none' },
+    { date: '2026-02-04', sleepMinutes: 430, lastCaffeineTime: '9:30' }, // malformed
+  ];
+  const snapshot: ResultSnapshot = {
+    verdictLabel: 'SUPPORTED',
+    statement: 'Exact engine verdict statement verbatim.',
+    reasons: ['Engine reason 1'],
+    conservativeEstimate: 16,
+    interval: [8, 28],
+    ruledOut: null,
+    daysAnalyzed: { intervention: 2, control: 1 },
+    daysExcluded: 0,
+    missingOutcomeDays: 1,
+    unknownExposureDays: 1,
+    adherence: {
+      estimand: 'itt',
+      counts: { ADHERENT: 1, NON_ADHERENT: 0, CONTAMINATED: 1, CONTROL_CLEAN: 1, UNKNOWN: 1 },
+      total: 4,
+      known: 3,
+      overallAdherence: 0.67,
+      knownFraction: 0.75,
+      interventionAdherence: 0.5,
+      controlContamination: 0.5,
+    },
+    reducedAdherence: true,
+    plannedPowerRecomputed: 0.75,
+    plannedPowerSnapshot: 0.75,
+    evaluatedAt: '2026-02-05T08:00:00.000Z',
+  };
+
+  const explanation = getResultExplanationModel(planRec.plan, snapshot, entries);
+  assert.equal(explanation.verdictHeading, 'Supported');
+  assert.equal(explanation.statement, 'Exact engine verdict statement verbatim.');
+  assert.match(explanation.estimateExplanation.conservativeEstimateText, /16 minutes/);
+  assert.match(explanation.estimateExplanation.intervalText, /8 to 28 minutes/);
+  assert.equal(explanation.contributingDays.analyzedTotal, 3);
+  assert.equal(explanation.contributingDays.missingSleepDays, 1);
+  assert.equal(explanation.contributingDays.unknownCaffeineDays, 1);
+  assert.equal(explanation.underlyingDays.length, 4);
+  assert.equal(explanation.underlyingDays[1].contributedToAnalysis, false);
+  assert.equal(explanation.underlyingDays[1].sleepText, 'Not logged');
+  assert.equal(explanation.underlyingDays[3].caffeineText, CAFFEINE_TIME_UNREADABLE_MARKER);
+  assert.ok(explanation.whatItTellsYou.doesTell.length >= 2);
+  assert.ok(explanation.whatItTellsYou.doesNotTell.length >= 2);
+});
+
+test('getExperimentLifecycleModel lists guide steps, saved results, and next cycle eligibility', () => {
+  const defaultConsent = { userId: 'u1', consentType: 'health-data' as const, policyVersion: 'v1', granted: true, createdAt: '' };
+  const defaultSetup = { experimentId: 'caffeine-cutoff', cutoffTime: '13:30', screeningAnswer: 'usually' as const, runInStartDate: '2026-01-01' };
+  const completedPlan: StoredExperimentPlan = {
+    ...makePlan('2026-02-01', 14, '13:30', 'completed'),
+    result: {
+      verdictLabel: 'NO_DETECTABLE_EFFECT',
+      statement: 'No detectable effect statement verbatim.',
+      reasons: [],
+      conservativeEstimate: null,
+      interval: [-10, 12],
+      ruledOut: 15,
+      daysAnalyzed: { intervention: 7, control: 7 },
+      daysExcluded: 0,
+      missingOutcomeDays: 0,
+      unknownExposureDays: 0,
+      adherence: {
+        estimand: 'itt',
+        counts: { ADHERENT: 7, NON_ADHERENT: 0, CONTAMINATED: 0, CONTROL_CLEAN: 7, UNKNOWN: 0 },
+        total: 14,
+        known: 14,
+        overallAdherence: 1,
+        knownFraction: 1,
+        interventionAdherence: 1,
+        controlContamination: 0,
+      },
+      reducedAdherence: false,
+      plannedPowerRecomputed: 0.8,
+      plannedPowerSnapshot: 0.8,
+      evaluatedAt: '2026-02-15T08:00:00.000Z',
+    },
+  };
+  const endedEarlyPlan: StoredExperimentPlan = {
+    ...makePlan('2026-01-10', 14, '12:00', 'cancelled'),
+    id: 'plan-cancelled-old',
+  };
+
+  const lifecycle = getExperimentLifecycleModel({
+    consent: defaultConsent,
+    setup: defaultSetup,
+    entries: [],
+    activePlan: completedPlan,
+    historyPlans: [completedPlan, endedEarlyPlan],
+    today: '2026-02-16',
+  });
+
+  assert.equal(lifecycle.state, 'plan_result_ready');
+  assert.equal(lifecycle.guideSteps.length, 3);
+  assert.equal(lifecycle.detail.cutoffTime, '13:30');
+  assert.equal(lifecycle.detail.canStartNewCycle, true);
+  assert.equal(lifecycle.savedExperiments.length, 2);
+  assert.equal(lifecycle.savedExperiments[0].verdictHeading, 'No detectable effect');
+  assert.equal(lifecycle.savedExperiments[0].statement, 'No detectable effect statement verbatim.');
+  assert.equal(lifecycle.savedExperiments[1].statusLabel, 'Ended early');
 });

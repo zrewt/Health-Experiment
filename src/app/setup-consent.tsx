@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Text, Button } from '@/components/ui';
+import { Screen, ScreenHeader, Card, Disclosure, Text, Button } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import { saveConsent, saveSetup, type ScreeningAnswer } from '@/data/experiment-store';
@@ -21,7 +21,6 @@ export default function SetupConsentScreen() {
   const [screeningAcknowledged, setScreeningAcknowledged] = useState(false);
   const [cutoffTime, setCutoffTime] = useState<string>(conditionRule.cutoffTime);
   const [agreed, setAgreed] = useState(false);
-  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -99,17 +98,15 @@ export default function SetupConsentScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Section 1: Plain explanation */}
-        <Text variant="titleLarge" style={styles.title}>Caffeine & Sleep Experiment</Text>
-        <Text variant="caption" color="champagne" style={styles.medicalNotice}>
-          This app is not medical advice.
-        </Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScreenHeader
+          overline="SETUP"
+          title="Caffeine & Sleep Experiment"
+          notice="This app is not medical advice."
+          action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
+        />
 
-        <View style={styles.card}>
-          <Text variant="sub" color="champagneLight" weight="semiBold" style={styles.cardHeader}>
-            How this experiment works
-          </Text>
+        <Card title="How this experiment works">
           <View style={styles.pointRow}>
             <Text variant="body" color="champagne" weight="semiBold">1. </Text>
             <Text variant="body" color="ivorySecondary" style={styles.pointText}>
@@ -128,20 +125,15 @@ export default function SetupConsentScreen() {
               Some people will be told it is not informative yet, and that is an honest result.
             </Text>
           </View>
-        </View>
+        </Card>
 
-        {/* Section 2: Experiment card */}
-        <View style={styles.card}>
-          <Text variant="overline" color="champagneMuted">EXPERIMENT</Text>
-          <Text variant="titleSmall" style={styles.cardTitle}>Caffeine cutoff and next-night sleep</Text>
-          <Text variant="body" color="ivorySecondary" style={styles.paragraph}>
+        <Card overline="EXPERIMENT" title="Caffeine cutoff and next-night sleep">
+          <Text variant="body" color="ivorySecondary">
             Measures whether ending caffeine consumption by an early cutoff time changes your recorded sleep duration that night.
           </Text>
-        </View>
+        </Card>
 
-        {/* Section 3: Screening question */}
-        <View style={styles.card}>
-          <Text variant="titleSmall" style={styles.cardTitle}>Screening Question</Text>
+        <Card title="Screening Question">
           <Text variant="body" color="ivorySecondary" style={styles.questionText}>
             Do you usually have caffeine after noon?
           </Text>
@@ -193,12 +185,10 @@ export default function SetupConsentScreen() {
               </View>
             </View>
           ) : null}
-        </View>
+        </Card>
 
-        {/* Section 4: Cutoff time picker */}
-        <View style={styles.card}>
-          <Text variant="titleSmall" style={styles.cardTitle}>Cutoff Time</Text>
-          <Text variant="body" color="ivorySecondary" style={styles.paragraph}>
+        <Card title="Cutoff Time">
+          <Text variant="body" color="ivorySecondary">
             The scheduled time after which intervention days avoid caffeine:
           </Text>
           <View style={styles.cutoffRow}>
@@ -223,13 +213,14 @@ export default function SetupConsentScreen() {
               </Pressable>
             ))}
           </View>
-        </View>
+        </Card>
 
-        {/* Section 5: Consent step */}
-        <View style={[styles.card, styles.consentCard]}>
-          <Text variant="overline" color="champagneMuted">CONSENT & DATA USE (DRAFT)</Text>
-          <Text variant="titleSmall" style={styles.cardTitle}>Informed Consent</Text>
-          <Text variant="body" color="ivorySecondary" style={styles.paragraph}>
+        <Card
+          overline="CONSENT & DATA USE (DRAFT)"
+          title="Informed Consent"
+          style={styles.consentCard}
+        >
+          <Text variant="body" color="ivorySecondary">
             To run this experiment, the app collects and securely stores:
           </Text>
           <View style={styles.bulletList}>
@@ -238,23 +229,11 @@ export default function SetupConsentScreen() {
             <Text variant="sub" color="ivorySecondary">• Your experiment schedule and resulting statistical summaries</Text>
           </View>
 
-          <Pressable
-            onPress={() => setPrivacyModalVisible(!privacyModalVisible)}
-            style={styles.privacyLink}
-            accessibilityRole="link"
-          >
-            <Text variant="sub" color="champagne">
-              {privacyModalVisible ? 'Hide Draft Privacy Policy ▲' : 'View Draft Privacy Policy ▼'}
+          <Disclosure label="View Draft Privacy Policy">
+            <Text variant="caption" color="ivoryMuted">
+              [DRAFT PLACEHOLDER - FOR LEGAL REVIEW]: Data collected in this application is used solely for the calculation of personal n-of-1 self-experiments. Your data will not be sold to third parties. A final production privacy policy must be approved by legal counsel prior to app release.
             </Text>
-          </Pressable>
-
-          {privacyModalVisible ? (
-            <View style={styles.privacyPlaceholderBox}>
-              <Text variant="caption" color="ivoryMuted">
-                [DRAFT PLACEHOLDER - FOR LEGAL REVIEW]: Data collected in this application is used solely for the calculation of personal n-of-1 self-experiments. Your data will not be sold to third parties. A final production privacy policy must be approved by legal counsel prior to app release.
-              </Text>
-            </View>
-          ) : null}
+          </Disclosure>
 
           {/* Affirmative agreement */}
           <Pressable
@@ -280,7 +259,6 @@ export default function SetupConsentScreen() {
               loading={saving}
               onPress={() => void handleAgreeAndContinue()}
             />
-            <View style={styles.actionSpacer} />
             <Button
               label="I don't agree"
               variant="quiet"
@@ -288,7 +266,7 @@ export default function SetupConsentScreen() {
               onPress={() => void handleDecline()}
             />
           </View>
-        </View>
+        </Card>
 
         {error ? (
           <Text variant="sub" color="garnet" style={styles.errorText} accessibilityRole="alert">
@@ -301,7 +279,8 @@ export default function SetupConsentScreen() {
 }
 
 const styles = StyleSheet.create({
-  scrollContent: {
+  content: {
+    gap: spacing.md,
     paddingBottom: spacing.xxl,
   },
   centerContainer: {
@@ -313,29 +292,12 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: spacing.xs,
   },
-  medicalNotice: {
-    marginBottom: spacing.md,
+  paragraph: {
+    marginTop: spacing.xs,
   },
   legalDisclaimer: {
     marginTop: spacing.md,
     textAlign: 'center',
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.hairline,
-    borderWidth: 1,
-    borderRadius: radii.card,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  cardHeader: {
-    marginBottom: spacing.sm,
-  },
-  cardTitle: {
-    marginVertical: spacing.xs,
-  },
-  paragraph: {
-    marginTop: spacing.xs,
   },
   pointRow: {
     flexDirection: 'row',
@@ -402,15 +364,6 @@ const styles = StyleSheet.create({
     marginVertical: spacing.sm,
     gap: spacing.xs,
   },
-  privacyLink: {
-    marginVertical: spacing.sm,
-  },
-  privacyPlaceholderBox: {
-    padding: spacing.sm,
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radii.control,
-    marginBottom: spacing.sm,
-  },
   checkboxRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -434,9 +387,7 @@ const styles = StyleSheet.create({
   },
   consentActions: {
     marginTop: spacing.sm,
-  },
-  actionSpacer: {
-    height: spacing.sm,
+    gap: spacing.sm,
   },
   buttonSpacing: {
     marginTop: spacing.lg,

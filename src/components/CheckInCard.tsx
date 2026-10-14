@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, Modal, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Text, Button, Field } from '@/components/ui';
+import { Text, Button, Field, Card } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
 import type { DailyEntry } from '@/experiment/types';
 import {
@@ -51,6 +51,9 @@ export function CheckInCard({
   const [lastCaffeineValidationMessage, setLastCaffeineValidationMessage] = useState<string | null>(null);
   const [timePickerOpen, setTimePickerOpen] = useState(false);
 
+  // Callers pass `key={date}`, so changing the day mounts a fresh card with the day's
+  // stored values instead of syncing them through an effect.
+
   const handleCaffeinePick = (event: unknown, selectedDate?: Date) => {
     const type = event && typeof event === 'object' && 'type' in event
       ? (event as { type: string }).type
@@ -99,71 +102,66 @@ export function CheckInCard({
     setLastCaffeineValidationMessage(null);
   };
 
-  // The button is highlighted only when a real time is set; "not answered" stays neutral.
+  // The time option is highlighted only when a real time is set; "not answered" stays neutral.
   const timeIsSelected = !noCaffeine && selectedTime !== null;
   // Read-side policy: a stored value that is neither a valid time, 'none' nor blank is unreadable.
   const storedUnreadable = readCaffeineTime(initialCaffeineTime).kind === 'unreadable';
+  const timeLabel = selectedTime
+    ? `${String(selectedTime.getHours()).padStart(2, '0')}:${String(selectedTime.getMinutes()).padStart(2, '0')}`
+    : 'Set time';
 
   return (
-    <View style={styles.card}>
-      <Text variant="overline" color="champagneMuted">
-        CHECK-IN FOR {label ?? date}
-      </Text>
-      <Text variant="titleSmall" style={styles.cardTitle}>Morning Check-in</Text>
+    <Card overline={`CHECK-IN FOR ${label ?? date}`}>
+      <Text variant="titleSmall" color="champagneLight">Morning check-in</Text>
 
-      <Text variant="sub" color="ivory" weight="medium">
-        Sleep duration (hours & minutes)
-      </Text>
+      <Text variant="sub" color="ivoryMuted">Sleep last night</Text>
       <View style={styles.row}>
         <View style={styles.flexInput}>
           <Field
-            placeholder="Hours (e.g. 7)"
+            label="Hours"
+            placeholder="7"
             keyboardType="numeric"
             value={sleepHours}
             onChangeText={setSleepHours}
+            containerStyle={styles.inputContainer}
           />
         </View>
         <View style={styles.flexInput}>
           <Field
-            placeholder="Minutes (e.g. 30)"
+            label="Minutes"
+            placeholder="30"
             keyboardType="numeric"
             value={sleepMins}
             onChangeText={setSleepMins}
+            containerStyle={styles.inputContainer}
           />
         </View>
       </View>
 
-      <Text variant="sub" color="ivory" weight="medium">
-        Last caffeine time (yesterday)
-      </Text>
+      <Text variant="sub" color="ivoryMuted">Yesterday's last caffeine</Text>
       <View style={styles.row}>
-        <View style={styles.flexInput}>
-          <Pressable
-            onPress={() => setTimePickerOpen(true)}
-            style={[
-              styles.timeButton,
-              noCaffeine && styles.timeButtonNoCaffeine,
-              timeIsSelected && styles.timeButtonSelected,
-            ]}
-          >
-            <Text
-              variant="sub"
-              color={timeIsSelected ? 'ground' : 'ivory'}
-              weight="semiBold"
-            >
-              {noCaffeine
-                ? 'No caffeine'
-                : selectedTime
-                ? `${String(selectedTime.getHours()).padStart(2, '0')}:${String(selectedTime.getMinutes()).padStart(2, '0')}`
-                : 'Select caffeine time'}
-            </Text>
-          </Pressable>
-        </View>
         <Pressable
-          onPress={() => setNoCaffeine(!noCaffeine)}
-          style={[styles.noCaffeineBtn, noCaffeine && styles.noCaffeineBtnActive]}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: noCaffeine }}
+          onPress={() => setTimePickerOpen(true)}
+          style={[styles.segment, timeIsSelected && styles.segmentActive]}
+          accessibilityRole="button"
+          accessibilityLabel="Set the last caffeine time"
+          accessibilityState={{ selected: timeIsSelected }}
+        >
+          <Text
+            variant="sub"
+            color={timeIsSelected ? 'ground' : 'ivory'}
+            weight="semiBold"
+            tabular
+          >
+            {timeLabel}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setNoCaffeine((prev) => !prev)}
+          style={[styles.segment, noCaffeine && styles.segmentActive]}
+          accessibilityRole="button"
+          accessibilityLabel="No caffeine"
+          accessibilityState={{ selected: noCaffeine }}
         >
           <Text
             variant="sub"
@@ -179,7 +177,9 @@ export function CheckInCard({
         <View style={styles.modalOverlay}>
           <View style={styles.timePickerCard}>
             <Text variant="overline" color="champagneMuted">Select caffeine time</Text>
-            <Text variant="titleSmall" style={styles.timePickerTitle}>Last caffeine time</Text>
+            <Text variant="titleSmall" color="champagneLight" style={styles.timePickerTitle}>
+              Last caffeine time
+            </Text>
             <DateTimePicker
               value={selectedTime ?? new Date()}
               mode="time"
@@ -211,14 +211,17 @@ export function CheckInCard({
         loading={saving}
         onPress={() => void handleSave()}
       />
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  timeButton: {
+  row: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
+  flexInput: { flex: 1 },
+  inputContainer: { marginVertical: 0 },
+  segment: {
     flex: 1,
-    height: 48,
+    minHeight: 52,
     borderRadius: radii.control,
     borderWidth: 1,
     borderColor: colors.hairlineBright,
@@ -226,13 +229,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  timeButtonSelected: {
-    borderColor: colors.champagne,
+  segmentActive: {
     backgroundColor: colors.champagne,
-    borderWidth: 1,
-  },
-  timeButtonNoCaffeine: {
-    backgroundColor: colors.surfaceHigh,
+    borderColor: colors.champagne,
   },
   modalOverlay: {
     flex: 1,
@@ -255,30 +254,5 @@ const styles = StyleSheet.create({
   timePickerButton: {
     width: '100%',
     paddingVertical: spacing.sm,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.card,
-    padding: spacing.md,
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.hairlineBright,
-  },
-  cardTitle: { marginBottom: spacing.xs },
-  row: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
-  flexInput: { flex: 1 },
-  noCaffeineBtn: {
-    height: 48,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.control,
-    borderWidth: 1,
-    borderColor: colors.hairlineBright,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceHigh,
-  },
-  noCaffeineBtnActive: {
-    backgroundColor: colors.champagne,
-    borderColor: colors.champagne,
   },
 });

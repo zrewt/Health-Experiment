@@ -9,6 +9,7 @@ import {
   canEditDate,
 } from '../src/experiment/dates';
 import { getRunInDescriptiveStats } from '../src/experiment/view-model';
+import { getJournalViewModel } from '../src/experiment/journal';
 import type { DailyEntry } from '../src/experiment/types';
 import { mergePendingEntries, retryPendingEntries } from '../src/data/pending-entries';
 import {
@@ -220,4 +221,48 @@ test('engineCaffeineTime and engineCaffeineServings honour the local date for ne
   // A malformed near-midnight-looking value is still rejected.
   assert.equal(readCaffeineTime('23:3').kind, 'unreadable');
   assert.equal(readCaffeineTime('0:30').kind, 'unreadable');
+});
+
+test('getJournalViewModel builds dated list, preserves missing as null, and exposes accessible chart without condition comparison', () => {
+  const setup = {
+    experimentId: 'caffeine-cutoff',
+    cutoffTime: '12:00',
+    screeningAnswer: 'usually' as const,
+    runInStartDate: '2026-02-10',
+  };
+  const entries = [
+    { date: '2026-02-10', sleepMinutes: 450, lastCaffeineTime: '14:30', synced: true },
+    // 2026-02-11 is completely unlogged (missing in timeline)
+    { date: '2026-02-12', sleepMinutes: 420, lastCaffeineTime: null, synced: true }, // partly logged
+    { date: '2026-02-13', sleepMinutes: 460, lastCaffeineTime: '9:30', synced: false }, // malformed + unsynced
+    { date: '2026-02-14', sleepMinutes: 480, lastCaffeineTime: 'none' as const, synced: true },
+  ];
+
+  const vm = getJournalViewModel({
+    entries,
+    today: '2026-02-15',
+    setup,
+    plan: null,
+  });
+
+  assert.equal(vm.yesterday, '2026-02-14');
+  assert.equal(vm.summary.totalTimelineDays, 5); // Feb 10..14 inclusive
+  assert.equal(vm.summary.loggedDays, 2); // Feb 10 and Feb 14
+  assert.equal(vm.summary.partialDays, 2); // Feb 12 and Feb 13 (sleep present, caffeine unreadable)
+  assert.equal(vm.summary.missingDays, 1); // Feb 11
+
+  const feb11 = vm.days.find(d => d.date === '2026-02-11')!;
+  assert.equal(feb11.sleepMinutes, null, 'missing sleep remains null, never zero');
+  assert.equal(feb11.sleepText, 'Not logged');
+  assert.equal(feb11.statusTone, 'missing');
+  assert.equal(feb11.editable, true); // within 3 days of 2026-02-14
+
+  const feb10 = vm.days.find(d => d.date === '2026-02-10')!;
+  assert.equal(feb10.editable, false); // 4 days before 2026-02-14
+
+  const feb11Bar = vm.chart.bars.find(b => b.date === '2026-02-11')!;
+  assert.equal(feb11Bar.sleepMinutes, null);
+  assert.equal(feb11Bar.heightFraction, 0);
+  assert.match(feb11Bar.accessibleSummary, /sleep not logged/);
+  assert.match(vm.chart.accessibleOverview, /4 of 5 nights logged/);
 });

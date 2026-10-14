@@ -1,7 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { authErrorMessage, signIn, signUp, validateCredentials } from '../src/lib/auth';
+import {
+  authErrorMessage,
+  deleteUserAccount,
+  requestPasswordReset,
+  signIn,
+  signUp,
+  updateUserPassword,
+  validateCredentials,
+} from '../src/lib/auth';
 
 type AuthClient = Pick<SupabaseClient['auth'], 'signInWithPassword' | 'signUp'>;
 const session = { access_token: 'test-only', user: { id: 'test-user' } };
@@ -51,4 +59,39 @@ test('signup supports immediate sessions and email-confirmation-required respons
 
 test('login cannot silently succeed without a session', async () => {
   await assert.rejects(signIn(fixture({ data: { session: null }, error: null }), 'name@example.com', 'password'), /did not return a session/);
+});
+
+test('password recovery and update helpers validate inputs and surface errors', async () => {
+  const resetCalls: string[] = [];
+  const resetClient = {
+    async resetPasswordForEmail(email: string) {
+      resetCalls.push(email);
+      return { data: {}, error: null } as any;
+    },
+  };
+  await assert.rejects(requestPasswordReset(resetClient, 'not-an-email'), /valid email/);
+  assert.equal(resetCalls.length, 0);
+  await requestPasswordReset(resetClient, ' user@example.com ');
+  assert.deepEqual(resetCalls, ['user@example.com']);
+
+  const updateCalls: string[] = [];
+  const updateClient = {
+    async updateUser(attrs: { password?: string }) {
+      updateCalls.push(attrs.password ?? '');
+      return { data: { user: null }, error: null } as any;
+    },
+  };
+  await assert.rejects(updateUserPassword(updateClient, 'short'), /8 characters/);
+  assert.equal(updateCalls.length, 0);
+  await updateUserPassword(updateClient, 'new-password-123');
+  assert.deepEqual(updateCalls, ['new-password-123']);
+
+  let rpcCalled = '';
+  await deleteUserAccount({
+    rpc(fn: string) {
+      rpcCalled = fn;
+      return Promise.resolve({ data: null, error: null }) as any;
+    },
+  });
+  assert.equal(rpcCalled, 'delete_own_account');
 });

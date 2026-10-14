@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, View, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Text, Button } from '@/components/ui';
-import { colors, radii, spacing } from '@/design/tokens';
+import { Screen, ScreenHeader, Card, NavRow, Text, Button } from '@/components/ui';
+import { colors, spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import {
   getSetup, getConsent, listEntries, getActivePlan, getPendingPlan, savePlan, saveNextCheckDate,
@@ -124,33 +124,36 @@ export default function FeasibilityScreen() {
   const startable = state?.kind === 'informative' || state?.kind === 'long_shot';
   return (
     <Screen>
-      {startable && !saved ? (
-        <View style={{ paddingBottom: spacing.sm }}>
-          <Text color="champagneLight" weight="semiBold">Approximate</Text>
-        </View>
-      ) : null}
       <ScrollView contentContainerStyle={styles.content}>
-        <Text variant="titleLarge" accessibilityRole="header" maxFontSizeMultiplier={0}>Feasibility & commitment</Text>
-        <Text color="champagne">This app is not medical advice.</Text>
+        <ScreenHeader
+          overline="BASELINE COMPLETE"
+          title="Feasibility & commitment"
+          notice={
+            startable && !saved
+              ? 'Approximate — this app is not medical advice.'
+              : 'This app is not medical advice.'
+          }
+          action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
+        />
         {loading ? <Text accessibilityLiveRegion="polite">Loading your log…</Text> : null}
         {error ? <Text color="champagneLight" accessibilityRole="alert">{error}</Text> : null}
         {!loading && !state && !saved ? <Button label="Retry loading" onPress={() => { setLoading(true); setError(null); setReload(n => n + 1); }} /> : null}
         {saved ? (
-          <View style={styles.card}>
+          <Card>
             <Text variant="titleSmall" accessibilityRole="header">Experiment scheduled</Text>
             <Text accessibilityLiveRegion="polite">Your experiment is scheduled to start on {saved.startDate} and runs for {saved.chosenDuration} days.</Text>
             <Text color="ivorySecondary">Daily instructions arrive in the next app update.</Text>
-            <Button label="Back to check-in" onPress={() => router.replace('/run-in')} />
-          </View>
+            <NavRow label="Back to check-in" onPress={() => router.replace('/run-in')} />
+          </Card>
         ) : !loading && state ? (
           <>
             {!startable && state.message ? <Text>{state.message}</Text> : null}
             {'reasons' in state ? (
-              <View style={styles.card}>
+              <Card>
                 <Text variant="titleSmall" accessibilityRole="header">{state.detailsHeading}</Text>
                 {state.reasons.map((reason, index) => <Text key={index} color="ivorySecondary">{reason}</Text>)}
                 {'detailFacts' in state ? state.detailFacts.map(fact => <Text key={fact}>{fact}</Text>) : null}
-              </View>
+              </Card>
             ) : null}
             {startable ? (
               <>
@@ -159,7 +162,7 @@ export default function FeasibilityScreen() {
                 <Text variant="titleSmall" accessibilityRole="header">Choose a duration</Text>
                 <View accessibilityRole="radiogroup" accessibilityLabel="Experiment duration" style={styles.group}>
                   {state.options.map(option => (
-                    <View key={option.duration} style={[styles.card, duration === option.duration && styles.selected]}>
+                    <Card key={option.duration} style={duration === option.duration ? styles.selected : undefined}>
                       <Pressable
                         onPress={() => setDuration(option.duration)} disabled={attempt !== null || saving}
                         accessibilityRole="radio" accessibilityLabel={`${option.duration} days`}
@@ -178,7 +181,7 @@ export default function FeasibilityScreen() {
                       {option.mdeAssignedDayEquivalent !== null ? <Text color="ivorySecondary">about {Math.round(option.mdeAssignedDayEquivalent)} minutes per assigned day</Text> : null}
                       <Text color="ivorySecondary">{option.adherenceAssumptionText}</Text>
                       <Text color="ivorySecondary">{assessment.feasibility.autocorrelationAssumptionText}</Text>
-                    </View>
+                    </Card>
                   ))}
                 </View>
                 <Text>{state.startInstruction}</Text>
@@ -192,12 +195,12 @@ export default function FeasibilityScreen() {
                 ) : null}
                 <Button label={attempt ? 'Retry saving plan' : 'Start experiment'} loading={saving}
                   disabled={!duration || (state.requiresAcknowledgement && !acknowledged)} onPress={() => void start()} />
-                {!attempt ? <Button label="Not now" variant="secondary" disabled={saving} onPress={() => router.replace('/run-in')} /> : null}
+                {!attempt ? <NavRow label="Not now" disabled={saving} onPress={() => router.replace('/run-in')} /> : null}
               </>
             ) : (
               <>
                 <Button label="Keep logging; re-check in 7 days" loading={saving} onPress={() => void recheck()} />
-                <Button label="Not now" variant="secondary" disabled={saving} onPress={() => router.replace('/run-in')} />
+                <NavRow label="Not now" disabled={saving} onPress={() => router.replace('/run-in')} />
               </>
             )}
           </>
@@ -210,8 +213,6 @@ export default function FeasibilityScreen() {
 const styles = StyleSheet.create({
   content: { gap: spacing.md, paddingBottom: spacing.xxl },
   group: { gap: spacing.md },
-  card: { backgroundColor: colors.surface, borderRadius: radii.card, padding: spacing.md, gap: spacing.md,
-    borderWidth: 1, borderColor: colors.hairlineBright },
   selected: { borderColor: colors.champagne },
   choice: { minHeight: 48, justifyContent: 'center', paddingVertical: spacing.sm },
 });

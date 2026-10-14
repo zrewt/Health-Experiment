@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, Pressable, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Text, Button, Field } from '@/components/ui';
+import {
+  Screen,
+  ScreenHeader,
+  Card,
+  NavRow,
+  StatStrip,
+  Text,
+  Button,
+  Field,
+} from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import {
@@ -276,27 +285,28 @@ export default function RunInScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <Text variant="titleLarge" style={styles.title}>Baseline Run-in</Text>
-        <Text variant="caption" color="champagne" style={styles.medicalNotice}>
-          This app is not medical advice.
-        </Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScreenHeader
+          overline="BASELINE RUN-IN"
+          title="Baseline Run-in"
+          notice="This app is not medical advice."
+          action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
+        />
 
-        {/* Progress line */}
-        <View style={styles.progressCard}>
-          <Text variant="titleSmall" color="champagneLight">
+        {/* Progress line: counts only, never a result. */}
+        <Card tone="hero" overline="BASELINE PROGRESS">
+          <Text variant="titleMedium" color="champagneLight" tabular>
             {validDaysCount} of {runInMinValidDays} valid days
           </Text>
-          <Text variant="sub" color="ivorySecondary" style={styles.progressSubtext}>
+          <Text variant="sub" color="ivorySecondary">
             Run-in ends on 14 valid days with sleep logged, not consecutive calendar days.
           </Text>
-        </View>
+        </Card>
 
         {/* Storage error / offline sync banner */}
         {storageError ? (
-          <View style={styles.errorBanner}>
-            <Text variant="sub" color="garnet" weight="semiBold" accessibilityRole="alert" style={{ flex: 1, marginRight: spacing.sm }}>
+          <Card tone="danger">
+            <Text variant="sub" color="garnet" weight="semiBold" accessibilityRole="alert">
               {storageError}
             </Text>
             <Button
@@ -318,33 +328,29 @@ export default function RunInScreen() {
                 }
               }}
             />
-          </View>
+          </Card>
         ) : null}
 
         {/* Run-in complete banner */}
         {isRunInComplete ? (
-          <View style={styles.completeCard}>
-            <Text variant="titleSmall" color="champagne">Run-in complete</Text>
-            <Text variant="body" color="ivorySecondary" style={styles.paragraph}>
+          <Card tone="hero" title="Run-in complete">
+            <Text variant="body" color="ivorySecondary">
               {nextCheckDate ? 'Your next feasibility check is ready.' : 'You have logged the required 14 valid baseline days. The feasibility check is the next step.'}
             </Text>
             <Button label="Check feasibility" onPress={() => router.push('/feasibility')} />
-          </View>
+          </Card>
         ) : nextCheckDate ? (
           <Text color="ivorySecondary">Keep logging. Your next feasibility check is on {nextCheckDate}.</Text>
         ) : null}
 
         {/* Morning check-in card */}
-        <View style={styles.card}>
-          <Text variant="overline" color="champagneMuted">
-            CHECK-IN FOR {activeDate === defaultEntryDate ? 'LAST NIGHT' : activeDate}
-          </Text>
-          <Text variant="titleSmall" style={styles.cardTitle}>
-            Morning Check-in
-          </Text>
+        <Card
+          overline={`CHECK-IN FOR ${activeDate === defaultEntryDate ? 'LAST NIGHT' : activeDate}`}
+          title="Morning Check-in"
+        >
 
           {/* Sleep duration inputs */}
-          <Text variant="sub" color="ivory" weight="medium" style={styles.inputGroupLabel}>
+          <Text variant="sub" color="ivoryMuted">
             Sleep duration (hours & minutes)
           </Text>
           <View style={styles.timeInputsRow}>
@@ -367,7 +373,7 @@ export default function RunInScreen() {
           </View>
 
           {/* Last caffeine time input */}
-          <Text variant="sub" color="ivory" weight="medium" style={styles.inputGroupLabel}>
+          <Text variant="sub" color="ivoryMuted">
             Last caffeine time (yesterday)
           </Text>
           <View style={styles.caffeineRow}>
@@ -384,10 +390,7 @@ export default function RunInScreen() {
                 setNoCaffeine(!noCaffeine);
                 if (!noCaffeine) setCaffeineTime('');
               }}
-              style={[
-                styles.noCaffeineBtn,
-                noCaffeine && styles.noCaffeineBtnActive,
-              ]}
+              style={[styles.segment, noCaffeine && styles.segmentActive]}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: noCaffeine }}
             >
@@ -405,7 +408,6 @@ export default function RunInScreen() {
             <Text
               variant="caption"
               color="garnet"
-              style={styles.errorNotice}
               accessibilityRole="alert"
             >
               {CAFFEINE_TIME_UNREADABLE_MESSAGE}
@@ -413,7 +415,7 @@ export default function RunInScreen() {
           ) : null}
 
           {fieldErrors ? (
-            <Text variant="caption" color="garnet" style={styles.errorNotice} accessibilityRole="alert">
+            <Text variant="caption" color="garnet" accessibilityRole="alert">
               {fieldErrors}
             </Text>
           ) : null}
@@ -422,7 +424,6 @@ export default function RunInScreen() {
             <Text
               variant="caption"
               color="champagneLight"
-              style={styles.successNotice}
               accessibilityRole="alert"
               accessibilityLiveRegion="polite"
             >
@@ -430,96 +431,61 @@ export default function RunInScreen() {
             </Text>
           ) : null}
 
-          <View style={styles.checkInActions}>
-            <Button
-              label={savingEntry ? 'Saving...' : 'Save check-in'}
-              variant="primary"
-              disabled={savingEntry}
-              loading={savingEntry}
-              onPress={() => void handleSaveEntry()}
-            />
-          </View>
-        </View>
+          <Button
+            label={savingEntry ? 'Saving...' : 'Save check-in'}
+            variant="primary"
+            disabled={savingEntry}
+            loading={savingEntry}
+            onPress={() => void handleSaveEntry()}
+          />
+        </Card>
 
         {/* Last 3 days list */}
-        <View style={styles.card}>
-          <Text variant="sub" color="champagneLight" weight="semiBold" style={styles.cardHeader}>
-            Recent Days
-          </Text>
+        <Card overline="RECENT DAYS">
           {pastDays.map((d) => {
             const status = getDayStatus(d);
             const isEditable = canEditDate(today, d);
             const isSelected = activeDate === d;
             return (
-              <Pressable
+              <NavRow
                 key={d}
+                label={d}
+                detail={status}
+                value={isEditable ? (isSelected ? 'Editing' : 'Edit') : 'Read-only'}
                 onPress={() => selectDateForEdit(d)}
-                style={[
-                  styles.dayRow,
-                  isSelected && styles.dayRowSelected,
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={`Date ${d}, Status: ${status}`}
-              >
-                <View>
-                  <Text variant="body" color="ivory" weight={isSelected ? 'semiBold' : 'regular'}>
-                    {d}
-                  </Text>
-                  <Text
-                    variant="caption"
-                    color={status === 'Logged' ? 'champagneLight' : status === 'Partly logged' ? 'ivorySecondary' : 'ivoryMuted'}
-                  >
-                    {status}
-                  </Text>
-                </View>
-                <Text variant="sub" color={isEditable ? 'champagne' : 'ivoryMuted'}>
-                  {isEditable ? 'Edit →' : 'Read-only'}
-                </Text>
-              </Pressable>
+              />
             );
           })}
-        </View>
+        </Card>
 
-        {/* Descriptive panel (after at least 3 valid days) */}
+        {/* Descriptive counts only: never a comparison, estimate or verdict. */}
         {validDaysCount >= 3 ? (
-          <View style={styles.descriptivePanel}>
-            <Text variant="overline" color="champagneMuted">
-              DESCRIPTIVE LOG SUMMARY
-            </Text>
-            <Text variant="sub" color="champagneLight" weight="semiBold" style={styles.panelTitle}>
-              What your log shows so far (descriptive, not a result)
-            </Text>
-
-            <View style={styles.statRow}>
-              <Text variant="body" color="ivorySecondary">Days logged:</Text>
-              <Text variant="body" color="ivory" weight="semiBold">
-                {descriptiveStats.daysLogged}
-              </Text>
-            </View>
-
-            <View style={styles.statRow}>
-              <Text variant="body" color="ivorySecondary">Average sleep so far:</Text>
-              <Text variant="body" color="ivory" weight="semiBold">
-                {descriptiveStats.averageSleepMinutes !== null
-                  ? `${(descriptiveStats.averageSleepMinutes / 60).toFixed(1)} hrs`
-                  : '—'}
-              </Text>
-            </View>
-
-            <View style={styles.statRow}>
-              <Text variant="body" color="ivorySecondary">Afternoon caffeine days:</Text>
-              <Text variant="body" color="ivory" weight="semiBold">
-                {descriptiveStats.afternoonCaffeineDays} of {descriptiveStats.daysLogged}
-              </Text>
-            </View>
-
-            <View style={styles.statRow}>
-              <Text variant="body" color="ivorySecondary">Days with unknown caffeine:</Text>
-              <Text variant="body" color="ivory" weight="semiBold">
-                {descriptiveStats.unknownCaffeineDays}
-              </Text>
-            </View>
-          </View>
+          <Card
+            overline="DESCRIPTIVE LOG SUMMARY"
+            subtitle="What your log shows so far (descriptive, not a result)"
+          >
+            <StatStrip
+              size="lg"
+              items={[
+                { label: 'Days logged', value: String(descriptiveStats.daysLogged) },
+                {
+                  label: 'Average sleep so far',
+                  value:
+                    descriptiveStats.averageSleepMinutes !== null
+                      ? `${(descriptiveStats.averageSleepMinutes / 60).toFixed(1)} hrs`
+                      : '—',
+                },
+                {
+                  label: 'Afternoon caffeine days',
+                  value: `${descriptiveStats.afternoonCaffeineDays} of ${descriptiveStats.daysLogged}`,
+                },
+                {
+                  label: 'Days with unknown caffeine',
+                  value: String(descriptiveStats.unknownCaffeineDays),
+                },
+              ]}
+            />
+          </Card>
         ) : null}
       </ScrollView>
     </Screen>
@@ -527,79 +493,11 @@ export default function RunInScreen() {
 }
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    paddingBottom: spacing.xxl,
-  },
-  title: {
-    marginBottom: spacing.xs,
-  },
-  medicalNotice: {
-    marginBottom: spacing.md,
-  },
-  progressCard: {
-    backgroundColor: colors.surfaceHigh,
-    borderColor: colors.hairlineBright,
-    borderWidth: 1,
-    borderRadius: radii.card,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  progressSubtext: {
-    marginTop: spacing.xs,
-  },
-  errorBanner: {
-    backgroundColor: colors.surface,
-    borderColor: colors.garnet,
-    borderWidth: 1,
-    borderRadius: radii.card,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  completeCard: {
-    backgroundColor: colors.surfaceHighlight,
-    borderColor: colors.champagne,
-    borderWidth: 1,
-    borderRadius: radii.card,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  paragraph: {
-    marginTop: spacing.xs,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.hairline,
-    borderWidth: 1,
-    borderRadius: radii.card,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  cardHeader: {
-    marginBottom: spacing.sm,
-  },
-  cardTitle: {
-    marginVertical: spacing.xs,
-  },
-  inputGroupLabel: {
-    marginTop: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  timeInputsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  caffeineRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    alignItems: 'center',
-  },
-  flexInput: {
-    flex: 1,
-  },
-  noCaffeineBtn: {
+  content: { gap: spacing.md, paddingBottom: spacing.xxl },
+  timeInputsRow: { flexDirection: 'row', gap: spacing.sm },
+  caffeineRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
+  flexInput: { flex: 1 },
+  segment: {
     height: 54,
     paddingHorizontal: spacing.md,
     backgroundColor: colors.surfaceHigh,
@@ -609,46 +507,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  noCaffeineBtnActive: {
+  segmentActive: {
     backgroundColor: colors.champagne,
     borderColor: colors.champagneLight,
-  },
-  errorNotice: {
-    marginTop: spacing.xs,
-  },
-  successNotice: {
-    marginTop: spacing.xs,
-  },
-  checkInActions: {
-    marginTop: spacing.md,
-  },
-  dayRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.hairline,
-  },
-  dayRowSelected: {
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radii.control,
-    paddingHorizontal: spacing.sm,
-  },
-  descriptivePanel: {
-    backgroundColor: colors.surface,
-    borderColor: colors.hairlineBright,
-    borderWidth: 1,
-    borderRadius: radii.card,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  panelTitle: {
-    marginVertical: spacing.xs,
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: spacing.xs,
   },
 });

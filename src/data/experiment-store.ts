@@ -9,13 +9,68 @@ import { sanitizeCaffeineTimeForWrite } from '@/experiment/caffeine-time';
 export const HEALTH_DATA_POLICY_VERSION = '2026-10-health-draft-v1';
 export const DEFAULT_EXPERIMENT_ID = 'caffeine-cutoff';
 
+function plansHistoryKey(userId: string): string {
+  return `@experiment_plans_history:${userId}`;
+}
+
+function archivedPlanIdsKey(userId: string): string {
+  return `@experiment_archived_plan_ids:${userId}`;
+}
+
+async function readArchivedPlanIds(userId: string): Promise<Set<string>> {
+  try {
+    const raw = await AsyncStorage.getItem(archivedPlanIdsKey(userId));
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? new Set(parsed.filter((x): x is string => typeof x === 'string')) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+async function mergePlansIntoLocalHistory(userId: string, incoming: readonly StoredExperimentPlan[]): Promise<StoredExperimentPlan[]> {
+  let existing: StoredExperimentPlan[] = [];
+  try {
+    const raw = await AsyncStorage.getItem(plansHistoryKey(userId));
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) existing = parsed as StoredExperimentPlan[];
+    }
+  } catch {
+    existing = [];
+  }
+  const byId = new Map<string, StoredExperimentPlan>();
+  for (const item of incoming) {
+    if (item && item.id) byId.set(item.id, item);
+  }
+  for (const item of existing) {
+    if (item && item.id && !byId.has(item.id)) byId.set(item.id, item);
+  }
+  const merged = Array.from(byId.values());
+  await AsyncStorage.setItem(plansHistoryKey(userId), JSON.stringify(merged));
+  return merged;
+}
+
 const planPersistence = createPlanPersistence(AsyncStorage, {
   async getActive(userId) {
     if (!supabase) throw new Error('Server storage is unavailable. Your experiment has not been started.');
     const { data, error } = await supabase.from('experiment_plans')
-      .select('id, plan, status, result, completed_at').eq('user_id', userId).neq('status', 'cancelled').maybeSingle();
+      .select('id, plan, status, result, completed_at')
+      .eq('user_id', userId)
+      .neq('status', 'cancelled')
+      .order('created_at', { ascending: false });
     if (error) throw new Error(`Could not load experiment plan: ${error.message}`);
-    return data as StoredExperimentPlan | null;
+    const rows = Array.isArray(data)
+      ? (data as StoredExperimentPlan[])
+      : data
+      ? [data as StoredExperimentPlan]
+      : [];
+    if (rows.length > 0) {
+      await mergePlansIntoLocalHistory(userId, rows);
+    }
+    const archivedIds = await readArchivedPlanIds(userId);
+    const active = rows.find(row => row.status === 'scheduled' || !archivedIds.has(row.id)) ?? null;
+    return active;
   },
   async insert(userId, plan) {
     if (!supabase) throw new Error('Server storage is unavailable. Your experiment has not been started.');
@@ -382,3 +437,60 @@ export async function getConsent(userId: string): Promise<ConsentRecord | null> 
     return null;
   }
 }
+
+/**
+ * Lists all saved experiment plans for a user (including completed and ended-early plans),
+ * ordered newest first. Preserves local history when offline.
+ */
+export async function listExperimentPlans(userId: string): Promise<StoredExperimentPlan[]> {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('experiment_plans')
+        .select('id, plan, status, result, completed_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      if (!error && Array.isArray(data)) {
+        return await mergePlansIntoLocalHistory(userId, data as StoredExperimentPlan[]);
+      }
+    } catch {
+      // Fall through to local history
+    }
+  }
+  return await mergePlansIntoLocalHistory(userId, []);
+}
+
+/**
+ * Preserves a completed experiment in saved history and marks it archived so the user
+ * can start a new baseline/feasibility cycle while keeping the completed result and its
+ * locked entries intact.
+ */
+export async function archiveCompletedPlanForRepeat(
+  userId: string,
+  planRecord: StoredExperimentPlan,
+): Promise<void> {
+  if (planRecord.status !== 'completed') {
+    throw new Error('Only a completed experiment can be archived to start a new cycle.');
+  }
+  await mergePlansIntoLocalHistory(userId, [planRecord]);
+  const archived = await readArchivedPlanIds(userId);
+  archived.add(planRecord.id);
+  await AsyncStorage.setItem(archivedPlanIdsKey(userId), JSON.stringify(Array.from(archived)));
+  await AsyncStorage.removeItem(`@experiment_active_plan:${userId}`);
+}
+
+/**
+ * Clears all device-local cached data for a user.
+ */
+export async function clearLocalUserData(userId: string): Promise<void> {
+  await Promise.all([
+    AsyncStorage.removeItem(setupKey(userId)),
+    AsyncStorage.removeItem(entriesKey(userId)),
+    AsyncStorage.removeItem(consentKey(userId)),
+    AsyncStorage.removeItem(plansHistoryKey(userId)),
+    AsyncStorage.removeItem(archivedPlanIdsKey(userId)),
+    AsyncStorage.removeItem(`@experiment_active_plan:${userId}`),
+    AsyncStorage.removeItem(`@experiment_pending_plan:${userId}`),
+  ]);
+}
+

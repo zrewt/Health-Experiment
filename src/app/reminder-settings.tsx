@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Text, Button, Field } from '@/components/ui';
+import { Screen, ScreenHeader, Card, Text, Button, Field } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import {
@@ -21,6 +21,48 @@ import {
 } from '@/notifications/reminder-plan';
 import { loadReminderPreferences, saveReminderPreferences } from '@/notifications/reminder-preferences';
 import { getActivePlan } from '@/data/experiment-store';
+
+/**
+ * One reminder switch: a plain label and description with the on/off pill on the
+ * right, so each switch reads as a sentence instead of a bare control.
+ */
+function ReminderToggle({
+  label,
+  description,
+  accessibilityLabel,
+  on,
+  active,
+  onPress,
+}: {
+  label: string;
+  description: string;
+  accessibilityLabel: string;
+  /** What the control displays. */
+  on: boolean;
+  /** Whether it is actually in force (off while daily reminders are off). */
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <View style={styles.toggleRow}>
+      <View style={styles.toggleText}>
+        <Text variant="body" color="ivory">{label}</Text>
+        <Text variant="caption" color="ivoryMuted">{description}</Text>
+      </View>
+      <Pressable
+        accessibilityRole="switch"
+        accessibilityState={{ checked: on }}
+        accessibilityLabel={accessibilityLabel}
+        onPress={onPress}
+        style={[styles.toggle, active && styles.toggleOn]}
+      >
+        <Text variant="caption" color={active ? 'ground' : 'ivory'} weight="semiBold">
+          {on ? 'On' : 'Off'}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
 
 export default function ReminderSettingsScreen() {
   const router = useRouter();
@@ -144,17 +186,23 @@ export default function ReminderSettingsScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text variant="titleLarge">Reminders</Text>
-        <Text color="ivorySecondary">
-          Gentle nudges to log your sleep. Nothing here is medical advice.
-        </Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScreenHeader
+          overline="NOTIFICATIONS"
+          title="Reminders"
+          notice="Gentle nudges to log your sleep. Nothing here is medical advice."
+          action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
+        />
 
-        {error ? <Text color="garnet" accessibilityRole="alert">{error}</Text> : null}
-        {status ? <Text color="champagneLight">{status}</Text> : null}
+        {status ? <Text color="champagneLight" accessibilityLiveRegion="polite">{status}</Text> : null}
 
-        <View style={styles.card}>
-          <Text variant="overline" color="champagneMuted">NOTIFICATIONS</Text>
+        {error ? (
+          <Card tone="danger">
+            <Text color="garnet" accessibilityRole="alert">{error}</Text>
+          </Card>
+        ) : null}
+
+        <Card overline="NOTIFICATIONS">
           <Text variant="sub" color="ivorySecondary">{permissionLine}</Text>
           {remindersSupported() && permission !== 'granted' ? (
             <Button
@@ -165,24 +213,17 @@ export default function ReminderSettingsScreen() {
               onPress={() => void handleEnable()}
             />
           ) : null}
-        </View>
+        </Card>
 
-        <View style={styles.card}>
-          <Text variant="overline" color="champagneMuted">DAILY CHECK-IN</Text>
-          <Pressable
-            accessibilityRole="switch"
-            accessibilityState={{ checked: preferences.enabled }}
+        <Card overline="DAILY CHECK-IN">
+          <ReminderToggle
+            label="Daily reminders"
+            description="Turning this off clears every scheduled reminder."
             accessibilityLabel="Daily reminders"
+            on={preferences.enabled}
+            active={preferences.enabled}
             onPress={() => update({ enabled: !preferences.enabled })}
-            style={[styles.toggle, preferences.enabled && styles.toggleOn]}
-          >
-            <Text variant="sub" color={preferences.enabled ? 'ground' : 'ivory'} weight="semiBold">
-              {preferences.enabled ? 'On' : 'Off'}
-            </Text>
-          </Pressable>
-          <Text variant="caption" color="ivoryMuted">
-            Turning this off clears every scheduled reminder.
-          </Text>
+          />
 
           <Field
             label="Morning check-in time (24-hour, HH:mm)"
@@ -193,41 +234,28 @@ export default function ReminderSettingsScreen() {
             autoCapitalize="none"
             keyboardType="numbers-and-punctuation"
           />
-        </View>
+        </Card>
 
-        <View style={styles.card}>
-          <Text variant="overline" color="champagneMuted">EXPERIMENT REMINDERS</Text>
+        <Card overline="EXPERIMENT REMINDERS">
           {hasActionableRule ? (
             <>
-              <Pressable
-                accessibilityRole="switch"
-                accessibilityState={{ checked: preferences.actionEnabled }}
+              <ReminderToggle
+                label="Reminder before the cutoff"
+                description="A nudge shortly before the cutoff, only on the days the rule is assigned to you."
                 accessibilityLabel="Reminder before the cutoff"
+                on={preferences.actionEnabled}
+                active={preferences.actionEnabled && preferences.enabled}
                 onPress={() => update({ actionEnabled: !preferences.actionEnabled })}
-                style={[styles.toggle, preferences.actionEnabled && preferences.enabled && styles.toggleOn]}
-              >
-                <Text variant="sub" color={preferences.actionEnabled && preferences.enabled ? 'ground' : 'ivory'} weight="semiBold">
-                  {preferences.actionEnabled ? 'On' : 'Off'}
-                </Text>
-              </Pressable>
-              <Text variant="caption" color="ivoryMuted">
-                A nudge shortly before the cutoff, only on the days the rule is assigned to you.
-              </Text>
+              />
 
-              <Pressable
-                accessibilityRole="switch"
-                accessibilityState={{ checked: preferences.previewEnabled }}
+              <ReminderToggle
+                label="Heads-up the evening before"
+                description="The evening before an assigned day, so you can plan ahead."
                 accessibilityLabel="Heads-up the evening before"
+                on={preferences.previewEnabled}
+                active={preferences.previewEnabled && preferences.enabled}
                 onPress={() => update({ previewEnabled: !preferences.previewEnabled })}
-                style={[styles.toggle, preferences.previewEnabled && preferences.enabled && styles.toggleOn]}
-              >
-                <Text variant="sub" color={preferences.previewEnabled && preferences.enabled ? 'ground' : 'ivory'} weight="semiBold">
-                  {preferences.previewEnabled ? 'On' : 'Off'}
-                </Text>
-              </Pressable>
-              <Text variant="caption" color="ivoryMuted">
-                The evening before an assigned day, so you can plan ahead.
-              </Text>
+              />
 
               <Field
                 label="Evening heads-up time (24-hour, HH:mm)"
@@ -244,7 +272,7 @@ export default function ReminderSettingsScreen() {
               These appear once you have a running experiment with a rule worth warning you about.
             </Text>
           )}
-        </View>
+        </Card>
 
         <Button
           testID="save-reminders"
@@ -253,7 +281,6 @@ export default function ReminderSettingsScreen() {
           loading={saving}
           onPress={() => void handleSave()}
         />
-        <Button label="Back to Home" variant="secondary" onPress={() => router.replace('/')} />
       </ScrollView>
     </Screen>
   );
@@ -261,16 +288,14 @@ export default function ReminderSettingsScreen() {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.md, paddingBottom: spacing.xxl },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.card,
-    padding: spacing.md,
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.hairlineBright,
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
   },
+  toggleText: { flex: 1, gap: 2 },
   toggle: {
-    alignSelf: 'flex-start',
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     borderRadius: radii.pill,

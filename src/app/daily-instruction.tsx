@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { StyleSheet, ScrollView, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Text, Button } from '@/components/ui';
-import { colors, spacing, radii } from '@/design/tokens';
+import { Screen, ScreenHeader, Card, NavRow, StatStrip, Text, Button } from '@/components/ui';
+import { spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import {
   getActivePlan,
@@ -64,13 +64,12 @@ export default function DailyInstructionScreen() {
   if (!planRecord || planRecord.status === 'cancelled') {
     return (
       <Screen>
-        <View style={styles.card}>
-          <Text variant="titleSmall">Experiment Ended Early</Text>
+        <Card overline="ENDED" title="Experiment ended early">
           <Text color="ivorySecondary">
             This experiment was ended without a result. Your logged entries have been kept. New experiments will arrive in future updates.
           </Text>
-          <Button label="Back to Home" variant="secondary" onPress={() => router.replace('/')} />
-        </View>
+          <NavRow label="Back to Today" onPress={() => router.replace('/')} />
+        </Card>
       </Screen>
     );
   }
@@ -145,61 +144,62 @@ export default function DailyInstructionScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text variant="titleLarge">Daily Instruction</Text>
-        <Text color="champagne">This app is not medical advice.</Text>
+        <ScreenHeader
+          overline="TODAY'S PLAN"
+          title="Daily Instruction"
+          notice="This app is not medical advice."
+          action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
+        />
 
         {statusMessage ? (
-          <View style={styles.card}>
-            <Text color="champagneLight">{statusMessage}</Text>
-          </View>
+          <Card>
+            <Text color="champagneLight" accessibilityLiveRegion="polite">{statusMessage}</Text>
+          </Card>
         ) : null}
 
         {/* Top card: Today's rule or schedule status */}
         {isScheduled ? (
-          <View style={styles.card}>
-            <Text variant="overline" color="champagneMuted">UPCOMING</Text>
+          <Card overline="UPCOMING">
             <Text variant="titleSmall">
               Your experiment starts on {plan.startDate}. Until then, keep your usual routine and keep logging.
             </Text>
-          </View>
+          </Card>
         ) : isAfterLastExposure ? (
-          <View style={styles.card}>
-            <Text variant="overline" color="champagneMuted">FINAL DAY</Text>
+          <Card overline="FINAL DAY">
             <Text variant="titleSmall">
               Last check-in: log last night to include your final day.
             </Text>
-          </View>
+          </Card>
         ) : todayScheduled ? (
-          <View style={styles.card}>
-            <Text variant="overline" color="champagneMuted">TODAY'S INSTRUCTION</Text>
-            <Text variant="titleMedium" color="champagneLight">
+          <Card tone="hero" overline="TODAY'S INSTRUCTION">
+            <Text variant="titleMedium" color="champagneLight" serif>
               {todayScheduled.condition === 'intervention'
                 ? `Today: no caffeine after ${cutoffTime}.`
                 : 'Today: your usual routine.'}
             </Text>
-          </View>
+          </Card>
         ) : null}
 
         {/* Progress Counts */}
-        <View style={styles.card}>
-          <Text variant="overline" color="champagneMuted">PROGRESS</Text>
-          <Text variant="titleSmall">
+        <Card overline="PROGRESS">
+          <Text variant="titleSmall" color="champagneLight" tabular>
             Day {currentDayNum} of {plan.chosenDuration}
           </Text>
-          <View style={styles.row}>
-            <Text color="ivorySecondary">Days logged: </Text>
-            <Text color="ivory" weight="semiBold">{progress.daysLogged}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text color="ivorySecondary">Days remaining: </Text>
-            <Text color="ivory" weight="semiBold">{progress.daysRemaining}</Text>
-          </View>
-          <View style={styles.adherenceGrid}>
-            <Text variant="caption" color="ivoryMuted">
-              Adherent: {progress.adherenceCounts.ADHERENT} | Usual routine: {progress.adherenceCounts.CONTROL_CLEAN} | Contaminated: {progress.adherenceCounts.CONTAMINATED} | Unknown: {progress.adherenceCounts.UNKNOWN}
-            </Text>
-          </View>
-        </View>
+          <StatStrip
+            items={[
+              { label: 'Days logged', value: String(progress.daysLogged), emphasis: 'strong' },
+              { label: 'Days remaining', value: String(progress.daysRemaining) },
+            ]}
+          />
+          <StatStrip
+            items={[
+              { label: 'Adherent', value: String(progress.adherenceCounts.ADHERENT), emphasis: 'strong' },
+              { label: 'Usual routine', value: String(progress.adherenceCounts.CONTROL_CLEAN) },
+              { label: 'Contaminated', value: String(progress.adherenceCounts.CONTAMINATED) },
+              { label: 'Unknown', value: String(progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
+            ]}
+          />
+        </Card>
 
         {/* Yesterday's check-in */}
         <CheckInCard
@@ -211,31 +211,23 @@ export default function DailyInstructionScreen() {
           saving={savingEntry}
         />
 
-        {/* Secondary: End experiment early */}
-        <View style={styles.endEarlyContainer}>
+        {/* Ending early is irreversible, so it sits last and quietly. */}
+        <Card tone="quiet">
+          <Text variant="caption" color="ivoryMuted">
+            Ending early keeps every logged entry but produces no result.
+          </Text>
           <Button
             label="End experiment early"
             variant="quiet"
             loading={cancelling}
             onPress={() => void handleEndEarly()}
           />
-        </View>
+        </Card>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.md, paddingBottom: spacing.xxl },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.card,
-    padding: spacing.md,
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.hairlineBright,
-  },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  adherenceGrid: { marginTop: spacing.xs },
-  endEarlyContainer: { marginTop: spacing.lg, alignItems: 'center' },
+  content: { gap: spacing.md, paddingBottom: spacing.lg },
 });
