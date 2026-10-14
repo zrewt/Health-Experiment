@@ -41,7 +41,6 @@ export function PrimaryNav({ current }: { current: PrimaryTab }) {
               >
                 {tab.label}
               </Text>
-              {active ? <View style={styles.indicator} /> : null}
             </Pressable>
           );
         })}
@@ -52,9 +51,7 @@ export function PrimaryNav({ current }: { current: PrimaryTab }) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingTop: spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: colors.hairline,
+    paddingTop: spacing.md,
     backgroundColor: colors.ground,
   },
   bar: {
@@ -65,25 +62,17 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     borderWidth: 1,
     borderColor: colors.hairlineBright,
-    padding: 4,
+    padding: 6,
   },
   item: {
     flex: 1,
-    minHeight: 42,
+    minHeight: 48,
     borderRadius: radii.pill,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.xs,
-    position: 'relative',
   },
   itemActive: {
     backgroundColor: colors.surfaceHigh,
-  },
-  indicator: {
-    width: 16,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: colors.champagne,
-    marginTop: 3,
   },
 });

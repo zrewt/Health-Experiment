@@ -74,7 +74,7 @@ export function CheckInCard({
       const h = Number(sleepHours.trim()) || 0;
       const m = Number(sleepMins.trim()) || 0;
       if (h < 0 || m < 0 || m >= 60) {
-        setError('Please enter valid sleep hours and minutes.');
+        setError('Check your sleep hours and minutes.');
         return;
       }
       finalSleepMinutes = h * 60 + m;
@@ -136,9 +136,7 @@ export function CheckInCard({
             containerStyle={styles.inputContainer}
           />
         </View>
-      </View>
-
-      <Text variant="sub" color="ivoryMuted">Yesterday's last caffeine</Text>
+      </View>        <Text variant="sub" color="ivoryMuted">Last caffeine yesterday</Text>
       <View style={styles.row}>
         <Pressable
           onPress={() => setTimePickerOpen(true)}
@@ -176,7 +174,7 @@ export function CheckInCard({
       <Modal visible={timePickerOpen} transparent animationType="fade" onRequestClose={() => setTimePickerOpen(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.timePickerCard}>
-            <Text variant="overline" color="champagneMuted">Select caffeine time</Text>
+            <Text variant="overline" color="champagneMuted">Pick a time</Text>
             <Text variant="titleSmall" color="champagneLight" style={styles.timePickerTitle}>
               Last caffeine time
             </Text>

@@ -22,7 +22,7 @@ export interface JournalDayItem {
   statusTone: 'logged' | 'partial' | 'missing' | 'unreadable';
   editable: boolean;
   synced: boolean;
-  phaseLabel: 'Experiment day' | 'Baseline';
+  phaseLabel: 'Test day' | 'Getting to know you';
 }
 
 export interface JournalChartBar {
@@ -185,7 +185,7 @@ export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
       statusTone,
       editable: canEditDate(today, date, plan),
       synced,
-      phaseLabel: scheduleDates.has(date) ? 'Experiment day' : 'Baseline',
+      phaseLabel: scheduleDates.has(date) ? 'Test day' : 'Getting to know you',
     });
   }
 

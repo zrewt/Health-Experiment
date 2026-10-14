@@ -51,13 +51,13 @@ test('instruction text matches exact wording per condition and preserves plan cu
 
   for (const day of plan.schedule) {
     const text = day.condition === 'intervention'
-      ? `Today: no caffeine after ${cutoff}.`
-      : 'Today: your usual routine.';
+      ? `Today: cutoff day, no caffeine after ${cutoff}`
+      : 'Today: normal day';
 
     if (day.condition === 'intervention') {
-      assert.equal(text, 'Today: no caffeine after 13:15.');
+      assert.equal(text, 'Today: cutoff day, no caffeine after 13:15');
     } else {
-      assert.equal(text, 'Today: your usual routine.');
+      assert.equal(text, 'Today: normal day');
     }
   }
 });
@@ -88,8 +88,8 @@ test('view model exposes only current day instruction, never future/other-day co
   const exposedToday = {
     date: todayAssignment.date,
     instruction: todayAssignment.condition === 'intervention'
-      ? `Today: no caffeine after ${plan.definition.conditionRule.cutoffTime}.`
-      : 'Today: your usual routine.',
+      ? `Today: cutoff day, no caffeine after ${plan.definition.conditionRule.cutoffTime}`
+      : 'Today: normal day',
   };
 
   assert.deepEqual(Object.keys(exposedToday).sort(), ['date', 'instruction']);

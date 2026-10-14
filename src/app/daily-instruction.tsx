@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { StyleSheet, ScrollView, Alert, Platform, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, ScreenHeader, Card, NavRow, StatStrip, Text, Button } from '@/components/ui';
+import {
+  Screen, ScreenHeader, Card, NavRow, StatStrip, Text, Button, Details, Disclosure,
+} from '@/components/ui';
 import { spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import {
@@ -45,7 +47,7 @@ export default function DailyInstructionScreen() {
         setPlanRecord(active);
         setEntries(loadedEntries);
       } catch (e) {
-        if (current) setStatusMessage(e instanceof Error ? e.message : 'Error loading plan.');
+        if (current) setStatusMessage(e instanceof Error ? e.message : 'Could not load your test. Try again.');
       } finally {
         if (current) setLoading(false);
       }
@@ -56,7 +58,7 @@ export default function DailyInstructionScreen() {
   if (loading) {
     return (
       <Screen>
-        <Text color="ivorySecondary">Loading daily instructions...</Text>
+        <Text color="ivorySecondary">Loading…</Text>
       </Screen>
     );
   }
@@ -64,9 +66,9 @@ export default function DailyInstructionScreen() {
   if (!planRecord || planRecord.status === 'cancelled') {
     return (
       <Screen>
-        <Card overline="ENDED" title="Experiment ended early">
+        <Card overline="ENDED" title="Test stopped early">
           <Text color="ivorySecondary">
-            This experiment was ended without a result. Your logged entries have been kept. New experiments will arrive in future updates.
+            Your entries are safe. Nothing was worked out, and you can start again any time.
           </Text>
           <NavRow label="Back to Today" onPress={() => router.replace('/')} />
         </Card>
@@ -95,6 +97,19 @@ export default function DailyInstructionScreen() {
 
   const yesterdayEntry = entries.find(e => e.date === yesterday);
 
+  // One big line, and today's number. Nothing else competes for the first glance.
+  const todayLine = isScheduled
+    ? `Starts ${plan.startDate}`
+    : isAfterLastExposure
+    ? 'All done — log last night'
+    : todayScheduled?.condition === 'intervention'
+    ? `Today: cutoff day, no caffeine after ${cutoffTime}`
+    : 'Today: normal day';
+
+  const dayLine = isScheduled
+    ? `Starts in ${plan.chosenDuration} days from that date`
+    : `Day ${currentDayNum} of ${plan.chosenDuration}`;
+
   const handleSaveCheckIn = async (entry: DailyEntry) => {
     if (!user) return;
     setSavingEntry(true);
@@ -105,9 +120,9 @@ export default function DailyInstructionScreen() {
         next.push(saved);
         return next.sort((a, b) => a.date.localeCompare(b.date));
       });
-      setStatusMessage('Check-in saved.');
+      setStatusMessage('Saved.');
     } catch (e) {
-      setStatusMessage(e instanceof Error ? e.message : 'Error saving check-in.');
+      setStatusMessage(e instanceof Error ? e.message : 'Could not save. Try again.');
     } finally {
       setSavingEntry(false);
     }
@@ -115,13 +130,13 @@ export default function DailyInstructionScreen() {
 
   const handleEndEarly = async () => {
     if (!user || !planRecord) return;
-    const message = 'This ends the experiment without a result. You cannot resume it. Your logged entries stay.';
+    const message = 'This ends the test and works nothing out. You cannot resume it. Your entries stay.';
     const confirm = Platform.OS === 'web'
       ? window.confirm(message)
       : await new Promise<boolean>(resolve => {
-          Alert.alert('End Experiment Early?', message, [
-            { text: 'Keep Going', onPress: () => resolve(false), style: 'cancel' },
-            { text: 'End Experiment', onPress: () => resolve(true), style: 'destructive' },
+          Alert.alert('End this test early?', message, [
+            { text: 'Keep going', onPress: () => resolve(false), style: 'cancel' },
+            { text: 'End it', onPress: () => resolve(true), style: 'destructive' },
           ]);
         });
 
@@ -135,7 +150,7 @@ export default function DailyInstructionScreen() {
       await clearDailyReminder();
       router.replace('/');
     } catch (e) {
-      setStatusMessage(e instanceof Error ? e.message : 'Could not end experiment early.');
+      setStatusMessage(e instanceof Error ? e.message : 'Could not end the test. Try again.');
     } finally {
       setCancelling(false);
     }
@@ -145,63 +160,25 @@ export default function DailyInstructionScreen() {
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenHeader
-          overline="TODAY'S PLAN"
-          title="Daily Instruction"
+          overline="TODAY’S NOTE"
+          title="Today"
           notice="This app is not medical advice."
-          action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
+          action={<Button label="Home" variant="quiet" onPress={() => router.replace('/')} />}
         />
 
         {statusMessage ? (
-          <Card>
-            <Text color="champagneLight" accessibilityLiveRegion="polite">{statusMessage}</Text>
-          </Card>
+          <Text variant="sub" color="champagneLight" accessibilityLiveRegion="polite">{statusMessage}</Text>
         ) : null}
 
-        {/* Top card: Today's rule or schedule status */}
-        {isScheduled ? (
-          <Card overline="UPCOMING">
-            <Text variant="titleSmall">
-              Your experiment starts on {plan.startDate}. Until then, keep your usual routine and keep logging.
-            </Text>
-          </Card>
-        ) : isAfterLastExposure ? (
-          <Card overline="FINAL DAY">
-            <Text variant="titleSmall">
-              Last check-in: log last night to include your final day.
-            </Text>
-          </Card>
-        ) : todayScheduled ? (
-          <Card tone="hero" overline="TODAY'S INSTRUCTION">
-            <Text variant="titleMedium" color="champagneLight" serif>
-              {todayScheduled.condition === 'intervention'
-                ? `Today: no caffeine after ${cutoffTime}.`
-                : 'Today: your usual routine.'}
-            </Text>
-          </Card>
-        ) : null}
-
-        {/* Progress Counts */}
-        <Card overline="PROGRESS">
-          <Text variant="titleSmall" color="champagneLight" tabular>
-            Day {currentDayNum} of {plan.chosenDuration}
+        {/* The one line that matters today, and nothing else. */}
+        <Card tone="hero">
+          <Text variant="titleMedium" color="champagneLight" serif>
+            {todayLine}
           </Text>
-          <StatStrip
-            items={[
-              { label: 'Days logged', value: String(progress.daysLogged), emphasis: 'strong' },
-              { label: 'Days remaining', value: String(progress.daysRemaining) },
-            ]}
-          />
-          <StatStrip
-            items={[
-              { label: 'Adherent', value: String(progress.adherenceCounts.ADHERENT), emphasis: 'strong' },
-              { label: 'Usual routine', value: String(progress.adherenceCounts.CONTROL_CLEAN) },
-              { label: 'Contaminated', value: String(progress.adherenceCounts.CONTAMINATED) },
-              { label: 'Unknown', value: String(progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
-            ]}
-          />
+          <Text variant="caption" color="ivoryMuted" tabular>{dayLine}</Text>
         </Card>
 
-        {/* Yesterday's check-in */}
+        {/* The log itself. Its Save button is the one main action on this screen. */}
         <CheckInCard
           date={yesterday}
           label="LAST NIGHT"
@@ -211,23 +188,44 @@ export default function DailyInstructionScreen() {
           saving={savingEntry}
         />
 
-        {/* Ending early is irreversible, so it sits last and quietly. */}
-        <Card tone="quiet">
-          <Text variant="caption" color="ivoryMuted">
-            Ending early keeps every logged entry but produces no result.
-          </Text>
-          <Button
-            label="End experiment early"
-            variant="quiet"
-            loading={cancelling}
-            onPress={() => void handleEndEarly()}
+        {/* Counts are available, not in the way. */}
+        <Details summary="How the test is going">
+          <StatStrip
+            items={[
+              { label: 'Days logged', value: String(progress.daysLogged), emphasis: 'strong' },
+              { label: 'Days to go', value: String(progress.daysRemaining) },
+            ]}
           />
-        </Card>
+          <StatStrip
+            items={[
+              { label: 'Kept the rule', value: String(progress.adherenceCounts.ADHERENT) },
+              { label: 'Normal days', value: String(progress.adherenceCounts.CONTROL_CLEAN) },
+              { label: 'Normal, no caffeine', value: String(progress.adherenceCounts.CONTAMINATED) },
+              { label: 'Not sure', value: String(progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
+            ]}
+          />
+        </Details>
+
+        {/* Ending early is irreversible, so it lives in the menu. */}
+        <Disclosure label="Menu" summary="End this test early">
+          <View style={styles.menuBody}>
+            <Text variant="caption" color="ivoryMuted">
+              Ending early keeps your entries but works nothing out.
+            </Text>
+            <Button
+              label="End early"
+              variant="quiet"
+              loading={cancelling}
+              onPress={() => void handleEndEarly()}
+            />
+          </View>
+        </Disclosure>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.md, paddingBottom: spacing.lg },
+  content: { gap: spacing.section, paddingBottom: spacing.section },
+  menuBody: { gap: spacing.sm, paddingTop: spacing.sm },
 });

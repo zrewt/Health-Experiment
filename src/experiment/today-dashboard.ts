@@ -205,12 +205,12 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       medicalNotice: 'This app is not medical advice.',
       instruction: {
         overline: 'GETTING STARTED',
-        heading: 'Review consent & set up your experiment',
-        body: 'Review how your sleep and caffeine log is used and choose your daily cutoff time to begin your 14-day baseline run-in.',
+        heading: 'Let’s get you set up',
+        body: 'See how your log is used, then pick your daily cutoff time.',
         detail: 'Takes about two minutes.',
       },
       primaryAction: {
-        label: 'Setup & Consent',
+        label: 'Set up',
         route: '/setup-consent',
         tone: 'primary',
       },
@@ -231,12 +231,12 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       medicalNotice: 'This app is not medical advice.',
       instruction: {
         overline: 'GETTING STARTED',
-        heading: 'Finish experiment setup',
-        body: 'Choose your daily caffeine cutoff time to start logging your 14-day baseline run-in.',
-        detail: 'One step left: your cutoff time.',
+        heading: 'One step left',
+        body: 'Pick your daily caffeine cutoff time.',
+        detail: 'Then you can start logging.',
       },
       primaryAction: {
-        label: 'Setup & Consent',
+        label: 'Set up',
         route: '/setup-consent',
         tone: 'primary',
       },
@@ -256,10 +256,10 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
     const remaining = Math.max(0, runInMinValidDays - validDays);
     const nextStepText =
       state === 'feasibility_ready'
-        ? 'Next step: Review your feasibility check and choose an experiment duration.'
+        ? 'Next step: see if this test can show a real difference.'
         : setup?.nextCheckDate
-        ? `Next step: Keep logging until your next feasibility check on ${setup.nextCheckDate}.`
-        : `Next step: Log ${remaining} more valid night${remaining === 1 ? '' : 's'} with sleep duration to unlock your feasibility check.`;
+        ? `Next step: keep logging until ${setup.nextCheckDate}.`
+        : `Next step: log ${remaining} more night${remaining === 1 ? '' : 's'} to unlock the check.`;
 
     return {
       today,
@@ -268,21 +268,21 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       instruction:
         state === 'feasibility_ready'
           ? {
-              overline: 'BASELINE COMPLETE',
-              heading: 'Ready to check feasibility',
-              body: 'Today: your usual routine. Your baseline log is ready to evaluate whether an experiment can detect a meaningful sleep change.',
-              detail: `${validDays} valid nights logged.`,
+              overline: 'ALL SET',
+              heading: 'Your log is ready',
+              body: 'Time to see if this test can show a real difference.',
+              detail: `${validDays} nights logged.`,
             }
           : {
-              overline: "TODAY'S ROUTINE",
-              heading: 'Today: your usual routine.',
-              body: 'Keep your normal sleep and caffeine habits during the baseline run-in and log each morning.',
-              detail: `${validDays} of ${runInMinValidDays} valid nights logged.`,
+              overline: 'GETTING TO KNOW YOU',
+              heading: 'Today: normal day',
+              body: 'Keep your usual habits, and log your night each morning.',
+              detail: `${validDays} of ${runInMinValidDays} nights logged.`,
             },
       primaryAction:
         state === 'feasibility_ready'
-          ? { label: 'Check Feasibility', route: '/feasibility', tone: 'primary' }
-          : { label: 'Run-in Check-in', route: '/run-in', tone: 'quiet' },
+          ? { label: 'Is this test worth doing?', route: '/feasibility', tone: 'primary' }
+          : { label: 'Log my sleep', route: '/run-in', tone: 'quiet' },
       checkIn: buildCheckIn({
         enabled: true,
         defaultDate: yesterday,
@@ -305,10 +305,10 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       state,
       medicalNotice: 'This app is not medical advice.',
       instruction: {
-        overline: 'EXPERIMENT ENDED',
-        heading: 'Experiment ended early',
-        body: 'Your experiment was ended early without a result. Your logged entries have been preserved.',
-        detail: 'No result was computed.',
+        overline: 'ENDED',
+        heading: 'Test stopped early',
+        body: 'Your entries are safe, and nothing was worked out.',
+        detail: 'You can start again any time.',
       },
       primaryAction: null,
       checkIn: buildCheckIn({
@@ -323,8 +323,8 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
 
   if (state === 'plan_result_ready' && plan) {
     const res = plan.result;
-    const verdictHeading = res ? (VERDICT_HEADINGS[res.verdictLabel] ?? res.verdictLabel) : 'Result ready';
-    const statement = res ? res.statement : 'Your experiment result is ready to view.';
+    const verdictHeading = res ? (VERDICT_HEADINGS[res.verdictLabel] ?? res.verdictLabel) : 'Ready to read';
+    const statement = res ? res.statement : 'Your test has finished. Open it to read what we found.';
     const daysAnalyzed = res ? res.daysAnalyzed.intervention + res.daysAnalyzed.control : 0;
 
     return {
@@ -332,13 +332,13 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       state,
       medicalNotice: 'This app is not medical advice.',
       instruction: {
-        overline: 'VERDICT',
+        overline: 'WHAT WE FOUND',
         heading: verdictHeading,
         body: statement,
-        detail: `${daysAnalyzed} days analyzed.`,
+        detail: `${daysAnalyzed} days looked at.`,
       },
       primaryAction: {
-        label: 'See Result',
+        label: 'Read what we found',
         route: '/result',
         tone: 'primary',
       },
@@ -353,7 +353,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
             daysAnalyzed,
             daysExcluded: res.daysExcluded,
             missingOutcomeDays: res.missingOutcomeDays,
-            nextStepText: 'Your experiment log is locked. Open See Result for full adherence and day counts.',
+            nextStepText: 'Your log is locked. Open what we found for the day counts.',
           }
         : null,
       unsyncedCount,
@@ -374,13 +374,13 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       state,
       medicalNotice: 'This app is not medical advice.',
       instruction: {
-        overline: 'UPCOMING EXPERIMENT',
-        heading: `Your experiment starts on ${activePlan.startDate}.`,
-        body: 'Until then, keep your usual routine and keep logging each morning.',
-        detail: `Starts ${activePlan.startDate} • ${activePlan.chosenDuration} days.`,
+        overline: 'STARTING SOON',
+        heading: `Starts ${activePlan.startDate}`,
+        body: 'Until then, keep your usual habits and keep logging.',
+        detail: `${activePlan.chosenDuration} days planned.`,
       },
       primaryAction: {
-        label: 'Daily Instruction',
+        label: 'Today’s note',
         route: '/daily-instruction',
         tone: 'quiet',
       },
@@ -396,7 +396,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
         daysLogged: summary.daysLogged,
         daysRemaining: summary.daysRemaining,
         adherenceCounts: summary.adherenceCounts,
-        nextStepText: `Next step: Follow your first daily instruction on ${activePlan.startDate}.`,
+        nextStepText: `Next step: your first note on ${activePlan.startDate}.`,
       },
       unsyncedCount,
     };
@@ -408,21 +408,21 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
     const currentDayNum = dayIndex >= 0 ? dayIndex + 1 : 1;
     const instructionHeading =
       todayScheduled?.condition === 'intervention'
-        ? `Today: no caffeine after ${cutoffTime}.`
-        : 'Today: your usual routine.';
+        ? `Today: cutoff day, no caffeine after ${cutoffTime}`
+        : 'Today: normal day';
 
     return {
       today,
       state,
       medicalNotice: 'This app is not medical advice.',
       instruction: {
-        overline: "TODAY'S INSTRUCTION",
+        overline: 'TODAY',
         heading: instructionHeading,
-        body: `Day ${currentDayNum} of ${activePlan.chosenDuration}. Log last night's sleep and yesterday's caffeine below.`,
-        detail: `Day ${currentDayNum} of ${activePlan.chosenDuration} • Cutoff ${cutoffTime}`,
+        body: 'Log last night’s sleep and your last caffeine time below.',
+        detail: `Day ${currentDayNum} of ${activePlan.chosenDuration}`,
       },
       primaryAction: {
-        label: 'Daily Instruction',
+        label: 'Today’s note',
         route: '/daily-instruction',
         tone: 'quiet',
       },
@@ -438,7 +438,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
         daysLogged: summary.daysLogged,
         daysRemaining: summary.daysRemaining,
         adherenceCounts: summary.adherenceCounts,
-        nextStepText: `Next step: Complete your experiment through ${lastExposureDate}. Results unlock on ${addDaysToLocalDate(lastExposureDate, 1)}.`,
+        nextStepText: `Next step: finish on ${lastExposureDate}. What we found opens the next day.`,
       },
       unsyncedCount,
     };
@@ -455,16 +455,15 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
     today,
     state,
     medicalNotice: 'This app is not medical advice.',
-    instruction: {
-      overline: 'FINAL CHECK-IN',
-      heading: 'Your experiment is complete.',
-      body: isFinalMissing
-        ? `You need to log your final day (${lastExposureDate}) before viewing your result.`
-        : 'All scheduled days have been logged. Lock your experiment days when ready to compute your result.',
-      detail: `${summary.daysLogged} of ${activePlan.chosenDuration} days logged.`,
-    },
-    primaryAction: {
-      label: 'Final Check-in',
+    instruction: {        overline: 'LAST DAY',
+        heading: 'Your sleep test is over',
+        body: isFinalMissing
+          ? 'Log your last night to see what we found.'
+          : 'Everything is logged. Lock it to see what we found.',
+        detail: `${summary.daysLogged} of ${activePlan.chosenDuration} days logged.`,
+      },
+      primaryAction: {
+        label: 'Finish & see what we found',
       route: '/result',
       tone: 'primary',
     },
@@ -480,7 +479,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       daysLogged: summary.daysLogged,
       daysRemaining: summary.daysRemaining,
       adherenceCounts: summary.adherenceCounts,
-      nextStepText: 'Next step: Open Final Check-in to lock your entries and see your result.',
+      nextStepText: 'Next step: lock your log to see what we found.',
     },
     unsyncedCount,
   };

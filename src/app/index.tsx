@@ -9,6 +9,7 @@ import {
   StatStrip,
   Text,
   Button,
+  Details,
   PrimaryNav,
 } from '@/components/ui';
 import { spacing } from '@/design/tokens';
@@ -104,7 +105,7 @@ export default function HomeScreen() {
       });
       setReminderNotice(
         reminder.status === 'skipped' && reminder.permission === 'denied'
-          ? 'Daily reminders are off. Turn notifications on for Aevum in Settings to get a check-in nudge.'
+          ? 'Daily reminders are off. Turn on notifications in Settings to get a nudge.'
           : null,
       );
     } catch (e) {
@@ -161,26 +162,26 @@ export default function HomeScreen() {
       setEditingCheckIn(false);
       setShowEarlierDays(false);
       if (saved.synced === false) {
-        setSyncNotice('Entry saved locally (not synced yet). Retrying sync...');
+        setSyncNotice('Saved on this device. Syncing now...');
         void syncUnsyncedEntries(user.id)
           .then(async (res) => {
             const refreshed = await listEntries(user.id);
             setEntries(refreshed);
             if (res.failedCount === 0) {
               setSyncNotice(null);
-              setSaveMessage('Check-in saved.');
+              setSaveMessage('Saved.');
             } else {
-              setSyncNotice(`${res.failedCount} entr${res.failedCount === 1 ? 'y' : 'ies'} saved locally (not synced yet).`);
+              setSyncNotice(`${res.failedCount} entr${res.failedCount === 1 ? 'y' : 'ies'} saved on this device.`);
             }
           })
           .catch(() => {
-            setSyncNotice('Entry saved locally (not synced yet). You can retry sync anytime.');
+            setSyncNotice('Saved on this device. You can try syncing again any time.');
           });
       } else {
-        setSaveMessage('Check-in saved.');
+        setSaveMessage('Saved.');
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save this check-in. Please try again.');
+      setError(e instanceof Error ? e.message : 'Could not save. Try again.');
     } finally {
       setSavingEntry(false);
     }
@@ -196,12 +197,12 @@ export default function HomeScreen() {
       setEntries(refreshed);
       if (res.failedCount === 0) {
         setSyncNotice(null);
-        setSaveMessage('All entries synced.');
+        setSaveMessage('All saved and synced.');
       } else {
-        setSyncNotice(`${res.failedCount} entr${res.failedCount === 1 ? 'y' : 'ies'} still waiting to sync.`);
+        setSyncNotice(`${res.failedCount} entr${res.failedCount === 1 ? 'y' : 'ies'} still to sync.`);
       }
     } catch {
-      setSyncNotice('Sync could not complete right now. Your entries remain saved on this device.');
+      setSyncNotice('Could not sync right now. Your entries are safe on this device.');
     } finally {
       setSyncing(false);
     }
@@ -235,10 +236,10 @@ export default function HomeScreen() {
           <Card style={styles.syncCard}>
             <Text variant="sub" color="champagneLight" accessibilityLiveRegion="polite">
               {syncNotice ??
-                `${dashboard.unsyncedCount} check-in${dashboard.unsyncedCount === 1 ? '' : 's'} saved on device (waiting to sync).`}
+                `${dashboard.unsyncedCount} check-in${dashboard.unsyncedCount === 1 ? '' : 's'} saved on this device.`}
             </Text>
             <Button
-              label="Retry Sync"
+              label="Try again"
               variant="quiet"
               loading={syncing}
               onPress={() => void handleRetrySync()}
@@ -256,7 +257,18 @@ export default function HomeScreen() {
           <Text variant="titleMedium" color="champagneLight" serif>
             {dashboard.instruction.heading}
           </Text>
-          <Text variant="body" color="ivorySecondary">{dashboard.instruction.body}</Text>
+          {/* A finished test leads with the plain heading; the engine's exact sentence
+              stays one tap away instead of competing with it. */}
+          {dashboard.state === 'plan_result_ready' ? (
+            <>
+              <Text variant="body" color="ivorySecondary">Open it to read the full result.</Text>
+              <Details summary="The exact words from your test">
+                <Text variant="sub" color="ivorySecondary">{dashboard.instruction.body}</Text>
+              </Details>
+            </>
+          ) : (
+            <Text variant="body" color="ivorySecondary">{dashboard.instruction.body}</Text>
+          )}
           <Text variant="caption" color="ivoryMuted" tabular>{dashboard.instruction.detail}</Text>
 
           {/* A required step is a button; a step Today already covers stays a quiet row. */}
@@ -281,7 +293,7 @@ export default function HomeScreen() {
                 <Text variant="overline" color="champagneMuted">
                   LOGGED FOR LAST NIGHT ({dashboard.checkIn.defaultDate})
                 </Text>
-                <Text variant="titleSmall" color="champagneLight" serif>Morning check-in complete</Text>
+                <Text variant="titleSmall" color="champagneLight" serif>Last night is logged</Text>
                 <Text variant="body" color="ivorySecondary" tabular>{dashboard.checkIn.summary}</Text>
                 <NavRow
                   label="Edit this check-in"
@@ -313,7 +325,7 @@ export default function HomeScreen() {
             {checkInFormVisible && !canEditActiveDate ? (
               <Card>
                 <Text variant="sub" color="ivorySecondary">
-                  This day is locked because its experiment result has been saved.
+                  This day is locked, because you already saved what we found.
                 </Text>
                 <NavRow
                   label="Back to last night"
@@ -361,9 +373,9 @@ export default function HomeScreen() {
 
         {/* Progress: figures only, no interim estimates. */}
         {dashboard.progress?.kind === 'run_in' ? (
-          <Card overline="BASELINE">
+          <Card overline="PROGRESS">
             <Text variant="titleMedium" color="champagneLight" tabular>
-              {dashboard.progress.validDays} of {dashboard.progress.targetDays} valid nights
+              {dashboard.progress.validDays} of {dashboard.progress.targetDays} nights logged
             </Text>
             <Text variant="sub" color="ivorySecondary">{dashboard.progress.nextStepText}</Text>
 
@@ -379,11 +391,11 @@ export default function HomeScreen() {
                         : '—',
                   },
                   {
-                    label: 'Late caffeine',
+                    label: 'Caffeine after noon',
                     value: `${dashboard.progress.descriptiveStats.afternoonCaffeineDays}`,
                   },
                   {
-                    label: 'Unknown caffeine',
+                    label: 'Caffeine not logged',
                     value: `${dashboard.progress.descriptiveStats.unknownCaffeineDays}`,
                   },
                 ]}
@@ -393,11 +405,11 @@ export default function HomeScreen() {
         ) : null}
 
         {dashboard.progress?.kind === 'experiment' ? (
-          <Card overline="EXPERIMENT">
+          <Card overline="TEST">
             <Text variant="titleMedium" color="champagneLight" tabular>
               {dashboard.progress.currentDayNum > 0
                 ? `Day ${dashboard.progress.currentDayNum} of ${dashboard.progress.totalDays}`
-                : `${dashboard.progress.totalDays} days scheduled`}
+                : `${dashboard.progress.totalDays} days to go`}
             </Text>
             <StatStrip
               items={[
@@ -407,10 +419,12 @@ export default function HomeScreen() {
             />
             <StatStrip
               items={[
-                { label: 'Adherent', value: String(dashboard.progress.adherenceCounts.ADHERENT), emphasis: 'strong' },
-                { label: 'Usual routine', value: String(dashboard.progress.adherenceCounts.CONTROL_CLEAN) },
-                { label: 'Contaminated', value: String(dashboard.progress.adherenceCounts.CONTAMINATED) },
-                { label: 'Unknown', value: String(dashboard.progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
+                { label: 'Kept the rule', value: String(dashboard.progress.adherenceCounts.ADHERENT), emphasis: 'strong' },
+                { label: 'Normal days', value: String(dashboard.progress.adherenceCounts.CONTROL_CLEAN) },
+                // CONTAMINATED is a normal day where caffeine was skipped or early, not
+                // "caffeine after cutoff" — that would describe the opposite of the count.
+                { label: 'Normal, no caffeine', value: String(dashboard.progress.adherenceCounts.CONTAMINATED) },
+                { label: 'Not sure', value: String(dashboard.progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
               ]}
             />
             <Text variant="sub" color="ivorySecondary">{dashboard.progress.nextStepText}</Text>
@@ -418,13 +432,13 @@ export default function HomeScreen() {
         ) : null}
 
         {dashboard.progress?.kind === 'result' ? (
-          <Card overline="EXPERIMENT SUMMARY">
+          <Card overline="WHAT WE FOUND">
             <StatStrip
               size="lg"
               items={[
-                { label: 'Days analyzed', value: String(dashboard.progress.daysAnalyzed), emphasis: 'strong' },
-                { label: 'Days excluded', value: String(dashboard.progress.daysExcluded) },
-                { label: 'No sleep logged', value: String(dashboard.progress.missingOutcomeDays) },
+                { label: 'Days looked at', value: String(dashboard.progress.daysAnalyzed), emphasis: 'strong' },
+                { label: 'Days left out', value: String(dashboard.progress.daysExcluded) },
+                { label: 'Nights not logged', value: String(dashboard.progress.missingOutcomeDays) },
               ]}
             />
             <Text variant="sub" color="ivorySecondary">{dashboard.progress.nextStepText}</Text>
@@ -449,7 +463,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
-  content: { gap: spacing.md, paddingBottom: spacing.lg },
-  alertCard: { gap: spacing.xs },
-  syncCard: { gap: spacing.xs },
+  content: { gap: spacing.section, paddingBottom: spacing.section },
+  alertCard: { gap: spacing.sm },
+  syncCard: { gap: spacing.sm },
 });

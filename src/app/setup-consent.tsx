@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, ScreenHeader, Card, Disclosure, Text, Button } from '@/components/ui';
+import { Screen, ScreenHeader, Card, Details, Text, Button } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import { saveConsent, saveSetup, type ScreeningAnswer } from '@/data/experiment-store';
@@ -33,7 +33,7 @@ export default function SetupConsentScreen() {
 
   const handleAgreeAndContinue = async () => {
     if (!user) {
-      setError('You must be signed in to set up an experiment.');
+      setError('You must be signed in to set this up.');
       return;
     }
     if (!screening) return;
@@ -77,16 +77,16 @@ export default function SetupConsentScreen() {
     return (
       <Screen>
         <View style={styles.centerContainer}>
-          <Text variant="titleMedium" style={styles.title}>Consent Declined</Text>
+          <Text variant="titleMedium" style={styles.title}>No problem</Text>
           <Text variant="body" color="ivorySecondary" style={styles.paragraph}>
-            The experiment requires permission to log your sleep and caffeine data. Without this consent, the app cannot be used for this study.
+            Without your permission the app cannot log your sleep and caffeine, so the test cannot run.
           </Text>
           <Text variant="caption" color="ivoryMuted" style={styles.legalDisclaimer}>
             This app is not medical advice.
           </Text>
           <View style={styles.buttonSpacing}>
             <Button
-              label="Review consent again"
+              label="Review it again"
               variant="secondary"
               onPress={() => setDeclined(false)}
             />
@@ -101,39 +101,33 @@ export default function SetupConsentScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader
           overline="SETUP"
-          title="Caffeine & Sleep Experiment"
+          title="Sleep & caffeine test"
           notice="This app is not medical advice."
           action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
         />
 
-        <Card title="How this experiment works">
+        <Card title="How this works">
           <View style={styles.pointRow}>
             <Text variant="body" color="champagne" weight="semiBold">1. </Text>
             <Text variant="body" color="ivorySecondary" style={styles.pointText}>
-              14 valid days of normal life first to understand your baseline sleep and caffeine routine.
+              Log your sleep each morning for about two weeks. Keep your usual habits.
             </Text>
           </View>
           <View style={styles.pointRow}>
             <Text variant="body" color="champagne" weight="semiBold">2. </Text>
             <Text variant="body" color="ivorySecondary" style={styles.pointText}>
-              Then we check whether an experiment could give you a clear answer before you commit.
+              Then we check whether a test can tell you anything.
             </Text>
           </View>
           <View style={styles.pointRow}>
             <Text variant="body" color="champagne" weight="semiBold">3. </Text>
             <Text variant="body" color="ivorySecondary" style={styles.pointText}>
-              Some people will be told it is not informative yet, and that is an honest result.
+              If it can, you run the test, one day at a time: a cutoff day or a normal day. At the end, what we found.
             </Text>
           </View>
         </Card>
 
-        <Card overline="EXPERIMENT" title="Caffeine cutoff and next-night sleep">
-          <Text variant="body" color="ivorySecondary">
-            Measures whether ending caffeine consumption by an early cutoff time changes your recorded sleep duration that night.
-          </Text>
-        </Card>
-
-        <Card title="Screening Question">
+        <Card title="One question">
           <Text variant="body" color="ivorySecondary" style={styles.questionText}>
             Do you usually have caffeine after noon?
           </Text>
@@ -167,7 +161,7 @@ export default function SetupConsentScreen() {
           {screening === 'rarely_or_never' ? (
             <View style={styles.honestNotice}>
               <Text variant="sub" color="champagneLight" weight="medium">
-                Because you rarely or never consume caffeine in the afternoon, this cutoff experiment is unlikely to tell you anything.
+                You rarely have caffeine in the afternoon, so this test is unlikely to tell you much.
               </Text>
               <View style={styles.inlineButtons}>
                 <Button
@@ -187,9 +181,9 @@ export default function SetupConsentScreen() {
           ) : null}
         </Card>
 
-        <Card title="Cutoff Time">
+        <Card title="Your cutoff time">
           <Text variant="body" color="ivorySecondary">
-            The scheduled time after which intervention days avoid caffeine:
+            On cutoff days, no caffeine after this time:
           </Text>
           <View style={styles.cutoffRow}>
             {['11:00', '12:00', '13:00', '14:00'].map((time) => (
@@ -216,24 +210,22 @@ export default function SetupConsentScreen() {
         </Card>
 
         <Card
-          overline="CONSENT & DATA USE (DRAFT)"
-          title="Informed Consent"
+          overline="BEFORE YOU START"
+          title="Your consent"
           style={styles.consentCard}
         >
-          <Text variant="body" color="ivorySecondary">
-            To run this experiment, the app collects and securely stores:
-          </Text>
           <View style={styles.bulletList}>
-            <Text variant="sub" color="ivorySecondary">• Sleep duration (hours and minutes logged each morning)</Text>
-            <Text variant="sub" color="ivorySecondary">• Time of last caffeine intake (or whether none was consumed)</Text>
-            <Text variant="sub" color="ivorySecondary">• Your experiment schedule and resulting statistical summaries</Text>
+            <Text variant="sub" color="ivorySecondary">• You log your sleep and your last caffeine time each morning.</Text>
+            <Text variant="sub" color="ivorySecondary">• We keep those logs, and the timetable of your test, in your own account.</Text>
+            <Text variant="sub" color="ivorySecondary">• You can stop any time, and delete everything from Settings.</Text>
+            <Text variant="sub" color="ivorySecondary">• This app is not medical advice.</Text>
           </View>
 
-          <Disclosure label="View Draft Privacy Policy">
+          <Details summary="The full consent and privacy text, as drafted">
             <Text variant="caption" color="ivoryMuted">
               [DRAFT PLACEHOLDER - FOR LEGAL REVIEW]: Data collected in this application is used solely for the calculation of personal n-of-1 self-experiments. Your data will not be sold to third parties. A final production privacy policy must be approved by legal counsel prior to app release.
             </Text>
-          </Disclosure>
+          </Details>
 
           {/* Affirmative agreement */}
           <Pressable
@@ -241,19 +233,19 @@ export default function SetupConsentScreen() {
             style={styles.checkboxRow}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: agreed }}
-            accessibilityLabel="I agree to share sleep duration, caffeine intake, and experiment records"
+            accessibilityLabel="I agree to store my sleep and caffeine logs for this test"
           >
             <View style={[styles.checkbox, agreed && styles.checkboxChecked]}>
               {agreed ? <Text variant="body" color="ground" weight="semiBold">✓</Text> : null}
             </View>
             <Text variant="body" color="ivory" style={styles.checkboxLabel}>
-              I agree to the collection and processing of my health and caffeine log data as described.
+              I agree to my sleep and caffeine logs being stored for this test.
             </Text>
           </Pressable>
 
           <View style={styles.consentActions}>
             <Button
-              label="I agree & start run-in"
+              label="I agree, let's start"
               variant="primary"
               disabled={!canSubmit}
               loading={saving}
@@ -280,7 +272,7 @@ export default function SetupConsentScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    gap: spacing.md,
+    gap: spacing.section,
     paddingBottom: spacing.xxl,
   },
   centerContainer: {
@@ -311,7 +303,7 @@ const styles = StyleSheet.create({
     marginVertical: spacing.sm,
   },
   optionsGroup: {
-    marginVertical: spacing.xs,
+    marginVertical: spacing.sm,
   },
   optionButton: {
     paddingVertical: spacing.md,
@@ -342,8 +334,8 @@ const styles = StyleSheet.create({
   },
   cutoffRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
+    gap: spacing.md,
+    marginTop: spacing.md,
   },
   cutoffPill: {
     paddingVertical: spacing.sm,

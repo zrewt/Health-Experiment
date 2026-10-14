@@ -40,24 +40,26 @@ for (const [mde, kind] of [[30, 'informative'], [31, 'long_shot'], [45, 'long_sh
       assert.equal(state.requiresAcknowledgement, kind === 'long_shot');
       for (const option of state.options) {
         assert.equal(option.statement, lookup(mde)({ duration: option.duration, sd: 25, lag1Autocorrelation: option.scenarioRho }).statement);
-        assert.equal(option.mdeLabel, 'effect if you follow the rule fully');
-        assert.equal(option.adherenceAssumptionText, 'assuming you follow the rule on about 9 of 10 assigned days');
+        assert.equal(option.mdeLabel, 'change if you follow the rule on every cutoff day');
+        assert.equal(option.adherenceAssumptionText, 'if you follow the rule on about 9 of 10 cutoff days');
         assert.equal(option.mdeAssignedDayEquivalent, typeof mde === 'number' ? mde * 0.8 : null);
       }
-      assert.equal(state.approximateLabel, 'Approximate');
-      assert.equal(state.simulationNote, 'These numbers come from computer simulations and are approximate (about plus or minus 6 percentage points).');
-      assert.match(state.startInstruction, /2-day blocks, assigned at random/);
+      assert.equal(state.approximateLabel, 'Rough');
+      assert.equal(state.simulationNote, 'These numbers come from computer simulations of your log, so they are rough — about six points either way.');
+      assert.match(state.startInstruction, /picked at random/);
       assert.match(state.startInstruction, /12:00/);
     } else {
       assert.equal('options' in state, false);
       assert.equal('canStart' in state, false);
       assert.ok('actions' in state);
-      assert.deepEqual(state.actions, ['Keep logging; re-check in 7 days', 'Not now']);
+      assert.deepEqual(state.actions, ['Keep logging for now', 'Not now']);
       assert.deepEqual(state.reasons, baseline.engineReasons);
       if (state.kind === 'not_informative') {
+        // The screen leads with one plain reason. The engine's own sentence for this tier
+        // is still reachable verbatim through feasibility.options and is shown under Details.
         if (typeof mde === 'number' && mde <= 60) assert.equal(state.message,
-          `With your current sleep variability, a 84-day experiment could only reliably detect changes of about ${mde} minutes or more if you follow the rule fully, which is larger than the 15 minutes we treat as meaningful. We don't recommend starting.`);
-        else assert.equal(state.message, 'Engine sentence for 84.\nPreserve every character.');
+          'Sleep changes would have to be large before this test could show them.');
+        else assert.equal(state.message, 'Your nightly sleep varies too much for this test to show a real difference.');
       }
     }
   });
@@ -73,12 +75,12 @@ test('ineligible facts are baseline counts only and reasons pass through the stu
   const state = getFeasibilityScreenState(summary, assessFeasibility(summary), setup);
   assert.equal(state.kind, 'ineligible');
   if (state.kind !== 'ineligible') assert.fail();
-  assert.equal(state.message, "We can't set up this experiment from your log yet.");
+  assert.equal(state.message, "We can't set up this test yet.");
   assert.equal(state.detailsHeading, 'Details');
   assert.deepEqual(state.reasons, ['Exact engine reason.\nNo edits.']);
   assert.deepEqual(state.detailFacts, [
     'You logged caffeine after noon on 3 of 14 days.',
-    '5 days had no caffeine time logged. Those days count against eligibility, so logging it each day helps.',
+    '5 days had no caffeine time logged, so they do not count. Log it every morning.',
   ]);
 });
 
@@ -95,7 +97,7 @@ test('SD 24 shows conservative notice and SD 76 shows no unsupported numbers or 
   const lowState = getFeasibilityScreenState(low, assessFeasibility(low, lookup(30)), setup);
   assert.equal(lowState.kind, 'informative');
   if (lowState.kind !== 'informative') assert.fail();
-  assert.equal(lowState.conservativeNote, 'Your sleep is more consistent than the range we tested, so these numbers are conservative.');
+  assert.equal(lowState.conservativeNote, 'Your sleep is steadier than the range we tested, so read these as the low end.');
   assert.ok(lowState.options.every(option => option.numberQualifier === 'at least'));
   const high = { ...baseline, sd: 76 };
   const highState = getFeasibilityScreenState(high, assessFeasibility(high, () => assert.fail('no out-of-range lookup')), setup);

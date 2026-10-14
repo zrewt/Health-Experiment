@@ -100,21 +100,21 @@ function extractCutoffTime(plan: ExperimentPlan): string {
 export const EXPERIMENT_GUIDE_STEPS: readonly [GuideStep, GuideStep, GuideStep] = [
   {
     stepNumber: 1,
-    title: '1. Baseline Run-in (14 valid days)',
+    title: '1. Getting to know your sleep',
     description:
-      'Log last night’s sleep and yesterday’s last caffeine time each morning while keeping your usual routine. Once 14 valid sleep days are recorded, the app checks whether an experiment is feasible.',
+      'Log each morning how long you slept and when you last had caffeine. Keep your usual habits. After 14 nights we check whether a test can show a real difference.',
   },
   {
     stepNumber: 2,
-    title: '2. Randomized 2-Day Blocks',
+    title: '2. The test itself',
     description:
-      'Choose an experiment length (42 to 84 days). Days are assigned in 2-day blocks to either your caffeine cutoff time or your usual routine. Only today’s instruction is shown during the day.',
+      'Days come in pairs, picked at random: a cutoff day (no caffeine after your cutoff time) or a normal day. The app shows you one day at a time.',
   },
   {
     stepNumber: 3,
-    title: '3. Locked Final Result',
+    title: '3. What we found',
     description:
-      'On the morning after your last experiment day, log your final night and lock the experiment window to view your verdict, uncertainty range, and adherence counts.',
+      'On the morning after your last day, log your night and lock the test to see what we found.',
   },
 ];
 
@@ -141,7 +141,7 @@ export function getExperimentLifecycleModel(inputs: {
 
   const validDays = entries.filter(e => e.sleepMinutes !== null).length;
 
-  let durationText = 'Chosen at feasibility check (42, 56, 70, or 84 days)';
+  let durationText = 'Chosen when you start (42, 56, 70 or 84 days)';
   if (activePlan) {
     const lastDate =
       activePlan.plan.schedule[activePlan.plan.schedule.length - 1]?.date ??
@@ -150,72 +150,72 @@ export function getExperimentLifecycleModel(inputs: {
   }
 
   let stageLabel = 'Not started';
-  let stageDescription = 'Complete consent and choose a caffeine cutoff time to begin.';
-  let nextStepLabel = 'Setup & Consent';
+  let stageDescription = 'Set up, then start logging.';
+  let nextStepLabel = 'Set up';
   let nextStepRoute: string | null = '/setup-consent';
   let canStartNewCycle = false;
 
   switch (state) {
     case 'needs_consent':
-      stageLabel = 'Consent needed';
-      stageDescription = 'Review how your log is used and grant consent before starting.';
-      nextStepLabel = 'Setup & Consent';
+      stageLabel = 'Not set up';
+      stageDescription = 'Read how your log is used, then agree.';
+      nextStepLabel = 'Set up';
       nextStepRoute = '/setup-consent';
       break;
     case 'needs_setup':
-      stageLabel = 'Setup needed';
-      stageDescription = 'Choose your daily caffeine cutoff time to begin the 14-day baseline run-in.';
-      nextStepLabel = 'Setup & Consent';
+      stageLabel = 'Not set up';
+      stageDescription = 'Pick your daily caffeine cutoff time.';
+      nextStepLabel = 'Set up';
       nextStepRoute = '/setup-consent';
       break;
     case 'run_in':
-      stageLabel = `Baseline run-in (${validDays} of ${runInMinValidDays} valid days)`;
+      stageLabel = `Getting to know your sleep (${validDays} of ${runInMinValidDays} nights)`;
       stageDescription =
-        'Keep your usual routine and log sleep and caffeine each morning until 14 valid sleep days are recorded.';
-      nextStepLabel = 'Open Run-in Check-in';
+        'Keep your usual habits and log each morning. 14 nights unlocks the check.';
+      nextStepLabel = 'Log my sleep';
       nextStepRoute = '/run-in';
       break;
     case 'feasibility_ready':
-      stageLabel = 'Feasibility ready';
+      stageLabel = 'Ready to check';
       stageDescription =
-        'Your baseline log has enough valid days to evaluate whether an experiment can detect a meaningful sleep difference.';
-      nextStepLabel = 'Check Feasibility';
+        'Your log has enough nights to see whether a test can show a real difference.';
+      nextStepLabel = 'Is this test worth doing?';
       nextStepRoute = '/feasibility';
       break;
     case 'plan_scheduled':
-      stageLabel = `Scheduled (starts ${activePlan?.plan.startDate ?? ''})`;
+      stageLabel = `Starts ${activePlan?.plan.startDate ?? ''}`;
       stageDescription =
-        'Your experiment schedule is locked in. Keep logging your usual routine until the start date.';
-      nextStepLabel = 'Daily Instruction';
+        'Your days are set. Keep logging your usual habits until then.';
+      nextStepLabel = 'Today’s note';
       nextStepRoute = '/daily-instruction';
       break;
     case 'plan_active':
-      stageLabel = 'Experiment in progress';
+      stageLabel = 'Test in progress';
       stageDescription =
-        'Follow today’s assigned instruction and log last night’s sleep and yesterday’s caffeine each morning.';
-      nextStepLabel = 'Daily Instruction';
+        'Follow today’s note and log your night each morning.';
+      nextStepLabel = 'Today’s note';
       nextStepRoute = '/daily-instruction';
       break;
     case 'plan_awaiting_final':
-      stageLabel = 'Awaiting final check-in';
+      stageLabel = 'Last night to log';
       stageDescription =
-        'Your scheduled experiment days have finished. Log your final night and compute your locked result.';
-      nextStepLabel = 'Final Check-in';
+        'The days are done. Log your last night, then lock it to see what we found.';
+      nextStepLabel = 'Finish & see what we found';
       nextStepRoute = '/result';
       break;
     case 'plan_result_ready':
-      stageLabel = 'Completed (result saved)';
+      stageLabel = 'Finished';
       stageDescription =
-        'Your experiment is complete and its result snapshot is saved. You can review the full result or start a new experiment cycle.';
-      nextStepLabel = 'See Result';
+        'Your test is done and saved. Read what we found, or start again.';
+      nextStepLabel = 'Read what we found';
       nextStepRoute = '/result';
       canStartNewCycle = true;
       break;
     case 'plan_ended_early':
-      stageLabel = 'Ended early';
+      stageLabel = 'Stopped early';
       stageDescription =
-        'Your experiment was ended early without a result. Your logged entries remain in your journal, and you can start a new cycle via baseline/feasibility.';
-      nextStepLabel = validDays >= runInMinValidDays ? 'Check Feasibility' : 'Continue Baseline Run-in';
+        'You stopped early, so nothing was worked out. Your entries are still in your journal.';
+      nextStepLabel = validDays >= runInMinValidDays ? 'Is this test worth doing?' : 'Log my sleep';
       nextStepRoute = validDays >= runInMinValidDays ? '/feasibility' : '/run-in';
       canStartNewCycle = true;
       break;
@@ -238,10 +238,10 @@ export function getExperimentLifecycleModel(inputs: {
     const res = item.result ?? null;
     const statusLabel =
       item.status === 'completed'
-        ? 'Completed'
+        ? 'Finished'
         : item.status === 'cancelled'
-        ? 'Ended early'
-        : 'In progress';
+        ? 'Stopped early'
+        : 'Running';
 
     return {
       id: item.id,
@@ -267,7 +267,7 @@ export function getExperimentLifecycleModel(inputs: {
     detail: {
       name: 'Caffeine cutoff',
       purpose:
-        'Compare your sleep duration on days assigned to a caffeine cutoff against days assigned to your usual routine.',
+        'See whether your sleep is different on cutoff days.',
       cutoffTime,
       durationText,
       stageLabel,
@@ -294,18 +294,18 @@ export function getResultExplanationModel(
 
   const conservativeEstimateText =
     result.conservativeEstimate !== null
-      ? `Conservative estimate: ${result.conservativeEstimate} minutes per night (the cautious lower bound of the plausible range comparing cutoff-assigned days with usual-routine days).`
-      : 'No single conservative minute estimate is highlighted because the observed difference could not be separated from day-to-day sleep variability.';
+      ? `Cautious estimate: about ${result.conservativeEstimate} minutes a night more sleep on cutoff days. This is the low end of the range we could work out.`
+      : 'No single number is shown here: the difference could not be told apart from night-to-night changes in your sleep.';
 
   const intervalText =
     result.interval !== null
-      ? `95% plausible range: ${Math.round(result.interval[0])} to ${Math.round(result.interval[1])} minutes difference between assigned cutoff days and assigned usual-routine days.`
-      : '95% plausible range: Not available for this log.';
+      ? `The range we could work out runs from ${Math.round(result.interval[0])} to ${Math.round(result.interval[1])} minutes a night.`
+      : 'A range could not be worked out from this log.';
 
   const uncertaintyNote =
     result.reducedAdherence
-      ? 'Reduced adherence was observed during the experiment window, which can make an assigned-day comparison smaller or less certain than under full adherence.'
-      : 'This range reflects night-to-night sleep variation across your logged experiment days.';
+      ? 'The rule was followed less often than planned, which can make the difference look smaller or less certain.'
+      : 'This range comes from night-to-night changes in your own sleep.';
 
   const byDate = new Map(entries.map(e => [e.date, e]));
   const underlyingDays: UnderlyingResultDay[] = plan.schedule.map(slot => {
@@ -326,8 +326,8 @@ export function getResultExplanationModel(
       assignedCondition: slot.condition,
       assignedLabel:
         slot.condition === 'intervention'
-          ? `Cutoff (${cutoffTime})`
-          : 'Usual routine',
+          ? `Cutoff day (${cutoffTime})`
+          : 'Normal day',
       sleepText,
       caffeineText,
       contributedToAnalysis: sleepMinutes !== null,
@@ -359,12 +359,12 @@ export function getResultExplanationModel(
     },
     whatItTellsYou: {
       doesTell: [
-        'Whether sleep duration differed on days assigned to your caffeine cutoff compared with days assigned to your usual routine during this experiment.',
-        `How many scheduled days contributed (${analyzedTotal} of ${plan.chosenDuration}) and how closely the assigned schedule was followed.`,
+        'Whether your sleep was longer or shorter on cutoff days than on normal days.',
+        `How many days went into it (${analyzedTotal} of ${plan.chosenDuration}) and how often the rule was followed.`,
       ],
       doesNotTell: [
-        'It cannot prove why sleep differed or isolate caffeine from other unmeasured daily habits.',
-        'It is a personal self-experiment summary, not a medical diagnosis or treatment recommendation.',
+        'It cannot tell you why your sleep differed. Caffeine is not separated from everything else in your day.',
+        'It is a summary of your own log, not a diagnosis or treatment advice.',
       ],
     },
     underlyingDays,

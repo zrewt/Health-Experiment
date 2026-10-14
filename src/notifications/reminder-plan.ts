@@ -185,7 +185,7 @@ export function conditionAction(rule: ConditionRuleConfig | null | undefined): C
     title: 'Last call',
     body: `No caffeine after ${cutoffTime} today.`,
     previewTitle: 'Heads up for tomorrow',
-    previewBody: `Tomorrow: no caffeine after ${cutoffTime}. Plan ahead.`,
+    previewBody: `Tomorrow: no caffeine after ${cutoffTime}.`,
   };
 }
 
@@ -230,18 +230,19 @@ function morningReminder(
   plan: ReminderPlanContext | null,
   time: { hour: number; minute: number },
 ): ReminderSpec {
-  const title = state === 'plan_awaiting_final' ? 'Final check-in' : 'Sleep check-in';
+  const title = state === 'plan_awaiting_final' ? 'Last day to log' : 'Sleep check-in';
 
+  // The daily reminder repeats every day and cannot know which day it lands on,
+  // so nothing here may depend on today's condition.
   const body = state === 'run_in'
-    ? 'Log how long you slept to keep your run-in going.'
+    ? 'Log how long you slept last night.'
     : state === 'plan_scheduled'
       ? (plan?.startDate
-        ? `Your experiment starts on ${plan.startDate}. Keep logging your sleep until then.`
-        : 'Your experiment has not started yet. Keep logging your sleep.')
+        ? `Your sleep test starts on ${plan.startDate}. Keep logging your sleep until then.`
+        : 'Your sleep test has not started yet. Keep logging your sleep.')
       : state === 'plan_awaiting_final'
-        ? 'Your experiment is over. Log your final day to see your result.'
-        // Day-agnostic on purpose: this one repeats, so it cannot know which rule today has.
-        : 'See the instruction for today, then log how long you slept.';
+        ? 'Your sleep test is over. Log your last day to see what we found.'
+        : 'Open today’s note, then log how long you slept.';
 
   return { slot: 'morning-check-in', trigger: { kind: 'daily', ...time }, title, body };
 }

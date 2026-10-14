@@ -64,19 +64,19 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
           <View style={styles.form}>
             <Text variant="titleLarge">
-              {resetMode ? 'Reset password' : signup ? 'Create account' : 'Log in'}
+              {resetMode ? 'Reset your password' : signup ? 'Create your account' : 'Welcome back'}
             </Text>
             <Text color="ivoryMuted" style={styles.subtitle}>
               {resetMode
-                ? 'Enter your account email and we will send a password reset link.'
+                ? 'We will email you a link to set a new password.'
                 : signup
-                ? 'Sign up with your email and password.'
-                : 'Welcome back.'}
+                ? 'Your email and a password is all we need.'
+                : 'Log in to pick up where you left off.'}
             </Text>
             {!supabase && <AccountSetupNotice />}
             {confirmation ? (
               <Text accessibilityLiveRegion="polite" style={styles.message}>
-                Check your email for a confirmation link. After confirming, return here to log in.
+                Check your email for a link. Then come back and log in.
               </Text>
             ) : resetMode ? (
               <>
@@ -87,10 +87,10 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
                 {error ? <Text color="garnet" accessibilityRole="alert" style={styles.message}>{error}</Text> : null}
                 {resetSent ? (
                   <Text color="champagneLight" accessibilityLiveRegion="polite" style={styles.message}>
-                    If an account exists for that email, a password reset link has been sent.
+                    If that email has an account, a reset link is on its way.
                   </Text>
                 ) : null}
-                <Button label="Send password reset link" loading={loading}
+                <Button label="Send reset link" loading={loading}
                   disabled={!supabase} onPress={() => void submitReset()} style={styles.submit} />
                 <Button label="Back to log in" variant="quiet" disabled={loading}
                   onPress={() => { setResetMode(false); setError(''); setResetSent(false); }} />
@@ -114,7 +114,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
                 ) : null}
               </>
             )}
-            <Button label={signup ? 'Already have an account? Log in' : 'Create an account'}
+            <Button label={signup ? 'Log in instead' : 'Create an account'}
               variant="quiet" disabled={loading}
               onPress={() => router.replace(signup ? '/auth/sign-in' : '/auth/sign-up')} />
           </View>
@@ -126,7 +126,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  scroll: { flexGrow: 1, justifyContent: 'center', paddingVertical: spacing.lg },
+  scroll: { flexGrow: 1, justifyContent: 'center', paddingVertical: spacing.xl },
   form: { width: '100%', maxWidth: 420, alignSelf: 'center', gap: spacing.sm },
   subtitle: { marginBottom: spacing.lg },
   message: { marginVertical: spacing.sm },

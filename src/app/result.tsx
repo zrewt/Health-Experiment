@@ -7,10 +7,10 @@ import {
   Card,
   Row,
   Divider,
-  Disclosure,
   NavRow,
   Text,
   Button,
+  Details,
 } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
@@ -68,7 +68,7 @@ export default function ResultScreen() {
         setPlanRecord(matchedFromHistory ?? active);
         setEntries(loadedEntries);
       } catch (e) {
-        if (current) setError(e instanceof Error ? e.message : 'Error loading plan.');
+        if (current) setError(e instanceof Error ? e.message : 'Could not load your plan.');
       } finally {
         if (current) setLoading(false);
       }
@@ -90,14 +90,14 @@ export default function ResultScreen() {
     return (
       <Screen>
         <ScreenHeader
-          overline="RESULT"
-          title="Your Result"
+          overline="WHAT WE FOUND"
+          title="Nothing here yet"
           notice={MEDICAL_NOTICE}
           action={<Button label="Today" variant="quiet" onPress={backToToday} />}
         />
-        <Card title="No Active Experiment">
+        <Card title="No sleep test is running">
           <NavRow
-            label="View Experiment History"
+            label="See past tests"
             onPress={() => router.replace('/experiment' as Href)}
           />
         </Card>
@@ -125,7 +125,7 @@ export default function ResultScreen() {
         return next.sort((a, b) => a.date.localeCompare(b.date));
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error saving final check-in.');
+      setError(e instanceof Error ? e.message : 'Could not save your log.');
     } finally {
       setSavingEntry(false);
     }
@@ -136,7 +136,7 @@ export default function ResultScreen() {
 
     // Hard invariant: the result can never be computed before E+1
     if (today <= lastExposureDate) {
-      setError('The experiment result cannot be computed before the day after your last experiment day (E+1).');
+      setError('You can see what we found the day after your last day.');
       return;
     }
 
@@ -164,7 +164,7 @@ export default function ResultScreen() {
       // result is stored, without waiting for the next home-screen visit to clear it.
       await clearDailyReminder();
     } catch (e) {
-      setError(`${e instanceof Error ? e.message : 'Could not compute result.'} Retry viewing result.`);
+      setError(`${e instanceof Error ? e.message : 'Could not work out the result.'} Try again.`);
     } finally {
       setComputing(false);
     }
@@ -179,7 +179,7 @@ export default function ResultScreen() {
       const validDays = entries.filter(e => e.sleepMinutes !== null).length;
       router.replace((validDays >= runInMinValidDays ? '/feasibility' : '/run-in') as Href);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not start a new experiment cycle.');
+      setError(e instanceof Error ? e.message : 'Could not start a new test.');
     } finally {
       setStartingNewCycle(false);
     }
@@ -197,125 +197,41 @@ export default function ResultScreen() {
       <Screen>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <ScreenHeader
-            overline="EXPERIMENT RESULT"
-            title="Your Result"
+            overline="WHAT WE FOUND"
+            title="What we found"
             notice={MEDICAL_NOTICE}
             action={<Button label="Today" variant="quiet" onPress={backToToday} />}
           />
 
-          {/* 1. Conclusion first, with the engine statement unchanged */}
-          <Card tone="hero" overline="VERDICT">
+          {/* 1. What we found: the plain heading leads. The engine's own sentence is
+              kept word for word and sits under Details, with the reasons it gives. */}
+          <Card tone="hero" overline="WHAT WE FOUND">
             <Text variant="titleMedium" color="champagneLight">{heading}</Text>
-            <Text variant="body" color="ivory">{res.statement}</Text>
-            {res.reasons && res.reasons.length > 0 ? (
-              <View style={styles.reasonsBox}>
-                {res.reasons.map((reason, idx) => (
-                  <Text key={idx} variant="caption" color="ivorySecondary">• {reason}</Text>
-                ))}
-              </View>
-            ) : null}
-          </Card>
-
-          {/* 2. Clear explanation of the estimate and uncertainty */}
-          <Card overline="ESTIMATE & UNCERTAINTY">
-            {res.conservativeEstimate !== null ? (
-              <Text variant="titleSmall" color="champagneLight" tabular>
-                Conservative estimate: {res.conservativeEstimate} minutes
-              </Text>
-            ) : null}
-            <Text variant="sub" color="ivorySecondary">
-              {explanation.estimateExplanation.conservativeEstimateText}
+            <Text variant="body" color="ivorySecondary">
+              Here is what your log showed, and how sure we can be about it.
             </Text>
-            <Text variant="sub" color="ivory" tabular>
-              {explanation.estimateExplanation.intervalText}
-            </Text>
-            <Text variant="caption" color="ivoryMuted">
-              {explanation.estimateExplanation.uncertaintyNote}
-            </Text>
-          </Card>
 
-          {/* 3. How many days contributed and what data was missing */}
-          <Card overline="CONTRIBUTING & MISSING DAYS">
-            <Row
-              label="Days analyzed"
-              value={`${explanation.contributingDays.analyzedTotal} of ${explanation.contributingDays.totalScheduled}`}
-            />
-            <Row
-              label="Cutoff days analyzed"
-              value={`${explanation.contributingDays.analyzedIntervention} of ${intDays} assigned`}
-            />
-            <Row
-              label="Usual-routine days analyzed"
-              value={`${explanation.contributingDays.analyzedControl} of ${ctrlDays} assigned`}
-            />
-            <Row
-              label="Days with no sleep logged"
-              value={String(res.missingOutcomeDays)}
-              emphasis="muted"
-            />
-            <Row
-              label="Days with unknown caffeine time"
-              value={String(res.unknownExposureDays)}
-              emphasis="muted"
-            />
-            <Row label="Days excluded" value={String(res.daysExcluded)} emphasis="muted" />
+            <Details summary="The exact wording, and what it does not say">
+              <Text variant="sub" color="ivory">{res.statement}</Text>
+              {res.reasons && res.reasons.length > 0 ? (
+                <View style={styles.reasonsBox}>
+                  {res.reasons.map((reason, idx) => (
+                    <Text key={idx} variant="caption" color="ivorySecondary">• {reason}</Text>
+                  ))}
+                </View>
+              ) : null}
 
-            <Divider />
-            <Text variant="overline" color="champagneMuted">ADHERENCE SUMMARY</Text>
-            <Text color="ivory">
-              Followed cutoff rule on {res.adherence.counts.ADHERENT} of {intDays} assigned days.
-            </Text>
-            <Text color="ivory">
-              Had caffeine after cutoff on {res.adherence.counts.CONTAMINATED} of {ctrlDays} usual routine days.
-            </Text>
-          </Card>
-
-          {res.limitations && res.limitations.length > 0 ? (
-            <Card overline="LIMITATIONS">
-              {res.limitations.map((lim, idx) => (
-                <Text key={idx} variant="caption" color="ivoryMuted">• {lim}</Text>
-              ))}
-            </Card>
-          ) : null}
-
-          {/* 4. What this result does—and does not—tell you */}
-          <Card tone="quiet">
-            <Disclosure
-              label="What this result tells you"
-              summary="And what it does not tell you"
-            >
               {explanation.whatItTellsYou.doesTell.map((line, idx) => (
-                <Text key={`does-${idx}`} variant="sub" color="ivorySecondary">
-                  • {line}
-                </Text>
+                <Text key={`does-${idx}`} variant="sub" color="ivorySecondary">• {line}</Text>
               ))}
-
-              <Text variant="overline" color="champagneMuted" style={styles.disclosureHeading}>
-                WHAT THIS RESULT DOES NOT TELL YOU
-              </Text>
               {explanation.whatItTellsYou.doesNotTell.map((line, idx) => (
-                <Text key={`not-${idx}`} variant="sub" color="ivoryMuted">
-                  • {line}
-                </Text>
+                <Text key={`not-${idx}`} variant="sub" color="ivoryMuted">• {line}</Text>
               ))}
+              <Text variant="caption" color="champagne">{MEDICAL_NOTICE}</Text>
+            </Details>
 
-              <View style={styles.explainBox}>
-                <Text variant="caption" color="ivorySecondary">
-                  This compares days assigned to the caffeine cutoff with days assigned to your usual routine. It describes the difference between those assigned days; it cannot tell you why it happened.
-                </Text>
-                <Text variant="caption" color="champagne">
-                  {MEDICAL_NOTICE}
-                </Text>
-              </View>
-            </Disclosure>
-          </Card>
-
-          {/* 5. Access to the underlying logged days */}
-          <Card tone="quiet">
-            <Disclosure
-              label={`Inspect ${explanation.underlyingDays.length} scheduled days`}
-              summary="These scheduled days are locked to preserve your experiment snapshot."
-            >
+            {/* The days behind the result, available but not in the way. */}
+            <Details summary={`See all ${explanation.underlyingDays.length} days`}>
               <View style={styles.daysList}>
                 {explanation.underlyingDays.map((day) => (
                   <View key={day.date} style={styles.dayRow}>
@@ -333,25 +249,95 @@ export default function ResultScreen() {
                   </View>
                 ))}
               </View>
-            </Disclosure>
-            <NavRow label="Open full Journal" onPress={() => router.push('/journal' as Href)} />
+            </Details>
           </Card>
 
-          {/* 6. Next steps in the experiment lifecycle */}
-          <Card overline="WHAT NEXT">
+          {/* 2. How sure we are: one plain line, then every number under Details. */}
+          <Card overline="HOW SURE WE ARE">
+            <Text variant="body" color="ivorySecondary">
+              This is a cautious read of your own log.
+            </Text>
+
+            <Details summary="The numbers">
+              {res.conservativeEstimate !== null ? (
+                <Text variant="titleSmall" color="champagneLight" tabular>
+                  Cautious estimate: {res.conservativeEstimate} minutes a night more sleep on cutoff days
+                </Text>
+              ) : null}
+              <Text variant="sub" color="ivorySecondary">
+                {explanation.estimateExplanation.conservativeEstimateText}
+              </Text>
+              <Text variant="sub" color="ivory" tabular>
+                {explanation.estimateExplanation.intervalText}
+              </Text>
+              <Text variant="caption" color="ivoryMuted">
+                {explanation.estimateExplanation.uncertaintyNote}
+              </Text>
+
+              <Divider />
+              <Row
+                label="Days looked at"
+                value={`${explanation.contributingDays.analyzedTotal} of ${explanation.contributingDays.totalScheduled}`}
+              />
+              <Row
+                label="Cutoff days looked at"
+                value={`${explanation.contributingDays.analyzedIntervention} of ${intDays}`}
+              />
+              <Row
+                label="Normal days looked at"
+                value={`${explanation.contributingDays.analyzedControl} of ${ctrlDays}`}
+              />
+              <Row
+                label="Nights not logged"
+                value={String(res.missingOutcomeDays)}
+                emphasis="muted"
+              />
+              <Row
+                label="Caffeine time not logged"
+                value={String(res.unknownExposureDays)}
+                emphasis="muted"
+              />
+              <Row label="Days left out" value={String(res.daysExcluded)} emphasis="muted" />
+
+              <Divider />
+              <Text variant="overline" color="champagneMuted">HOW OFTEN YOU KEPT TO IT</Text>
+              {/* ADHERENT = a cutoff day with no caffeine after the cutoff.
+                  CONTAMINATED = a normal day where caffeine was skipped or early, so the
+                  label must not claim caffeine after the cutoff. */}
+              <Text color="ivory">
+                Kept the rule on {res.adherence.counts.ADHERENT} of {intDays} cutoff days.
+              </Text>
+              <Text color="ivory">
+                No caffeine after cutoff on {res.adherence.counts.CONTAMINATED} of {ctrlDays} normal days.
+              </Text>
+
+              {res.limitations && res.limitations.length > 0 ? (
+                <View style={styles.explainBox}>
+                  <Text variant="overline" color="champagneMuted">WHAT WE COULD NOT RULE OUT</Text>
+                  {res.limitations.map((lim, idx) => (
+                    <Text key={idx} variant="caption" color="ivoryMuted">• {lim}</Text>
+                  ))}
+                </View>
+              ) : null}
+            </Details>
+          </Card>
+
+          {/* 3. What to do next: one action, then quiet ways onward. */}
+          <Card overline="WHAT TO DO NEXT">
             <Text variant="sub" color="ivorySecondary">
-              Your result is saved in your Experiment history. You can start a new caffeine experiment cycle anytime while keeping this result and its locked days intact.
+              This is saved. You can start another test any time.
             </Text>
             <Button
-              label="Start a new caffeine experiment"
+              label="Start a new sleep test"
               variant="primary"
               loading={startingNewCycle}
               onPress={() => void handleStartNextCycle()}
             />
             <NavRow
-              label="Experiment overview & saved results"
+              label="Past tests"
               onPress={() => router.push('/experiment' as Href)}
             />
+            <NavRow label="Open my log" onPress={() => router.push('/journal' as Href)} />
           </Card>
 
           {error ? (
@@ -369,33 +355,35 @@ export default function ResultScreen() {
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenHeader
-          overline="FINAL CHECK-IN"
-          title="Final Check-in"
+          overline="LAST DAY"
+          title="Last night to log"
           notice={MEDICAL_NOTICE}
           action={<Button label="Today" variant="quiet" onPress={backToToday} />}
         />
 
-        <Card title="Your experiment is complete.">
+        <Card title="Your sleep test is over">
           <Text color="ivorySecondary">
             {isFinalMissing
-              ? `You need to log your final day (${lastExposureDate}) before viewing your result.`
-              : 'All scheduled days have been logged.'}
+              ? `Log ${lastExposureDate} to see what we found.`
+              : 'Every day is logged.'}
           </Text>
         </Card>
 
-        {/* Progress counts only */}
-        <Card overline="SUMMARY COUNTS">
+        {/* Counts only: never a comparison or a verdict before the result is opened. */}
+        <Card overline="SO FAR">
           <Text color="ivory">Days logged: {progress.daysLogged} of {plan.chosenDuration}</Text>
-          <Text variant="caption" color="ivoryMuted">
-            Adherent: {progress.adherenceCounts.ADHERENT} | Control clean: {progress.adherenceCounts.CONTROL_CLEAN} | Contaminated: {progress.adherenceCounts.CONTAMINATED} | Unknown: {progress.adherenceCounts.UNKNOWN}
-          </Text>
+          <Details summary="How often you kept to it">
+            <Text variant="caption" color="ivoryMuted">
+              Kept the rule: {progress.adherenceCounts.ADHERENT} · Normal days: {progress.adherenceCounts.CONTROL_CLEAN} · Normal, no caffeine: {progress.adherenceCounts.CONTAMINATED} · Not sure: {progress.adherenceCounts.UNKNOWN}
+            </Text>
+          </Details>
         </Card>
 
         {isFinalMissing ? (
           <CheckInCard
             key={lastExposureDate}
             date={lastExposureDate}
-            label={`FINAL EXPOSURE DAY (${lastExposureDate})`}
+            label={`LAST DAY (${lastExposureDate})`}
             initialSleepMinutes={lastEntry?.sleepMinutes ?? null}
             initialCaffeineTime={lastEntry?.lastCaffeineTime ?? null}
             onSave={handleSaveFinalCheckIn}
@@ -411,15 +399,15 @@ export default function ResultScreen() {
 
         <Card>
           <Text variant="sub" color="champagneLight" weight="medium">
-            Once you view your result, the days in this experiment are locked, so log or fix any days first.
+            Once you open what we found, these days are locked. Fix anything you need to first.
           </Text>
           <Button
-            label="See my result"
+            label="See what we found"
             variant="primary"
             loading={computing}
             onPress={() => void handleComputeResult()}
           />
-          <NavRow label="Review log in Journal" onPress={() => router.push('/journal' as Href)} />
+          <NavRow label="Open my log" onPress={() => router.push('/journal' as Href)} />
         </Card>
       </ScrollView>
     </Screen>
@@ -427,27 +415,24 @@ export default function ResultScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.md, paddingBottom: spacing.lg },
+  content: { gap: spacing.section, paddingBottom: spacing.section },
   reasonsBox: {
-    marginTop: spacing.xs,
-    gap: 4,
-  },
-  disclosureHeading: {
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
+    gap: spacing.sm,
   },
   explainBox: {
-    paddingTop: spacing.xs,
-    gap: spacing.xs,
+    paddingTop: spacing.sm,
+    gap: spacing.sm,
   },
   daysList: {
-    gap: spacing.xs,
-    marginTop: spacing.xs,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   dayRow: {
-    padding: spacing.sm,
+    padding: spacing.md,
     backgroundColor: colors.surfaceHigh,
     borderRadius: radii.control,
-    gap: 2,
+    gap: 4,
   },
   dayRowHeader: {
     flexDirection: 'row',

@@ -131,14 +131,14 @@ export default function SettingsScreen() {
   const handleClearLocalCache = async () => {
     if (!user || clearingLocal) return;
     const message =
-      'This clears cached entries and plan state stored on this device. Synced data on your account remains intact.';
+      'This clears the entries stored on this device. Anything already synced to your account stays.';
     const confirmed =
       Platform.OS === 'web'
         ? window.confirm(message)
         : await new Promise<boolean>((resolve) => {
-            Alert.alert('Clear Device Cache?', message, [
+            Alert.alert('Clear this device?', message, [
               { text: 'Cancel', onPress: () => resolve(false), style: 'cancel' },
-              { text: 'Clear Cache', onPress: () => resolve(true), style: 'destructive' },
+              { text: 'Clear', onPress: () => resolve(true), style: 'destructive' },
             ]);
           });
     if (!confirmed) return;
@@ -149,9 +149,9 @@ export default function SettingsScreen() {
     try {
       await clearLocalUserData(user.id);
       await loadSettings();
-      setNotice('Local device cache cleared.');
+      setNotice('Cleared on this device.');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not clear local cache.');
+      setError(e instanceof Error ? e.message : 'Could not clear this device.');
     } finally {
       setClearingLocal(false);
     }
@@ -160,12 +160,12 @@ export default function SettingsScreen() {
   const handleDeleteAccount = async () => {
     if (!user || deletingAccount) return;
     const message =
-      'This permanently deletes your account and all logged sleep, caffeine, and experiment records. This action cannot be undone.';
+      'This deletes your account and every sleep and caffeine entry you have logged. It cannot be undone.';
     const confirmed =
       Platform.OS === 'web'
         ? window.confirm(message)
         : await new Promise<boolean>((resolve) => {
-            Alert.alert('Delete Account Permanently?', message, [
+            Alert.alert('Delete your account?', message, [
               { text: 'Cancel', onPress: () => resolve(false), style: 'cancel' },
               { text: 'Delete Account', onPress: () => resolve(true), style: 'destructive' },
             ]);
@@ -226,28 +226,28 @@ export default function SettingsScreen() {
           </Card>
         ) : null}
 
-        {/* 1. Reminders & Experiment Setup */}
-        <Card overline="REMINDERS & EXPERIMENT SETUP">
-          <Row label="Personal caffeine cutoff" value={setup?.cutoffTime ?? 'Not configured'} />
+        {/* 1. Reminders */}
+        <Card overline="REMINDERS">
+          <Row label="Your caffeine cutoff" value={setup?.cutoffTime ?? 'Not set'} />
           <Row
-            label="Sync status"
-            value={unsyncedCount === 0 ? 'All entries synced' : `${unsyncedCount} waiting to sync`}
+            label="Sync"
+            value={unsyncedCount === 0 ? 'All synced' : `${unsyncedCount} waiting`}
             emphasis={unsyncedCount === 0 ? 'strong' : 'danger'}
           />
 
           <NavRow
-            label="Reminder settings"
-            detail="When the morning check-in nudge arrives"
+            label="Reminders"
+            detail="When your morning nudge arrives"
             onPress={() => router.push('/reminder-settings' as Href)}
           />
           <NavRow
-            label="Review setup & consent"
-            detail="Cutoff time and what you agreed to"
+            label="Your setup & consent"
+            detail="Your cutoff time and what you agreed to"
             onPress={() => router.push('/setup-consent' as Href)}
           />
           {unsyncedCount > 0 ? (
             <Button
-              label="Retry syncing entries"
+              label="Try sync again"
               variant="primary"
               loading={syncing}
               onPress={() => void handleRetrySync()}
@@ -255,11 +255,11 @@ export default function SettingsScreen() {
           ) : null}
         </Card>
 
-        {/* 2. Account & Security */}
-        <Card overline="ACCOUNT & SECURITY">
+        {/* 2. Account */}
+        <Card overline="ACCOUNT">
           <Row label="Signed in as" value={user?.email ?? 'Unknown'} />
 
-          <Disclosure label="Change password" summary="Set a new password for this account">
+          <Disclosure label="Change password" summary="Set a new password">
             <Field
               label="New password (at least 8 characters)"
               accessibilityLabel="New password"
@@ -292,15 +292,15 @@ export default function SettingsScreen() {
         </Card>
 
         {/* 3. Privacy & Data */}
-        <Card overline="PRIVACY & DATA">
+        <Card overline="YOUR DATA">
           <Row
-            label="Consent status"
-            value={consent?.granted ? `Granted (${consent.policyVersion})` : 'Not currently granted'}
+            label="Consent"
+            value={consent?.granted ? 'Agreed' : 'Not agreed'}
             emphasis={consent?.granted ? 'strong' : 'danger'}
           />
-          <Disclosure label="How your data is stored" summary="What is logged and where it lives">
+          <Disclosure label="How your data is stored" summary="What we keep and where">
             <Text variant="caption" color="ivorySecondary">
-              • Your sleep duration and caffeine cutoff logs are used only to run your personal n-of-1 self-experiment.
+              • Your sleep and caffeine times are used only to run your own sleep test.
             </Text>
             <Text variant="caption" color="ivorySecondary">
               • Entries are cached on your device for offline reliability and synced to your private account.
@@ -314,45 +314,45 @@ export default function SettingsScreen() {
           </Disclosure>
         </Card>
 
-        {/* 4. Help & Everyday Use */}
-        <Card overline="HELP & EVERYDAY USE">
-          <Disclosure label="Frequently asked questions" summary="Dates, missing fields and locked days">
+        {/* 4. Help */}
+        <Card overline="HELP">
+          <Disclosure label="Questions people ask" summary="Dates, missing fields and locked days">
             <Text variant="sub" color="champagneLight" weight="semiBold">
-              Why does my morning check-in log yesterday’s date?
+              Why does my check-in use yesterday’s date?
             </Text>
             <Text variant="caption" color="ivorySecondary">
-              Each exposure day pairs yesterday’s caffeine intake with the sleep you just woke up from this morning.
+              Yesterday’s caffeine goes with the sleep you just woke up from. Logging this morning answers for last night.
             </Text>
 
             <Text variant="sub" color="champagneLight" weight="semiBold">
               What if I skip a field or forget a day?
             </Text>
             <Text variant="caption" color="ivorySecondary">
-              Missing is never turned into zero sleep or no caffeine. Unlogged fields remain unknown, and you can backfill or edit yesterday and the previous 3 days.
+              A blank field stays blank. It never becomes zero sleep or no caffeine, and you can edit yesterday and the 3 days before it.
             </Text>
 
             <Text variant="sub" color="champagneLight" weight="semiBold">
-              Why are completed experiment days locked?
+              Why can’t I change some days?
             </Text>
             <Text variant="caption" color="ivorySecondary">
-              Once you view your experiment result, the scheduled days in that experiment are locked so your saved result always matches the underlying log.
+              Days lock once you have saved what we found for a test. That keeps the saved reading matched to your log.
             </Text>
           </Disclosure>
         </Card>
 
-        {/* 5. Account & Data Deletion */}
-        <Card tone="danger" overline="DATA & ACCOUNT DELETION">
+        {/* 5. Delete */}
+        <Card tone="danger" overline="DELETE">
           <Text variant="caption" color="ivoryMuted">
-            Clear cached data on this device or permanently delete your account and all stored experiment records.
+            Clear what is stored on this device, or delete your account and all your records for good.
           </Text>
           <Button
-            label="Clear device cache"
+            label="Clear this device"
             variant="secondary"
             loading={clearingLocal}
             onPress={() => void handleClearLocalCache()}
           />
           <Button
-            label="Delete account & all data"
+            label="Delete my account and data"
             variant="quiet"
             loading={deletingAccount}
             onPress={() => void handleDeleteAccount()}
@@ -367,5 +367,5 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
-  content: { gap: spacing.md, paddingBottom: spacing.lg },
+  content: { gap: spacing.section, paddingBottom: spacing.section },
 });

@@ -8,4 +8,5 @@ export * from './Row';
 export * from './ScreenHeader';
 export * from './NavRow';
 export * from './Disclosure';
+export * from './Details';
 export * from './PrimaryNav';

@@ -51,7 +51,7 @@ function makePlan(startDate: string, lengthDays = 14, cutoffTime = '12:00', stat
           statement: 'Statement 4 days',
           conservative: false,
           numberQualifier: 'unqualified',
-          mdeLabel: 'effect if you follow the rule fully',
+          mdeLabel: 'change if you follow the rule on every cutoff day',
           adherenceAssumptionText: 'assuming you follow rule',
           rhoLookups: [],
         }],
@@ -214,9 +214,9 @@ import type { VerdictStatus } from '../src/engine/types';
 test('verdict headings match fixed mapping and pass engine statements verbatim', () => {
   // The screen must render the real mapping, not a local copy. Import the module the
   // result screen uses so a typo in one place is caught here.
-  assert.equal(VERDICT_HEADINGS['SUPPORTED'], 'Supported');
-  assert.equal(VERDICT_HEADINGS['NO_DETECTABLE_EFFECT'], 'No detectable effect');
-  assert.equal(VERDICT_HEADINGS['INCONCLUSIVE'], 'Inconclusive');
+  assert.equal(VERDICT_HEADINGS['SUPPORTED'], 'Sleep was longer on cutoff days');
+  assert.equal(VERDICT_HEADINGS['NO_DETECTABLE_EFFECT'], 'No clear difference in sleep');
+  assert.equal(VERDICT_HEADINGS['INCONCLUSIVE'], 'Too close to call');
 
   // Every verdict the engine can return has a heading; there are no unknown keys.
   const engineStatuses: Verdict['status'][] = ['SUPPORTED', 'NO_DETECTABLE_EFFECT', 'INCONCLUSIVE'];
@@ -419,7 +419,7 @@ test('getResultExplanationModel preserves engine statement verbatim and explains
   };
 
   const explanation = getResultExplanationModel(planRec.plan, snapshot, entries);
-  assert.equal(explanation.verdictHeading, 'Supported');
+  assert.equal(explanation.verdictHeading, 'Sleep was longer on cutoff days');
   assert.equal(explanation.statement, 'Exact engine verdict statement verbatim.');
   assert.match(explanation.estimateExplanation.conservativeEstimateText, /16 minutes/);
   assert.match(explanation.estimateExplanation.intervalText, /8 to 28 minutes/);
@@ -485,7 +485,7 @@ test('getExperimentLifecycleModel lists guide steps, saved results, and next cyc
   assert.equal(lifecycle.detail.cutoffTime, '13:30');
   assert.equal(lifecycle.detail.canStartNewCycle, true);
   assert.equal(lifecycle.savedExperiments.length, 2);
-  assert.equal(lifecycle.savedExperiments[0].verdictHeading, 'No detectable effect');
+  assert.equal(lifecycle.savedExperiments[0].verdictHeading, 'No clear difference in sleep');
   assert.equal(lifecycle.savedExperiments[0].statement, 'No detectable effect statement verbatim.');
-  assert.equal(lifecycle.savedExperiments[1].statusLabel, 'Ended early');
+  assert.equal(lifecycle.savedExperiments[1].statusLabel, 'Stopped early');
 });

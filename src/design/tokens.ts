@@ -83,7 +83,14 @@ export const spacing = {
   lg: 24,
   xl: 32,
   xxl: 48,
+  /** Horizontal page gutter. Material 3: 16 (compact) / 24 (medium) — 24 gives an editorial phone page air to breathe. */
   screen: 24,
+  /** Vertical gap between top-level blocks on a screen. Atlassian: 32–80 for page layout. */
+  section: 32,
+  /** Inner padding for a grouped surface (the Card). Material 3 card: 16–24. */
+  card: 20,
+  /** Gap between the items inside one grouped surface. */
+  inline: 12,
 } as const;
 
 export const tokens = {

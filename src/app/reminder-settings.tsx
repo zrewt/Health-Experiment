@@ -75,7 +75,7 @@ export default function ReminderSettingsScreen() {
   const [requesting, setRequesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  // Only an experiment with a recognised condition rule has a moment worth warning about.
+  // Only a test with a recognised condition rule has a moment worth warning about.
   const [hasActionableRule, setHasActionableRule] = useState(false);
 
   useEffect(() => {
@@ -190,7 +190,7 @@ export default function ReminderSettingsScreen() {
         <ScreenHeader
           overline="NOTIFICATIONS"
           title="Reminders"
-          notice="Gentle nudges to log your sleep. Nothing here is medical advice."
+          notice="Gentle nudges to log your sleep. This app is not medical advice."
           action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
         />
 
@@ -236,12 +236,12 @@ export default function ReminderSettingsScreen() {
           />
         </Card>
 
-        <Card overline="EXPERIMENT REMINDERS">
+        <Card overline="TEST REMINDERS">
           {hasActionableRule ? (
             <>
               <ReminderToggle
                 label="Reminder before the cutoff"
-                description="A nudge shortly before the cutoff, only on the days the rule is assigned to you."
+                description="A nudge just before your cutoff, on cutoff days."
                 accessibilityLabel="Reminder before the cutoff"
                 on={preferences.actionEnabled}
                 active={preferences.actionEnabled && preferences.enabled}
@@ -249,9 +249,9 @@ export default function ReminderSettingsScreen() {
               />
 
               <ReminderToggle
-                label="Heads-up the evening before"
-                description="The evening before an assigned day, so you can plan ahead."
-                accessibilityLabel="Heads-up the evening before"
+                label="Evening heads-up"
+                description="The evening before a cutoff day, so you can plan."
+                accessibilityLabel="Evening heads-up"
                 on={preferences.previewEnabled}
                 active={preferences.previewEnabled && preferences.enabled}
                 onPress={() => update({ previewEnabled: !preferences.previewEnabled })}
@@ -269,7 +269,7 @@ export default function ReminderSettingsScreen() {
             </>
           ) : (
             <Text variant="sub" color="ivorySecondary">
-              These appear once you have a running experiment with a rule worth warning you about.
+              These appear once a test is running.
             </Text>
           )}
         </Card>
@@ -287,7 +287,7 @@ export default function ReminderSettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.md, paddingBottom: spacing.xxl },
+  content: { gap: spacing.section, paddingBottom: spacing.xxl },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',

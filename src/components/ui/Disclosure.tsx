@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { colors, spacing } from '@/design/tokens';
+import { spacing } from '@/design/tokens';
 import { Text } from './Text';
 
 interface DisclosureProps {
@@ -27,6 +27,10 @@ export function Disclosure({ label, summary, defaultOpen = false, children }: Di
         accessibilityRole="button"
         accessibilityLabel={label}
         accessibilityState={{ expanded: open }}
+        // React Native Web does not emit aria-expanded from accessibilityState, so it is
+        // set explicitly: the open/closed state must reach assistive tech, not just the
+        // +/− glyph.
+        aria-expanded={open}
       >
         <View style={styles.headerText}>
           <Text variant="sub" color="champagneLight" weight="semiBold">
@@ -48,19 +52,17 @@ export function Disclosure({ label, summary, defaultOpen = false, children }: Di
 }
 
 const styles = StyleSheet.create({
-  wrapper: { gap: spacing.xs },
+  wrapper: { gap: spacing.sm },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacing.sm,
-    minHeight: 44,
+    gap: spacing.md,
+    minHeight: 52,
   },
-  headerText: { flex: 1, gap: 2 },
+  headerText: { flex: 1, gap: 4 },
   body: {
-    gap: spacing.xs,
-    paddingTop: spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: colors.hairline,
+    gap: spacing.sm,
+    paddingTop: spacing.md,
   },
 });

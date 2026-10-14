@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import {
+  Details,
   Screen,
   ScreenHeader,
   Card,
@@ -13,7 +14,7 @@ import {
   Button,
   PrimaryNav,
 } from '@/components/ui';
-import { colors, spacing } from '@/design/tokens';
+import { spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import {
   getConsent,
@@ -66,7 +67,7 @@ export default function ExperimentScreen() {
       setHistoryPlans(loadedHistory);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not load experiment details.');
+      setError(e instanceof Error ? e.message : 'Could not load your test details.');
     } finally {
       setLoading(false);
     }
@@ -100,10 +101,10 @@ export default function ExperimentScreen() {
       }
       await loadLifecycle();
       const validDays = entries.filter((e) => e.sleepMinutes !== null).length;
-      setNotice('Previous experiment saved to your history. You can now check feasibility or continue logging.');
+      setNotice('Your last test is saved. Taking you to the next step.');
       router.push((validDays >= runInMinValidDays ? '/feasibility' : '/run-in') as Href);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not start a new experiment cycle.');
+      setError(e instanceof Error ? e.message : 'Could not start another test.');
     } finally {
       setStartingCycle(false);
     }
@@ -113,8 +114,8 @@ export default function ExperimentScreen() {
     <Screen>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader
-          overline="N-OF-1 SELF-EXPERIMENT"
-          title="Experiment"
+          overline="YOUR SLEEP TEST"
+          title="Your sleep test"
           notice={model.medicalNotice}
         />
 
@@ -133,8 +134,8 @@ export default function ExperimentScreen() {
           </Card>
         ) : null}
 
-        {/* The current experiment and the one step that comes next. */}
-        <Card tone="hero" overline="CURRENT EXPERIMENT">
+        {/* The current test and the one step that comes next. */}
+        <Card tone="hero" overline="NOW">
           <Text variant="titleMedium" color="champagneLight" serif>
             {model.detail.name}
           </Text>
@@ -143,10 +144,10 @@ export default function ExperimentScreen() {
           </Text>
 
           <View style={styles.metaList}>
-            <Row label="Personal cutoff time" value={model.detail.cutoffTime} />
-            <Row label="Duration" value={model.detail.durationText} />
+            <Row label="Cutoff time" value={model.detail.cutoffTime} />
+            <Row label="Length" value={model.detail.durationText} />
             <Row
-              label="Current stage"
+              label="Where you are"
               value={loading ? 'Loading...' : model.detail.stageLabel}
               emphasis="strong"
             />
@@ -166,7 +167,7 @@ export default function ExperimentScreen() {
 
           {model.detail.canStartNewCycle && activePlan?.status === 'completed' ? (
             <Button
-              label="Start a new caffeine experiment"
+              label="Start another test"
               variant="secondary"
               loading={startingCycle}
               onPress={() => void handleStartNewCycle()}
@@ -176,7 +177,7 @@ export default function ExperimentScreen() {
 
         {/* The explanation is worth reading once, not on every visit. */}
         <Card tone="quiet">
-          <Disclosure label="How this experiment works" summary="Three stages from baseline to result">
+          <Disclosure label="How this works" summary="Three short steps">
             {model.guideSteps.map((step) => (
               <View key={step.stepNumber} style={styles.step}>
                 <Text variant="sub" color="champagneLight" weight="semiBold">
@@ -190,10 +191,10 @@ export default function ExperimentScreen() {
           </Disclosure>
         </Card>
 
-        <Card overline="SAVED RESULTS & HISTORY">
+        <Card overline="PAST TESTS">
           {model.savedExperiments.length === 0 ? (
             <Text variant="sub" color="ivoryMuted">
-              No scheduled or completed experiments yet. Complete your 14-day baseline run-in and feasibility check to start your first experiment.
+              No tests yet. Log 14 nights to find out whether a test is worth doing.
             </Text>
           ) : (
             model.savedExperiments.map((saved, index) => (
@@ -209,27 +210,30 @@ export default function ExperimentScreen() {
                   value={saved.statusLabel}
                   emphasis={saved.status === 'completed' ? 'strong' : 'muted'}
                 />
-                <Row label="Cutoff" value={saved.cutoffTime} />
+                <Row label="Cutoff time" value={saved.cutoffTime} />
                 {saved.daysAnalyzed !== null ? (
-                  <Row label="Days analyzed" value={String(saved.daysAnalyzed)} />
+                  <Row label="Days looked at" value={String(saved.daysAnalyzed)} />
                 ) : null}
 
                 {saved.verdictHeading ? (
                   <View style={styles.verdictSnippet}>
                     <Text variant="sub" color="champagne" weight="semiBold">
-                      Verdict: {saved.verdictHeading}
+                      What we found: {saved.verdictHeading}
                     </Text>
+                    {/* The engine's own sentence is kept word for word, under Details. */}
                     {saved.statement ? (
-                      <Text variant="caption" color="ivorySecondary">
-                        {saved.statement}
-                      </Text>
+                      <Details summary="The exact wording">
+                        <Text variant="caption" color="ivorySecondary">
+                          {saved.statement}
+                        </Text>
+                      </Details>
                     ) : null}
                   </View>
                 ) : null}
 
                 {saved.status === 'completed' ? (
                   <NavRow
-                    label="Open saved result"
+                    label="Read what we found"
                     onPress={() => router.push(`/result?planId=${encodeURIComponent(saved.id)}` as Href)}
                   />
                 ) : null}
@@ -246,22 +250,19 @@ export default function ExperimentScreen() {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
-  content: { gap: spacing.md, paddingBottom: spacing.lg },
+  content: { gap: spacing.section, paddingBottom: spacing.section },
   metaList: {
-    paddingVertical: spacing.xs,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colors.hairline,
-    gap: spacing.xs,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
   },
   step: {
-    paddingVertical: spacing.xs,
-    gap: 2,
+    paddingVertical: spacing.sm,
+    gap: 4,
   },
   savedItem: {
-    gap: spacing.xs,
+    gap: spacing.md,
   },
   verdictSnippet: {
-    gap: 2,
+    gap: 4,
   },
 });

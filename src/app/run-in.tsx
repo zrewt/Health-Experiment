@@ -115,7 +115,7 @@ export default function RunInScreen() {
         }
       } catch (err) {
         if (isCurrent) {
-          setStorageError(err instanceof Error ? err.message : 'Failed to load experiment data.');
+          setStorageError(err instanceof Error ? err.message : 'Could not load your log.');
         }
       }
     }
@@ -168,8 +168,7 @@ export default function RunInScreen() {
     let finalSleepMinutes: number | null = null;
     if (sleepHours.trim() !== '' || sleepMins.trim() !== '') {
       const h = Number(sleepHours.trim()) || 0;
-      const m = Number(sleepMins.trim()) || 0;
-      if (h < 0 || m < 0 || m >= 60) {
+      const m = Number(sleepMins.trim()) || 0;        if (h < 0 || m < 0 || m >= 60) {
         setFieldErrors('Please enter valid sleep hours and minutes.');
         return;
       }
@@ -185,11 +184,11 @@ export default function RunInScreen() {
             resolve(window.confirm(`You logged ${hours.toFixed(1)} hours of sleep. Would you like to save this?`));
           } else {
             Alert.alert(
-              'Confirm Sleep Duration',
-              `You logged ${hours.toFixed(1)} hours of sleep. Is this correct?`,
+              'That seems unusual',
+              `You logged ${hours.toFixed(1)} hours of sleep. Save it anyway?`,
               [
-                { text: 'Edit', onPress: () => resolve(false), style: 'cancel' },
-                { text: 'Yes, Save', onPress: () => resolve(true) },
+                { text: 'Go back', onPress: () => resolve(false), style: 'cancel' },
+                { text: 'Save', onPress: () => resolve(true) },
               ],
             );
           }
@@ -287,19 +286,19 @@ export default function RunInScreen() {
     <Screen>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader
-          overline="BASELINE RUN-IN"
-          title="Baseline Run-in"
+          overline="GETTING TO KNOW YOU"
+          title="Getting to know your sleep"
           notice="This app is not medical advice."
           action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
         />
 
         {/* Progress line: counts only, never a result. */}
-        <Card tone="hero" overline="BASELINE PROGRESS">
+        <Card tone="hero" overline="PROGRESS">
           <Text variant="titleMedium" color="champagneLight" tabular>
-            {validDaysCount} of {runInMinValidDays} valid days
+            {validDaysCount} of {runInMinValidDays} nights logged
           </Text>
           <Text variant="sub" color="ivorySecondary">
-            Run-in ends on 14 valid days with sleep logged, not consecutive calendar days.
+            Nights logged count, not days in a row.
           </Text>
         </Card>
 
@@ -331,27 +330,27 @@ export default function RunInScreen() {
           </Card>
         ) : null}
 
-        {/* Run-in complete banner */}
+        {/* All-nights-logged banner */}
         {isRunInComplete ? (
-          <Card tone="hero" title="Run-in complete">
+          <Card tone="hero" title="All set">
             <Text variant="body" color="ivorySecondary">
-              {nextCheckDate ? 'Your next feasibility check is ready.' : 'You have logged the required 14 valid baseline days. The feasibility check is the next step.'}
+              {nextCheckDate ? 'Your next check is ready.' : 'You have logged 14 nights. Next: find out whether a test is worth doing.'}
             </Text>
-            <Button label="Check feasibility" onPress={() => router.push('/feasibility')} />
+            <Button label="Is this test worth doing?" onPress={() => router.push('/feasibility')} />
           </Card>
         ) : nextCheckDate ? (
-          <Text color="ivorySecondary">Keep logging. Your next feasibility check is on {nextCheckDate}.</Text>
+          <Text color="ivorySecondary">Next check: {nextCheckDate}. Keep logging.</Text>
         ) : null}
 
         {/* Morning check-in card */}
         <Card
           overline={`CHECK-IN FOR ${activeDate === defaultEntryDate ? 'LAST NIGHT' : activeDate}`}
-          title="Morning Check-in"
+          title="Morning check-in"
         >
 
           {/* Sleep duration inputs */}
           <Text variant="sub" color="ivoryMuted">
-            Sleep duration (hours & minutes)
+            How long you slept
           </Text>
           <View style={styles.timeInputsRow}>
             <View style={styles.flexInput}>
@@ -374,7 +373,7 @@ export default function RunInScreen() {
 
           {/* Last caffeine time input */}
           <Text variant="sub" color="ivoryMuted">
-            Last caffeine time (yesterday)
+            Last caffeine yesterday
           </Text>
           <View style={styles.caffeineRow}>
             <View style={styles.flexInput}>
@@ -458,29 +457,29 @@ export default function RunInScreen() {
           })}
         </Card>
 
-        {/* Descriptive counts only: never a comparison, estimate or verdict. */}
+        {/* Your own counts only: never a comparison, estimate or verdict. */}
         {validDaysCount >= 3 ? (
           <Card
-            overline="DESCRIPTIVE LOG SUMMARY"
-            subtitle="What your log shows so far (descriptive, not a result)"
+            overline="WHAT YOUR LOG SHOWS"
+            subtitle="Your own numbers, not a result."
           >
             <StatStrip
               size="lg"
               items={[
                 { label: 'Days logged', value: String(descriptiveStats.daysLogged) },
                 {
-                  label: 'Average sleep so far',
+                  label: 'Average sleep',
                   value:
                     descriptiveStats.averageSleepMinutes !== null
                       ? `${(descriptiveStats.averageSleepMinutes / 60).toFixed(1)} hrs`
                       : '—',
                 },
                 {
-                  label: 'Afternoon caffeine days',
+                  label: 'Caffeine after noon',
                   value: `${descriptiveStats.afternoonCaffeineDays} of ${descriptiveStats.daysLogged}`,
                 },
                 {
-                  label: 'Days with unknown caffeine',
+                  label: 'Caffeine not logged',
                   value: String(descriptiveStats.unknownCaffeineDays),
                 },
               ]}
@@ -493,9 +492,9 @@ export default function RunInScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.md, paddingBottom: spacing.xxl },
-  timeInputsRow: { flexDirection: 'row', gap: spacing.sm },
-  caffeineRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
+  content: { gap: spacing.section, paddingBottom: spacing.xxl },
+  timeInputsRow: { flexDirection: 'row', gap: spacing.md },
+  caffeineRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
   flexInput: { flex: 1 },
   segment: {
     height: 54,

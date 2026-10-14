@@ -39,12 +39,12 @@ export function ScreenHeader({ overline, title, notice, action }: ScreenHeaderPr
 }
 
 const styles = StyleSheet.create({
-  wrapper: { gap: spacing.xs },
+  wrapper: { gap: spacing.sm },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     gap: spacing.md,
   },
-  titleBlock: { flexShrink: 1, gap: 2 },
+  titleBlock: { flexShrink: 1, gap: 6 },
 });

@@ -50,13 +50,13 @@ const styles = StyleSheet.create({
   base: {
     borderRadius: radii.card,
     borderCurve: 'continuous',
-    gap: spacing.sm,
+    gap: spacing.inline,
   },
 });
 
 const TONES: Record<CardTone, ViewStyle> = {
   default: {
-    padding: spacing.md,
+    padding: spacing.card,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.hairline,
@@ -69,11 +69,11 @@ const TONES: Record<CardTone, ViewStyle> = {
     gap: spacing.md,
   },
   quiet: {
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
     backgroundColor: 'transparent',
   },
   danger: {
-    padding: spacing.md,
+    padding: spacing.card,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.garnet,

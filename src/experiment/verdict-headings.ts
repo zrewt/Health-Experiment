@@ -11,9 +11,9 @@
 import type { Verdict } from '../engine/types';
 
 export const VERDICT_HEADINGS: Record<Verdict['status'], string> = {
-  SUPPORTED: 'Supported',
-  NO_DETECTABLE_EFFECT: 'No detectable effect',
-  INCONCLUSIVE: 'Inconclusive',
+  SUPPORTED: 'Sleep was longer on cutoff days',
+  NO_DETECTABLE_EFFECT: 'No clear difference in sleep',
+  INCONCLUSIVE: 'Too close to call',
 };
 
 /** Every verdict the engine can return has a heading here. */

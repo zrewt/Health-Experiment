@@ -128,29 +128,27 @@ export type FeasibilityScreenState =
       reasons: string[];
       lateCaffeineDays: number;
       knownExposureDays: number;
-      unknownExposureDays: number;
-      detailFacts: string[];
-      actions: ['Keep logging; re-check in 7 days', 'Not now'];
+      unknownExposureDays: number;      detailFacts: string[];
+      actions: ['Keep logging for now', 'Not now'];
     }
   | {
-      kind: 'ineligible';
+    kind: 'ineligible';
       message: string;
       detailsHeading: 'Details';
       reasons: string[];
       lateCaffeineDays: number;
       knownExposureDays: number;
-      unknownExposureDays: number;
-      detailFacts: string[];
-      actions: ['Keep logging; re-check in 7 days', 'Not now'];
+      unknownExposureDays: number;      detailFacts: string[];
+      actions: ['Keep logging for now', 'Not now'];
     }
   | {
-      kind: 'not_informative';
+    kind: 'not_informative';
       message: string;
       detailsHeading: 'Details';
       reasons: string[];
       duration: number | null;
       mde: MdeDirectMinutes;
-      actions: ['Keep logging; re-check in 7 days', 'Not now'];
+      actions: ['Keep logging for now', 'Not now'];
     }
   | {
       kind: 'informative' | 'long_shot';
@@ -159,7 +157,7 @@ export type FeasibilityScreenState =
       defaultDuration: number;
       requiresAcknowledgement: boolean;
       cutoffTime: string;
-      approximateLabel: 'Approximate';
+      approximateLabel: 'Rough';
       simulationNote: string;
       conservativeNote: string | null;
       startInstruction: string;

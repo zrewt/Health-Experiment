@@ -276,8 +276,8 @@ test('getTodayDashboardModel handles realistic 14 run-in days + in-window entrie
   const todayScheduled = plan.plan.schedule.find(s => s.date === today)!;
   const expectedHeading =
     todayScheduled.condition === 'intervention'
-      ? 'Today: no caffeine after 13:00.'
-      : 'Today: your usual routine.';
+      ? 'Today: cutoff day, no caffeine after 13:00'
+      : 'Today: normal day';
   assert.equal(model.instruction.heading, expectedHeading);
 
   // Recent days surface unreadable marker and unsynced status on 2026-02-16
@@ -294,7 +294,10 @@ test('getTodayDashboardModel handles realistic 14 run-in days + in-window entrie
   assert.equal(model.checkIn.status, 'unreadable');
   assert.equal(model.checkIn.summary, '7h 20m · Caffeine time unreadable');
   assert.match(model.instruction.detail, /Day 3 of 6/);
-  assert.match(model.instruction.detail, /Cutoff 13:00/);
+  // The cutoff time is carried by the heading itself on cutoff days.
+  if (todayScheduled.condition === 'intervention') {
+    assert.match(model.instruction.heading, /13:00/);
+  }
   // Today already performs the check-in, so the other screen is an optional step.
   assert.equal(model.primaryAction?.tone, 'quiet');
 
@@ -325,7 +328,7 @@ test('getTodayDashboardModel covers run_in, feasibility_ready, and completed res
     today: '2026-01-05',
   });
   assert.equal(runInModel.state, 'run_in');
-  assert.equal(runInModel.instruction.heading, 'Today: your usual routine.');
+  assert.equal(runInModel.instruction.heading, 'Today: normal day');
   assert.equal(runInModel.checkIn.enabled, true);
   assert.equal(runInModel.checkIn.status, 'logged');
   assert.equal(runInModel.checkIn.summary, '7h 00m · Last caffeine 15:00');
@@ -374,13 +377,13 @@ test('getTodayDashboardModel covers run_in, feasibility_ready, and completed res
     today: '2026-02-05',
   });
   assert.equal(resultModel.state, 'plan_result_ready');
-  assert.equal(resultModel.instruction.heading, 'Supported');
+  assert.equal(resultModel.instruction.heading, 'Sleep was longer on cutoff days');
   assert.equal(resultModel.instruction.body, 'Engine verdict statement verbatim.');
   assert.equal(resultModel.checkIn.enabled, false);
   assert.equal(resultModel.checkIn.recentDays[0].editable, false);
   // A verdict is something the user still has to open, so it stays a required action.
   assert.equal(resultModel.primaryAction?.tone, 'primary');
-  assert.match(resultModel.instruction.detail, /4 days analyzed/);
+  assert.match(resultModel.instruction.detail, /4 days looked at/);
 });
 
 test('the Today check-in reports whether last night is already logged', () => {

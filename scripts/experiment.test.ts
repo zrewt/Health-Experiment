@@ -76,9 +76,10 @@ test('config reuses engine bounds and defaults; assumption labels match the cont
   assert.equal(config.runInMinValidDays, 14);
   assert.equal(config.assumedAdherence, 0.9);
   assert.equal(config.assumedContamination, 0.1);
-  assert.equal(config.mdeLabel, 'effect if you follow the rule fully');
-  assert.equal(config.adherenceAssumptionText, 'assuming you follow the rule on about 9 of 10 assigned days');
-  assert.equal(config.autocorrelationAssumptionText, 'We did not estimate autocorrelation from your run-in; numbers use the least favourable value in the tested range (0.2 to 0.6).');
+  // Wording is plain-words copy; these pin the exact user-facing labels.
+  assert.equal(config.mdeLabel, 'change if you follow the rule on every cutoff day');
+  assert.equal(config.adherenceAssumptionText, 'if you follow the rule on about 9 of 10 cutoff days');
+  assert.equal(config.autocorrelationAssumptionText, 'We did not work out how much one night of sleep follows the night before. The numbers use the hardest value in the range we tested (0.2 to 0.6).');
   assert.equal('autocorrelationClamp' in config, false);
 });
 
@@ -108,7 +109,7 @@ test('SD 24 uses SD 25 for every lookup, flags each number at least, and preserv
   assert.equal(result.conservative, true);
   assert.equal(result.numberQualifier, 'at least');
   assert.equal(result.sdUsed, 25);
-  assert.match(result.conservativeAssumptionText!, /unvalidated/);
+  assert.match(result.conservativeAssumptionText!, /not proven limits/);
   assert.equal(result.inputs.baseline.sd, 24);
   for (const [index, option] of result.options.entries()) {
     assert.equal(option.conservative, true);

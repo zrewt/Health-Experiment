@@ -37,10 +37,10 @@ export const conditionRule = Object.freeze({
   type: 'caffeine-cutoff', cutoffTime: '12:00',
 } satisfies CaffeineConditionRule);
 
-export const mdeLabel = 'effect if you follow the rule fully';
+export const mdeLabel = 'change if you follow the rule on every cutoff day';
 export const adherenceAssumptionText =
-  `assuming you follow the rule on about ${assumedAdherence * 10} of 10 assigned days`;
+  `if you follow the rule on about ${assumedAdherence * 10} of 10 cutoff days`;
 export const autocorrelationAssumptionText =
-  `We did not estimate autocorrelation from your run-in; numbers use the least favourable value in the tested range (${Math.min(...autocorrelationGrid)} to ${Math.max(...autocorrelationGrid)}).`;
+  `We did not work out how much one night of sleep follows the night before. The numbers use the hardest value in the range we tested (${Math.min(...autocorrelationGrid)} to ${Math.max(...autocorrelationGrid)}).`;
 export const conservativeAssumptionText =
-  `Run-in SD is below the tested range; lookup uses SD ${sdLowerBound}. Numbers labelled "at least" are conservative, unvalidated assumptions, not validated bounds.`;
+  `Your sleep varies less than the range we tested, so the look-up uses the smallest value (${sdLowerBound}). Numbers marked "at least" are cautious guesses, not proven limits.`;

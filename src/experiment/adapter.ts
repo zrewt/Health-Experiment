@@ -246,19 +246,19 @@ export function getFeasibilityScreenState(
   feasibility: FeasibilityViewModel,
   setup: { cutoffTime: string },
 ): FeasibilityScreenState {
-  const actions: ['Keep logging; re-check in 7 days', 'Not now'] = [
-    'Keep logging; re-check in 7 days', 'Not now',
+  const actions: ['Keep logging for now', 'Not now'] = [
+    'Keep logging for now', 'Not now',
   ];
   if (!baseline.eligible || feasibility.tier === 'cannot_assess') {
     const detailFacts = [
       `You logged caffeine after noon on ${baseline.lateCaffeineDays} of ${baseline.knownExposureDays + baseline.unknownExposureDays} days.`,
     ];
     if (baseline.unknownExposureDays > 0) {
-      detailFacts.push(`${baseline.unknownExposureDays} days had no caffeine time logged. Those days count against eligibility, so logging it each day helps.`);
+      detailFacts.push(`${baseline.unknownExposureDays} days had no caffeine time logged, so they do not count. Log it every morning.`);
     }
     return {
       kind: !baseline.eligible ? 'ineligible' : 'cannot_assess',
-      message: "We can't set up this experiment from your log yet.",
+      message: "We can't set up this test yet.",
       detailsHeading: 'Details', reasons: [...baseline.engineReasons],
       lateCaffeineDays: baseline.lateCaffeineDays,
       knownExposureDays: baseline.knownExposureDays,
@@ -269,11 +269,13 @@ export function getFeasibilityScreenState(
   if (feasibility.tier === 'not_informative') {
     const option = feasibility.options.find(item => item.duration === config.tierDuration);
     const mde = option?.mdeDirectMinutes ?? null;
+    // The engine statement for this tier ships verbatim under Details; the plain
+    // verdict and this one reason are what the screen leads with.
     const message = mde === 'larger_than_60' || (typeof mde === 'number' && mde > 60)
-      ? option?.statement ?? ''
+      ? 'Your nightly sleep varies too much for this test to show a real difference.'
       : typeof mde === 'number'
-        ? `With your current sleep variability, a ${option?.duration ?? config.tierDuration}-day experiment could only reliably detect changes of about ${mde} minutes or more if you follow the rule fully, which is larger than the ${feasibility.inputs.minimumMeaningfulEffectMinutes} minutes we treat as meaningful. We don't recommend starting.`
-        : 'The simulations could not provide a reliable estimate for this sleep variability. We do not recommend starting.';
+        ? 'Sleep changes would have to be large before this test could show them.'
+        : 'We could not get reliable numbers from your sleep pattern.';
     return {
       kind: 'not_informative', message, detailsHeading: 'Details',
       reasons: [...baseline.engineReasons], duration: option?.duration ?? null,
@@ -282,7 +284,7 @@ export function getFeasibilityScreenState(
   }
   if (!feasibility.defaultDuration) {
     return {
-      kind: 'cannot_assess', message: "We can't set up this experiment from your log yet.",
+      kind: 'cannot_assess', message: "We can't set up this test yet.",
       detailsHeading: 'Details', reasons: [...baseline.engineReasons],
       lateCaffeineDays: baseline.lateCaffeineDays,
       knownExposureDays: baseline.knownExposureDays,
@@ -296,12 +298,12 @@ export function getFeasibilityScreenState(
     defaultDuration: feasibility.defaultDuration,
     requiresAcknowledgement: feasibility.tier === 'long_shot',
     cutoffTime: setup.cutoffTime,
-    approximateLabel: 'Approximate',
-    simulationNote: 'These numbers come from computer simulations and are approximate (about plus or minus 6 percentage points).',
+    approximateLabel: 'Rough',
+    simulationNote: 'These numbers come from computer simulations of your log, so they are rough — about six points either way.',
     conservativeNote: feasibility.conservative
-      ? 'Your sleep is more consistent than the range we tested, so these numbers are conservative.'
+      ? 'Your sleep is steadier than the range we tested, so read these as the low end.'
       : null,
-    startInstruction: `Starting means 2-day blocks, assigned at random; you will be told each day whether to use your usual routine or a caffeine cutoff at ${setup.cutoffTime}.`,
+    startInstruction: `Days come in pairs, picked at random: a cutoff day (no caffeine after ${setup.cutoffTime}) or a normal day. The app tells you which, one day at a time.`,
   };
 }
 
