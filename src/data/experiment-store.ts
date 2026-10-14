@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import type { DailyEntry } from '@/experiment/types';
 import { mergePendingEntries, retryPendingEntries } from './pending-entries';
+import { deviceKeysForUser } from './local-wipe';
 import { createPlanPersistence, type StoredExperimentPlan } from './plan-persistence';
 import { parseLocalDate } from '@/experiment/dates';
 import { sanitizeCaffeineTimeForWrite } from '@/experiment/caffeine-time';
@@ -479,18 +480,25 @@ export async function archiveCompletedPlanForRepeat(
   await AsyncStorage.removeItem(`@experiment_active_plan:${userId}`);
 }
 
+export interface LocalWipeReport {
+  /** The keys that were actually on the device and are now gone. */
+  removedKeys: string[];
+}
+
 /**
- * Clears all device-local cached data for a user.
+ * Removes this account's offline copy from the device.
+ *
+ * Everything removed here is a cache the account can rebuild, so a partial failure is
+ * only ever an unfinished cleanup, never lost data. Keys are selected by shape (see
+ * deviceKeysForUser) instead of by name, so a cache key added later is cleared with
+ * them rather than being left behind on the phone.
  */
-export async function clearLocalUserData(userId: string): Promise<void> {
-  await Promise.all([
-    AsyncStorage.removeItem(setupKey(userId)),
-    AsyncStorage.removeItem(entriesKey(userId)),
-    AsyncStorage.removeItem(consentKey(userId)),
-    AsyncStorage.removeItem(plansHistoryKey(userId)),
-    AsyncStorage.removeItem(archivedPlanIdsKey(userId)),
-    AsyncStorage.removeItem(`@experiment_active_plan:${userId}`),
-    AsyncStorage.removeItem(`@experiment_pending_plan:${userId}`),
-  ]);
+export async function clearLocalUserData(userId: string): Promise<LocalWipeReport> {
+  const allKeys = await AsyncStorage.getAllKeys();
+  const owned = deviceKeysForUser(allKeys, userId);
+  if (owned.length > 0) {
+    await AsyncStorage.multiRemove(owned);
+  }
+  return { removedKeys: owned };
 }
 

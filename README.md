@@ -32,7 +32,11 @@ In Supabase Authentication:
 - With Confirm email enabled, signup shows a confirmation message. Open the email link, then return to the app and log in. Without confirmation, signup opens Home immediately.
 - Configure mail delivery and rate limits before production use.
 
-No application tables or SQL migrations are required. Supabase Auth manages accounts. Removing the old fitness schema from this checkout does **not** delete any existing remote tables, users, data, triggers, or deployed functions. Review those separately if you want to remove them; this change performs no remote cleanup.
+### Database
+
+Run [supabase/schema-all.sql](supabase/schema-all.sql) once in the Supabase SQL editor. It creates the four experiment tables, the locked-day trigger and `delete_own_account()`; every statement is idempotent, so re-running the same file is the way to apply a change to it.
+
+In-app account deletion calls `delete_own_account()`, and the locked-day trigger is part of the same file, so a project that has not run it shows an error in Settings instead of deleting the account. The per-screen `schema-screen*.sql` files are kept as the historical record; `supabase/schema-all.sql` is the one to run.
 
 ## Routes and sessions
 
@@ -51,6 +55,8 @@ npm run typecheck
 npm run lint
 npm run test:auth
 npm run test:env
+npx tsx --test scripts/*.test.ts
+npm run verify:freeze
 node scripts/contrast-sanity.cjs
 npx expo-doctor
 ```

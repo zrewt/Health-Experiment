@@ -53,7 +53,10 @@ export async function updateUserPassword(auth: PasswordUpdateClient, newPassword
 export async function deleteUserAccount(client: AccountDeleteClient): Promise<void> {
   const { error } = await client.rpc('delete_own_account');
   if (error) {
-    throw new Error(`Could not delete server account: ${error.message}`);
+    // The code is carried into the message on purpose: it is what tells a missing database
+    // function (PGRST202) apart from a server-side refusal (42501, 23503) in the UI.
+    const code = (error as { code?: string }).code;
+    throw new Error(`Could not delete the account: ${error.message}${code ? ` (${code})` : ''}`);
   }
 }
 

@@ -37,6 +37,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const signOut = useAuthStore((state) => state.signOut);
+  const forgetSession = useAuthStore((state) => state.forgetSession);
 
   const [consent, setConsent] = useState<ConsentRecord | null>(null);
   const [setup, setSetup] = useState<ExperimentSetupRecord | null>(null);
@@ -130,8 +131,14 @@ export default function SettingsScreen() {
 
   const handleClearLocalCache = async () => {
     if (!user || clearingLocal) return;
+    // Names the one real risk before asking: entries that never reached the account live
+    // only here, and clearing takes them with it. Everything else comes back from the server.
+    const unsyncedWarning =
+      unsyncedCount > 0
+        ? ` ${unsyncedCount} entr${unsyncedCount === 1 ? 'y has' : 'ies have'} not reached your account yet, and clearing loses ${unsyncedCount === 1 ? 'it' : 'them'}.`
+        : '';
     const message =
-      'This clears the entries stored on this device. Anything already synced to your account stays.';
+      `This clears the entries stored on this device. Anything already synced to your account stays.${unsyncedWarning}`;
     const confirmed =
       Platform.OS === 'web'
         ? window.confirm(message)
@@ -147,9 +154,14 @@ export default function SettingsScreen() {
     setError(null);
     setNotice(null);
     try {
-      await clearLocalUserData(user.id);
+      const report = await clearLocalUserData(user.id);
       await loadSettings();
-      setNotice('Cleared on this device.');
+      const count = report.removedKeys.length;
+      setNotice(
+        count === 0
+          ? 'Nothing was stored on this device to clear. Your log is in your account.'
+          : `Cleared ${count} stored item${count === 1 ? '' : 's'} from this device. Your account copy was not deleted, so your log is shown again from the server copy.`,
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not clear this device.');
     } finally {
@@ -175,19 +187,36 @@ export default function SettingsScreen() {
     setDeletingAccount(true);
     setError(null);
     setNotice(null);
+    const userId = user.id;
     try {
       if (!supabase) {
         throw new Error('Server connection is required to delete your account.');
       }
+      // The rows can only be deleted server-side, so that call comes first: if it fails,
+      // nothing on this device has changed and the error is worth showing.
       await deleteUserAccount(supabase);
-      await clearDailyReminder();
-      await clearLocalUserData(user.id);
-      await signOut();
     } catch (cause) {
       setError(authErrorMessage(cause));
-    } finally {
       setDeletingAccount(false);
+      return;
     }
+
+    // From here the account is gone. Device cleanup and sign-out are best-effort on
+    // purpose: neither may leave the user sitting in a signed-in app for an account that
+    // no longer exists, and a failed cache removal is not a failed deletion.
+    await clearDailyReminder();
+    try {
+      await clearLocalUserData(userId);
+    } catch {
+      // Offline cache only; the account and every row in it are already deleted.
+    }
+    try {
+      await signOut();
+    } catch {
+      // The stored token is dead now, so drop the in-memory session and leave anyway.
+      forgetSession();
+    }
+    setDeletingAccount(false);
   };
 
   const handleSignOut = async () => {

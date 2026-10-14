@@ -11,6 +11,12 @@ interface AuthStore {
   hydrate: () => Promise<void>;
   setSession: (session: Session | null) => void;
   signOut: () => Promise<void>;
+  /**
+   * Drops the in-memory session without touching storage. Only for the one case where the
+   * account row is already gone (in-app deletion): the user must leave the signed-in app
+   * even if the storage call fails, and the stored token can no longer do anything.
+   */
+  forgetSession: () => void;
 }
 
 /** Guards against a second hydrate pass registering duplicate listeners. */
@@ -72,6 +78,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const { error } = await supabase.auth.signOut({ scope: 'local' });
       if (error) throw error;
     }
+    set({ session: null, user: null, loading: false });
+  },
+
+  forgetSession: () => {
     set({ session: null, user: null, loading: false });
   },
 }));

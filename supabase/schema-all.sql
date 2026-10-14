@@ -205,6 +205,12 @@ create unique index if not exists uq_experiment_plans_scheduled_user
 -- Entries dated inside a completed plan's schedule can no longer be updated or
 -- deleted, so a saved verdict always matches the log it was computed from.
 -- Entries outside that window (including the baseline run-in) stay editable.
+--
+-- One exception: deleting the account itself. That path deletes the user's rows and
+-- the account row in one transaction, and the lock must not be able to stop it, so
+-- public.delete_own_account() raises a transaction-local flag this trigger respects.
+-- Only that SECURITY DEFINER function can set the flag: the API cannot, because there
+-- is no endpoint that runs arbitrary SQL or set_config for a signed-in caller.
 -- ============================================================================
 create or replace function public.check_entry_edit_lock()
 returns trigger
@@ -216,6 +222,21 @@ declare
   target_date text;
   locked boolean;
 begin
+  if coalesce(current_setting('aevum.account_delete', true), '') = 'on' then
+    if (TG_OP = 'DELETE') then
+      return OLD;
+    else
+      return NEW;
+    end if;
+  end if;
+
+  -- A sample row is dev scaffolding, not a logged day. The app's delete policy already
+  -- allows only sample rows to be removed, so the lock has nothing to protect here and
+  -- must not turn "Delete sample entries" into a no-op after a test has been completed.
+  if (TG_OP = 'DELETE' and OLD.is_sample) then
+    return OLD;
+  end if;
+
   if (TG_OP = 'DELETE') then
     target_user_id := OLD.user_id;
     target_date := OLD.date;
@@ -259,8 +280,12 @@ create trigger trg_prevent_completed_entry_edits
 -- ============================================================================
 -- 6. In-app account deletion (App Store requirement)
 -- ============================================================================
--- Deletes the caller's auth.users row, which cascades to experiment_consent,
--- experiment_setup, experiment_entries and experiment_plans.
+-- Deletes the caller's rows and then the caller's auth.users row. Everything is
+-- removed inside one transaction, so a failure leaves the account exactly as it was.
+--
+-- The rows are deleted explicitly and first, rather than relying on the cascade, so
+-- the order never matters: the locked-day trigger would otherwise still see the
+-- completed plan while the entries under it were being deleted, and refuse.
 -- ============================================================================
 create or replace function public.delete_own_account()
 returns void
@@ -275,6 +300,15 @@ begin
     raise exception 'Not authenticated'
       using errcode = 'insufficient_privilege';
   end if;
+
+  -- Transaction-local, and only reachable from this function, so the locked-day rule
+  -- keeps protecting a finished experiment from every client-side edit.
+  perform set_config('aevum.account_delete', 'on', true);
+
+  delete from public.experiment_entries where user_id = caller_id;
+  delete from public.experiment_plans   where user_id = caller_id;
+  delete from public.experiment_setup   where user_id = caller_id;
+  delete from public.experiment_consent where user_id = caller_id;
 
   delete from auth.users
   where id = caller_id;
