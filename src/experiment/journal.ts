@@ -57,6 +57,8 @@ export interface JournalInputs {
   today: string;
   setup: ExperimentSetupRecord | null;
   plan: StoredExperimentPlan | null;
+  /** Optional full plan history so archived completed plans stay locked in the journal. */
+  plans?: readonly StoredExperimentPlan[];
   maxTimelineDays?: number;
 }
 
@@ -94,7 +96,7 @@ function formatCaffeineDisplay(raw: string | 'none' | null): {
  * - Never exposes future experiment assignments or interim condition comparisons.
  */
 export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
-  const { entries, today, setup, plan, maxTimelineDays = 60 } = inputs;
+  const { entries, today, setup, plan, plans = [], maxTimelineDays = 60 } = inputs;
   const yesterday = getMorningEntryDate(today);
 
   const byDate = new Map<string, DashboardEntry>();
@@ -104,9 +106,15 @@ export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
     }
   }
 
-  const scheduleDates = new Set<string>(
-    plan && plan.status !== 'cancelled' ? plan.plan.schedule.map(s => s.date) : []
-  );
+  const allPlans = [...(plan ? [plan] : []), ...plans];
+  const scheduleDates = new Set<string>();
+  for (const item of allPlans) {
+    if (item && item.status !== 'cancelled') {
+      for (const s of item.plan.schedule) {
+        scheduleDates.add(s.date);
+      }
+    }
+  }
 
   // Determine earliest date to include in the continuous dated list
   const candidateStarts: string[] = [];
@@ -183,7 +191,7 @@ export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
       caffeineText: caffeineInfo.text,
       statusText,
       statusTone,
-      editable: canEditDate(today, date, plan),
+      editable: canEditDate(today, date, allPlans),
       synced,
       phaseLabel: scheduleDates.has(date) ? 'Test day' : 'Getting to know you',
     });

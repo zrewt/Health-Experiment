@@ -17,7 +17,10 @@ const config: ExpoConfig = {
     barStyle: 'dark-content',
     backgroundColor: tokens.colors.background,
   },
-  ios: { supportsTablet: false },
+  ios: {
+    supportsTablet: false,
+    bundleIdentifier: brand.iosBundleIdentifier,
+  },
   web: { bundler: 'metro', output: 'single', name: brand.name },
   plugins: [
     'expo-router',

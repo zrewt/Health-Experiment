@@ -211,6 +211,13 @@ test('edit lock disables editing scheduled dates when plan is completed', () => 
   const activePlan = makePlan('2026-02-01', 14, '12:00', 'scheduled');
   assert.equal(canEditDate(today, '2026-02-14', activePlan), true);
   assert.equal(canEditDate(today, '2026-02-13', activePlan), true);
+
+  // Even after archiving the completed plan to start a second cycle (where active plan is null
+  // and the completed plan lives in history), its scheduled days stay locked on E+1..E+4:
+  assert.equal(canEditDate('2026-02-15', '2026-02-14', [completedPlan]), false);
+  assert.equal(canEditDate('2026-02-16', '2026-02-14', [completedPlan]), false);
+  // While the first new run-in night (2026-02-15, logged on morning of 2026-02-16) is editable:
+  assert.equal(canEditDate('2026-02-16', '2026-02-15', [completedPlan]), true);
 });
 
 import type { VerdictStatus } from '../src/engine/types';

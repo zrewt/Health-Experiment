@@ -136,6 +136,7 @@ export default function RunInScreen() {
   }, [userId, defaultEntryDate, router, reloadTrigger]);
 
   const selectDateForEdit = (date: string) => {
+    if (!canEditDate(today, date, savedPlans)) return;
     setActiveDate(date);
     const existing = entries.find((e) => e.date === date);
     if (existing) {
@@ -169,6 +170,10 @@ export default function RunInScreen() {
 
   const handleSaveEntry = async () => {
     if (!user) return;
+    if (!canEditDate(today, activeDate, savedPlans)) {
+      setFieldErrors('This day belongs to a finished test and is locked.');
+      return;
+    }
     setFieldErrors(null);
     setStorageError(null);
 
@@ -455,7 +460,7 @@ export default function RunInScreen() {
         <Card overline="RECENT DAYS">
           {pastDays.map((d) => {
             const status = getDayStatus(d);
-            const isEditable = canEditDate(today, d);
+            const isEditable = canEditDate(today, d, savedPlans);
             const isSelected = activeDate === d;
             return (
               <NavRow
@@ -463,6 +468,7 @@ export default function RunInScreen() {
                 label={d}
                 detail={status}
                 value={isEditable ? (isSelected ? 'Editing' : 'Edit') : 'Read-only'}
+                disabled={!isEditable}
                 onPress={() => selectDateForEdit(d)}
               />
             );

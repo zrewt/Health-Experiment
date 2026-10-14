@@ -168,6 +168,13 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
     addDaysToLocalDate(yesterday, -2),
   ];
 
+  // Lock any date belonging to a completed plan — including one just archived to start a
+  // new cycle — so the client never offers an edit that the server trigger will reject.
+  const lockPlans = [
+    ...(plan ? [plan] : []),
+    ...plans.map((p) => ({ status: 'completed', plan: p })),
+  ];
+
   const recentDays: DashboardDayItem[] = candidateDates.map(d => {
     const existing = entries.find(e => e.date === d);
     const { statusText, statusTone, synced } = buildDayStatus(existing);
@@ -176,7 +183,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       label: d === yesterday ? `Last night (${d})` : d,
       statusText,
       statusTone,
-      editable: canEditDate(today, d, plan),
+      editable: canEditDate(today, d, lockPlans),
       sleepMinutes: existing?.sleepMinutes ?? null,
       lastCaffeineTime: existing?.lastCaffeineTime ?? null,
       synced,

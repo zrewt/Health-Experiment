@@ -19,6 +19,7 @@ import {
   getSetup,
   listEntries,
   getActivePlan,
+  listExperimentPlans,
   saveEntry,
   syncUnsyncedEntries,
   type ExperimentSetupRecord,
@@ -45,6 +46,7 @@ export default function JournalScreen() {
   const [setup, setSetup] = useState<ExperimentSetupRecord | null>(null);
   const [entries, setEntries] = useState<StoredDailyEntry[]>([]);
   const [plan, setPlan] = useState<StoredExperimentPlan | null>(null);
+  const [savedPlans, setSavedPlans] = useState<StoredExperimentPlan[]>([]);
   const [editingDate, setEditingDate] = useState<string | null>(null);
 
   const today = getToday();
@@ -52,14 +54,16 @@ export default function JournalScreen() {
   const loadJournal = useCallback(async () => {
     if (!user) return;
     try {
-      const [loadedSetup, loadedEntries, loadedPlan] = await Promise.all([
+      const [loadedSetup, loadedEntries, loadedPlan, loadedPlans] = await Promise.all([
         getSetup(user.id),
         listEntries(user.id),
         getActivePlan(user.id),
+        listExperimentPlans(user.id),
       ]);
       setSetup(loadedSetup);
       setEntries(loadedEntries);
       setPlan(loadedPlan);
+      setSavedPlans(loadedPlans);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load journal.');
@@ -81,6 +85,7 @@ export default function JournalScreen() {
     today,
     setup,
     plan,
+    plans: savedPlans,
   });
 
   const unsyncedCount = entries.filter((e) => e.synced === false).length;

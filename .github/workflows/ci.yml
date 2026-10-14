@@ -1,0 +1,48 @@
+name: Verify
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify frozen engine manifest
+        run: npm run verify:freeze
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck app
+        run: npm run typecheck
+
+      - name: Typecheck engine
+        run: npx tsc -p tsconfig.engine.json --noEmit
+
+      - name: Check design token contrast
+        run: node scripts/contrast-sanity.cjs
+
+      - name: Run all test suites (UTC)
+        env:
+          TZ: UTC
+        run: npx tsx --test scripts/*.test.ts
+
+      - name: Run timezone-sensitive tests (America/Toronto)
+        env:
+          TZ: America/Toronto
+        run: npx tsx --test scripts/run-in-baseline.test.ts scripts/domain-screens.test.ts scripts/reminders.test.ts

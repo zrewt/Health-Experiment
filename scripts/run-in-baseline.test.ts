@@ -8,7 +8,9 @@ import {
   validRunInDays,
 } from '../src/experiment/adapter';
 import { getHomeState } from '../src/experiment/home-state';
-import { addDaysToLocalDate } from '../src/experiment/dates';
+import { getTodayDashboardModel } from '../src/experiment/today-dashboard';
+import { getJournalViewModel } from '../src/experiment/journal';
+import { addDaysToLocalDate, canEditDate } from '../src/experiment/dates';
 import { runInMinValidDays } from '../src/experiment/config';
 import type { DailyEntry, ExperimentPlan } from '../src/experiment/types';
 import type { StoredExperimentPlan } from '../src/data/plan-persistence';
@@ -179,3 +181,36 @@ test('the gate follows the same rule: a finished test cannot unlock the next run
   assert.equal(entries.filter((entry) => entry.sleepMinutes !== null).length, PLAN_LENGTH + 3);
   assert.ok(entries.filter((entry) => entry.sleepMinutes !== null).length >= runInMinValidDays);
 });
+
+test('archived completed plan dates stay edit-locked on Today and Journal during the new run-in', () => {
+  // On the morning of FIRST_RUN_IN_NIGHT (the day after E), yesterday is LAST_PLANNED_DAY (E).
+  // Even after the user archives the completed plan to start a second cycle (plan = null,
+  // plans = [finishedPlan.plan]), LAST_PLANNED_DAY and earlier schedule days must remain locked.
+  const dayAfterTest = FIRST_RUN_IN_NIGHT;
+  assert.equal(canEditDate(dayAfterTest, LAST_PLANNED_DAY, [finishedPlan]), false);
+
+  const dashboardOnDayAfter = getTodayDashboardModel({
+    consent: { userId: 'u', consentType: 'health-data', policyVersion: 'v1', granted: true, createdAt: '2026-01-01T00:00:00.000Z' },
+    setup: { experimentId: 'caffeine-cutoff', cutoffTime: '12:00', screeningAnswer: 'usually', runInStartDate: '2026-01-01' },
+    entries: planLogs(),
+    plan: null,
+    plans: planWindows,
+    today: dayAfterTest,
+  });
+  for (const recent of dashboardOnDayAfter.checkIn.recentDays) {
+    assert.equal(recent.editable, false, `completed test day ${recent.date} must stay locked on Today`);
+  }
+
+  const journalOnDayAfter = getJournalViewModel({
+    entries: planLogs(),
+    today: dayAfterTest,
+    setup: { experimentId: 'caffeine-cutoff', cutoffTime: '12:00', screeningAnswer: 'usually', runInStartDate: '2026-01-01' },
+    plan: null,
+    plans: [finishedPlan],
+  });
+  const lastScheduledInJournal = journalOnDayAfter.days.find((d) => d.date === LAST_PLANNED_DAY);
+  assert.ok(lastScheduledInJournal);
+  assert.equal(lastScheduledInJournal.editable, false, 'completed test day must stay locked in Journal');
+  assert.equal(lastScheduledInJournal.phaseLabel, 'Test day');
+});
+

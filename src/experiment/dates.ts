@@ -84,6 +84,11 @@ export function daysBetween(earlierDateStr: string, laterDateStr: string): numbe
   return Math.round((dt2.getTime() - dt1.getTime()) / (24 * 60 * 60 * 1000));
 }
 
+export type LockablePlan = {
+  status: string;
+  plan: { schedule: readonly { date: string }[] };
+};
+
 /**
  * Pure domain function determining whether an entry date can still be edited.
  *
@@ -91,14 +96,26 @@ export function daysBetween(earlierDateStr: string, laterDateStr: string): numbe
  * True ONLY for the current entry date (the date of the morning check-in on `today`)
  * and the previous 3 days. Older days are read-only. Future days cannot be edited.
  *
- * If plan is provided and plan.status === 'completed', all dates in the plan's schedule
- * are locked and read-only (returns false).
+ * If any provided plan (single plan or history list) has status === 'completed', all
+ * dates in that plan's schedule are locked and read-only (returns false), matching the
+ * server-side `check_entry_edit_lock()` trigger across archived cycles.
  */
-export function canEditDate(today: string, date: string, plan?: { status: string; plan: { schedule: { date: string }[] } } | null): boolean {
-  if (plan && plan.status === 'completed') {
-    const inSchedule = plan.plan.schedule.some(s => s.date === date);
-    if (inSchedule) {
-      return false;
+export function canEditDate(
+  today: string,
+  date: string,
+  planOrPlans?: LockablePlan | readonly LockablePlan[] | null,
+): boolean {
+  if (planOrPlans) {
+    const list: readonly LockablePlan[] = Array.isArray(planOrPlans)
+      ? planOrPlans
+      : [planOrPlans as LockablePlan];
+    for (const item of list) {
+      if (item && item.status === 'completed') {
+        const inSchedule = item.plan.schedule.some(s => s.date === date);
+        if (inSchedule) {
+          return false;
+        }
+      }
     }
   }
 

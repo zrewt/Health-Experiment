@@ -224,6 +224,9 @@ export default function SettingsScreen() {
     setSigningOut(true);
     setError(null);
     try {
+      // Clear scheduled OS notifications on sign-out so a signed-out device is not
+      // nudged with active-experiment reminders.
+      await clearDailyReminder();
       await signOut();
     } catch (cause) {
       setError(authErrorMessage(cause));
