@@ -215,9 +215,9 @@ export default function SetupConsentScreen() {
           style={styles.consentCard}
         >
           <View style={styles.bulletList}>
-            <Text variant="sub" color="ivorySecondary">• You log your sleep and your last caffeine time each morning.</Text>
-            <Text variant="sub" color="ivorySecondary">• We keep those logs, and the timetable of your test, in your own account.</Text>
-            <Text variant="sub" color="ivorySecondary">• You can stop any time, and delete everything from Settings.</Text>
+            <Text variant="sub" color="ivorySecondary">• You log your sleep and caffeine each morning.</Text>
+            <Text variant="sub" color="ivorySecondary">• We keep your logs in your own account.</Text>
+            <Text variant="sub" color="ivorySecondary">• You can stop and delete it all any time.</Text>
             <Text variant="sub" color="ivorySecondary">• This app is not medical advice.</Text>
           </View>
 
