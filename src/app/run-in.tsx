@@ -19,8 +19,10 @@ import {
   syncUnsyncedEntries,
   getConsent,
   getSetup,
+  listExperimentPlans,
   StoredDailyEntry,
 } from '@/data/experiment-store';
+import type { StoredExperimentPlan } from '@/data/plan-persistence';
 import { getToday } from '@/experiment/clock';
 import {
   getMorningEntryDate,
@@ -28,6 +30,7 @@ import {
   canEditDate,
 } from '@/experiment/dates';
 import { runInMinValidDays } from '@/experiment/config';
+import { entriesForRunIn, validRunInDays } from '@/experiment/adapter';
 import { isFeasibilityDue } from '@/experiment/start-attempt';
 import { getRunInDescriptiveStats, type RunInDescriptiveStats } from '@/experiment/view-model';
 import {
@@ -43,6 +46,8 @@ export default function RunInScreen() {
   const user = useAuthStore((state) => state.user);
 
   const [entries, setEntries] = useState<StoredDailyEntry[]>([]);
+  // Earlier tests: their days are not part of this run-in.
+  const [savedPlans, setSavedPlans] = useState<StoredExperimentPlan[]>([]);
   const [activeDate, setActiveDate] = useState<string>('');
   const [storageError, setStorageError] = useState<string | null>(null);
   const [nextCheckDate, setNextCheckDate] = useState<string | null>(null);
@@ -83,6 +88,9 @@ export default function RunInScreen() {
         const loaded = await listEntries(userId!);
         if (!isCurrent) return;
         setEntries(loaded);
+        const plans = await listExperimentPlans(userId!);
+        if (!isCurrent) return;
+        setSavedPlans(plans);
 
         const target = defaultEntryDate;
         setActiveDate(target);
@@ -251,10 +259,14 @@ export default function RunInScreen() {
     }
   };
 
-  // Calculations for progress & descriptive counts
-  const validDaysCount = entries.filter((e) => e.sleepMinutes !== null).length;
+  // Calculations for progress & descriptive counts.
+  // The run-in window is the days after every earlier plan's last scheduled day: days from
+  // a finished test were not "getting to know your sleep" and must not inflate this count.
+  const allPlans = savedPlans.map((item) => item.plan);
+  const runInEntries = entriesForRunIn(entries, allPlans, today);
+  const validDaysCount = validRunInDays(entries, allPlans, today);
   const isRunInComplete = isFeasibilityDue(validDaysCount, nextCheckDate, today);
-  const descriptiveStats: RunInDescriptiveStats = getRunInDescriptiveStats(entries);
+  const descriptiveStats: RunInDescriptiveStats = getRunInDescriptiveStats(runInEntries);
 
   // Past 3 editable days list (yesterday, -2 days, -3 days)
   const pastDays = [

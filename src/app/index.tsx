@@ -22,6 +22,7 @@ import {
   getSetup,
   listEntries,
   getActivePlan,
+  listExperimentPlans,
   saveEntry,
   syncUnsyncedEntries,
   type ConsentRecord,
@@ -52,6 +53,8 @@ export default function HomeScreen() {
   const [setup, setSetup] = useState<ExperimentSetupRecord | null>(null);
   const [entries, setEntries] = useState<StoredDailyEntry[]>([]);
   const [plan, setPlan] = useState<StoredExperimentPlan | null>(null);
+  // Every saved plan, so the run-in counters can ignore the days of an earlier test.
+  const [savedPlans, setSavedPlans] = useState<StoredExperimentPlan[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   // The check-in form is shown only when it is needed: last night is not logged
@@ -65,16 +68,18 @@ export default function HomeScreen() {
   const loadDashboard = useCallback(async () => {
     if (!user) return;
     try {
-      const [loadedConsent, loadedSetup, loadedEntries, loadedPlan] = await Promise.all([
+      const [loadedConsent, loadedSetup, loadedEntries, loadedPlan, loadedPlans] = await Promise.all([
         getConsent(user.id),
         getSetup(user.id),
         listEntries(user.id),
         getActivePlan(user.id),
+        listExperimentPlans(user.id),
       ]);
       setConsent(loadedConsent);
       setSetup(loadedSetup);
       setEntries(loadedEntries);
       setPlan(loadedPlan);
+      setSavedPlans(loadedPlans);
       setError('');
 
       const model = getTodayDashboardModel({
@@ -82,6 +87,7 @@ export default function HomeScreen() {
         setup: loadedSetup,
         entries: loadedEntries,
         plan: loadedPlan,
+        plans: loadedPlans.map(item => item.plan),
         today,
       });
 
@@ -131,6 +137,7 @@ export default function HomeScreen() {
     setup,
     entries,
     plan,
+    plans: savedPlans.map(item => item.plan),
     today,
   });
 

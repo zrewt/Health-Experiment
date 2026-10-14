@@ -1,7 +1,8 @@
-import type { DailyEntry } from './types';
+import type { DailyEntry, ExperimentPlan } from './types';
 import type { StoredExperimentPlan } from '../data/plan-persistence';
 import type { ConsentRecord, ExperimentSetupRecord } from '../data/experiment-store';
 import { isFeasibilityDue } from './start-attempt';
+import { validRunInDays } from './adapter';
 
 export type HomeState =
   | 'needs_consent'
@@ -19,6 +20,12 @@ export interface HomeStateInputs {
   setup: ExperimentSetupRecord | null;
   entries: readonly DailyEntry[];
   plan: StoredExperimentPlan | null;
+  /**
+   * Every plan on the account, active or finished. The run-in count excludes the days
+   * inside their windows, so a new cycle starts from zero instead of inheriting the days
+   * of the test before it.
+   */
+  plans: readonly ExperimentPlan[];
   today: string;
 }
 
@@ -33,11 +40,13 @@ export interface HomeStateInputs {
  * - plan_scheduled: active plan exists, but today < plan.startDate
  * - plan_active: active plan exists, startDate <= today <= lastExposureDate
  * - plan_awaiting_final: today >= lastExposureDate + 1 day and plan not completed/cancelled
- * - feasibility_ready: no active plan, run-in has >= 14 valid days OR nextCheckDate reached
+ * - feasibility_ready: no active plan, the run-in window has >= 14 valid days OR nextCheckDate
+ *   is reached. The run-in window is the days after every earlier plan's last scheduled day
+ *   (entriesForRunIn), so a finished test never counts towards the next one.
  * - run_in: run-in in progress
  */
 export function getHomeState(inputs: HomeStateInputs): HomeState {
-  const { consent, setup, entries, plan, today } = inputs;
+  const { consent, setup, entries, plan, plans, today } = inputs;
 
   if (!consent || !consent.granted) {
     return 'needs_consent';
@@ -71,8 +80,9 @@ export function getHomeState(inputs: HomeStateInputs): HomeState {
     return 'plan_awaiting_final';
   }
 
-  // No active/running plan
-  const validDaysCount = entries.filter(e => e.sleepMinutes !== null).length;
+  // No active/running plan. Only days outside every earlier plan's window count, so a
+  // second cycle is judged on its own run-in rather than on the test that came before it.
+  const validDaysCount = validRunInDays(entries, plans, today);
   if (isFeasibilityDue(validDaysCount, setup.nextCheckDate ?? null, today)) {
     return 'feasibility_ready';
   }

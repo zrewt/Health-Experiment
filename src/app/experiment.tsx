@@ -30,6 +30,7 @@ import {
 import type { StoredExperimentPlan } from '@/data/plan-persistence';
 import { getToday } from '@/experiment/clock';
 import { getExperimentLifecycleModel } from '@/experiment/lifecycle';
+import { validRunInDays } from '@/experiment/adapter';
 import { runInMinValidDays } from '@/experiment/config';
 
 export default function ExperimentScreen() {
@@ -100,7 +101,13 @@ export default function ExperimentScreen() {
         await archiveCompletedPlanForRepeat(user.id, activePlan);
       }
       await loadLifecycle();
-      const validDays = entries.filter((e) => e.sleepMinutes !== null).length;
+      // Counted over the new run-in window only: the test that just finished must not
+      // decide that the next cycle already has its 14 nights.
+      const validDays = validRunInDays(
+        entries,
+        [activePlan, ...historyPlans].filter((item): item is StoredExperimentPlan => item !== null).map(item => item.plan),
+        today,
+      );
       setNotice('Your last test is saved. Taking you to the next step.');
       router.push((validDays >= runInMinValidDays ? '/feasibility' : '/run-in') as Href);
     } catch (e) {

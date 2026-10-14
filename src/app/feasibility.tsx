@@ -6,9 +6,10 @@ import { colors, radii, spacing } from '@/design/tokens';
 import { useAuthStore } from '@/store/auth';
 import {
   getSetup, getConsent, listEntries, getActivePlan, getPendingPlan, savePlan, saveNextCheckDate,
+  listExperimentPlans,
   type ExperimentSetupRecord,
 } from '@/data/experiment-store';
-import { computeBaseline, assessFeasibility } from '@/experiment/adapter';
+import { computeBaseline, assessFeasibility, entriesForRunIn } from '@/experiment/adapter';
 import { getFeasibilityScreenState } from '@/experiment/view-model';
 import { getStartAttempt, isFeasibilityDue } from '@/experiment/start-attempt';
 import { getToday } from '@/experiment/clock';
@@ -57,9 +58,16 @@ export default function FeasibilityScreen() {
           return;
         }
         const pending = await getPendingPlan(userId);
-        const entries = await listEntries(userId);
+        const [entries, savedPlans] = await Promise.all([
+          listEntries(userId),
+          listExperimentPlans(userId),
+        ]);
         if (!current) return;
-        const baseline = pending?.feasibilitySnapshot.inputs.baseline ?? computeBaseline(entries);
+        // The baseline is built from the run-in window only. Days inside an earlier plan's
+        // schedule had caffeine cut on some mornings, so letting them through would bias
+        // both this verdict-worthiness check and the afternoon-caffeine eligibility share.
+        const runInEntries = entriesForRunIn(entries, savedPlans.map(item => item.plan), getToday());
+        const baseline = pending?.feasibilitySnapshot.inputs.baseline ?? computeBaseline(runInEntries);
         if (!pending && !isFeasibilityDue(baseline.validDays, setup.nextCheckDate ?? null, getToday())) {
           router.replace('/run-in');
           return;

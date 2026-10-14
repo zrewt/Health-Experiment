@@ -1,7 +1,7 @@
 import type { DailyEntry, ProgressSummary } from './types';
 import type { HomeState, HomeStateInputs } from './home-state';
 import { getHomeState } from './home-state';
-import { entriesForPlan, progressSummary } from './adapter';
+import { entriesForPlan, entriesForRunIn, validRunInDays, progressSummary } from './adapter';
 import { getRunInDescriptiveStats, type RunInDescriptiveStats } from './view-model';
 import { addDaysToLocalDate, canEditDate, getMorningEntryDate } from './dates';
 import { runInMinValidDays } from './config';
@@ -157,8 +157,8 @@ function buildDayStatus(entry: DashboardEntry | undefined): {
  * - Missing values remain null (MISSING IS NOT ZERO)
  */
 export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashboardModel {
-  const { consent, setup, entries, plan, today } = inputs;
-  const state = getHomeState({ consent, setup, entries, plan, today });
+  const { consent, setup, entries, plan, plans, today } = inputs;
+  const state = getHomeState({ consent, setup, entries, plan, plans, today });
   const unsyncedCount = entries.filter(e => e.synced === false).length;
   const yesterday = getMorningEntryDate(today);
 
@@ -251,8 +251,11 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
   }
 
   if (state === 'run_in' || state === 'feasibility_ready') {
-    const validDays = entries.filter(e => e.sleepMinutes !== null).length;
-    const descriptiveStats = validDays >= 3 ? getRunInDescriptiveStats(entries) : null;
+    // The counters read the run-in window only: days inside an earlier plan's schedule are
+    // not "getting to know your sleep", they are days of a test that already ran.
+    const runInEntries = entriesForRunIn(entries, plans, today);
+    const validDays = validRunInDays(entries, plans, today);
+    const descriptiveStats = validDays >= 3 ? getRunInDescriptiveStats(runInEntries) : null;
     const remaining = Math.max(0, runInMinValidDays - validDays);
     const nextStepText =
       state === 'feasibility_ready'

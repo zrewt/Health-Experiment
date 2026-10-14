@@ -95,6 +95,7 @@ test('router transitions across last exposure date E, E+1, and completed status'
     setup: defaultSetup,
     entries: [],
     plan,
+    plans: [],
     today: '2026-02-14',
   }), 'plan_active');
 
@@ -104,6 +105,7 @@ test('router transitions across last exposure date E, E+1, and completed status'
     setup: defaultSetup,
     entries: [],
     plan,
+    plans: [],
     today: '2026-02-15',
   }), 'plan_awaiting_final');
 
@@ -113,6 +115,7 @@ test('router transitions across last exposure date E, E+1, and completed status'
     setup: defaultSetup,
     entries: [],
     plan: { ...plan, status: 'completed' },
+    plans: [],
     today: '2026-02-15',
   }), 'plan_result_ready');
 
@@ -122,6 +125,7 @@ test('router transitions across last exposure date E, E+1, and completed status'
     setup: defaultSetup,
     entries: [],
     plan,
+    plans: [],
     today: '2026-02-18',
   }), 'plan_awaiting_final');
 });
@@ -346,6 +350,7 @@ test('cancelled plans do not transition to result ready or produce results', () 
     setup: defaultSetup,
     entries: [],
     plan,
+    plans: [],
     today: '2026-02-15',
   }), 'plan_ended_early');
 
@@ -354,6 +359,7 @@ test('cancelled plans do not transition to result ready or produce results', () 
     setup: defaultSetup,
     entries: [],
     plan,
+    plans: [],
     today: '2026-02-20',
   }), 'plan_ended_early');
 });

@@ -62,6 +62,7 @@ test('getHomeState returns needs_consent when consent is missing or ungranted', 
     setup: defaultSetup,
     entries: [],
     plan: null,
+    plans: [],
     today: '2026-01-01',
   }), 'needs_consent');
 
@@ -70,6 +71,7 @@ test('getHomeState returns needs_consent when consent is missing or ungranted', 
     setup: defaultSetup,
     entries: [],
     plan: null,
+    plans: [],
     today: '2026-01-01',
   }), 'needs_consent');
 });
@@ -80,6 +82,7 @@ test('getHomeState returns needs_setup when setup is missing', () => {
     setup: null,
     entries: [],
     plan: null,
+    plans: [],
     today: '2026-01-01',
   }), 'needs_setup');
 });
@@ -95,6 +98,7 @@ test('getHomeState returns run_in during baseline logging', () => {
     setup: defaultSetup,
     entries,
     plan: null,
+    plans: [],
     today: '2026-01-06',
   }), 'run_in');
 });
@@ -110,6 +114,7 @@ test('getHomeState returns feasibility_ready at 14 valid days or nextCheckDate',
     setup: defaultSetup,
     entries,
     plan: null,
+    plans: [],
     today: '2026-01-15',
   }), 'feasibility_ready');
 
@@ -119,6 +124,7 @@ test('getHomeState returns feasibility_ready at 14 valid days or nextCheckDate',
     setup: { ...defaultSetup, nextCheckDate: '2026-01-20' },
     entries,
     plan: null,
+    plans: [],
     today: '2026-01-15',
   }), 'run_in');
 
@@ -128,6 +134,7 @@ test('getHomeState returns feasibility_ready at 14 valid days or nextCheckDate',
     setup: { ...defaultSetup, nextCheckDate: '2026-01-20' },
     entries,
     plan: null,
+    plans: [],
     today: '2026-01-20',
   }), 'feasibility_ready');
 });
@@ -141,6 +148,7 @@ test('getHomeState transitions across scheduled, active, awaiting final, and res
     setup: defaultSetup,
     entries: [],
     plan,
+    plans: [],
     today: '2026-01-14',
   }), 'plan_scheduled');
 
@@ -150,6 +158,7 @@ test('getHomeState transitions across scheduled, active, awaiting final, and res
     setup: defaultSetup,
     entries: [],
     plan,
+    plans: [],
     today: '2026-01-15',
   }), 'plan_active');
 
@@ -158,6 +167,7 @@ test('getHomeState transitions across scheduled, active, awaiting final, and res
     setup: defaultSetup,
     entries: [],
     plan,
+    plans: [],
     today: '2026-01-18',
   }), 'plan_active');
 
@@ -167,6 +177,7 @@ test('getHomeState transitions across scheduled, active, awaiting final, and res
     setup: defaultSetup,
     entries: [],
     plan,
+    plans: [],
     today: '2026-01-19',
   }), 'plan_awaiting_final');
 
@@ -176,6 +187,7 @@ test('getHomeState transitions across scheduled, active, awaiting final, and res
     setup: defaultSetup,
     entries: [{ date: '2026-01-18', sleepMinutes: 440, lastCaffeineTime: 'none' }],
     plan,
+    plans: [],
     today: '2026-01-19',
   }), 'plan_awaiting_final');
 
@@ -185,6 +197,7 @@ test('getHomeState transitions across scheduled, active, awaiting final, and res
     setup: defaultSetup,
     entries: [{ date: '2026-01-18', sleepMinutes: 440, lastCaffeineTime: 'none' }],
     plan: { ...plan, status: 'completed' },
+    plans: [],
     today: '2026-01-19',
   }), 'plan_result_ready');
 });
@@ -196,6 +209,7 @@ test('getHomeState returns plan_ended_early when plan status is cancelled', () =
     setup: defaultSetup,
     entries: [],
     plan: cancelledPlan,
+    plans: [],
     today: '2026-01-16',
   }), 'plan_ended_early');
 });
@@ -263,6 +277,7 @@ test('getTodayDashboardModel handles realistic 14 run-in days + in-window entrie
     setup: defaultSetup,
     entries,
     plan,
+    plans: [],
     today,
   });
 
@@ -325,6 +340,7 @@ test('getTodayDashboardModel covers run_in, feasibility_ready, and completed res
     setup: defaultSetup,
     entries: fourRunIn,
     plan: null,
+    plans: [],
     today: '2026-01-05',
   });
   assert.equal(runInModel.state, 'run_in');
@@ -374,6 +390,7 @@ test('getTodayDashboardModel covers run_in, feasibility_ready, and completed res
     setup: defaultSetup,
     entries: [],
     plan: completedPlan,
+    plans: [],
     today: '2026-02-05',
   });
   assert.equal(resultModel.state, 'plan_result_ready');
@@ -407,6 +424,8 @@ test('the Today check-in reports whether last night is already logged', () => {
       setup: defaultSetup,
       entries: entries.map(e => ({ ...e, synced: true })),
       plan: null,
+      plans: [],
+    plans: [],
       today,
     });
     assert.equal(model.state, 'run_in', `${label}: state`);

@@ -28,7 +28,7 @@ import {
 } from '@/data/experiment-store';
 import type { StoredExperimentPlan } from '@/data/plan-persistence';
 import { getToday } from '@/experiment/clock';
-import { progressSummary, evaluate, entriesForPlan } from '@/experiment/adapter';
+import { progressSummary, evaluate, entriesForPlan, validRunInDays } from '@/experiment/adapter';
 import { VERDICT_HEADINGS } from '@/experiment/verdict-headings';
 import { getResultExplanationModel } from '@/experiment/lifecycle';
 import { runInMinValidDays } from '@/experiment/config';
@@ -45,6 +45,7 @@ export default function ResultScreen() {
 
   const user = useAuthStore(state => state.user);
   const [planRecord, setPlanRecord] = useState<StoredExperimentPlan | null>(null);
+  const [savedPlans, setSavedPlans] = useState<StoredExperimentPlan[]>([]);
   const [entries, setEntries] = useState<StoredDailyEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingEntry, setSavingEntry] = useState(false);
@@ -62,13 +63,15 @@ export default function ResultScreen() {
         const [active, loadedEntries, history] = await Promise.all([
           getActivePlan(user.id),
           listEntries(user.id),
-          requestedPlanId ? listExperimentPlans(user.id) : Promise.resolve([]),
+          // Always loaded: the new-cycle count and a shared link both need every plan.
+          listExperimentPlans(user.id),
         ]);
         if (!current) return;
         const matchedFromHistory = requestedPlanId
           ? history.find(item => item.id === requestedPlanId) ?? null
           : null;
         setPlanRecord(matchedFromHistory ?? active);
+        setSavedPlans(history);
         setEntries(loadedEntries);
       } catch (e) {
         if (current) setError(e instanceof Error ? e.message : 'Could not load your plan.');
@@ -179,7 +182,13 @@ export default function ResultScreen() {
     setError(null);
     try {
       await archiveCompletedPlanForRepeat(user.id, planRecord);
-      const validDays = entries.filter(e => e.sleepMinutes !== null).length;
+      // The test that just ended is excluded, so a second cycle goes to its own run-in
+      // instead of jumping straight to the check on the previous test's days.
+      const validDays = validRunInDays(
+        entries,
+        [planRecord, ...savedPlans].filter((item): item is StoredExperimentPlan => item !== null).map(item => item.plan),
+        today,
+      );
       router.replace((validDays >= runInMinValidDays ? '/feasibility' : '/run-in') as Href);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not start a new test.');

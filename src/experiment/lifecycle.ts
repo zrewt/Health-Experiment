@@ -2,6 +2,7 @@ import type { StoredExperimentPlan } from '../data/plan-persistence';
 import type { ConsentRecord, ExperimentSetupRecord } from '../data/experiment-store';
 import type { DailyEntry, ExperimentPlan, ResultViewModel } from './types';
 import { getHomeState, type HomeState } from './home-state';
+import { validRunInDays } from './adapter';
 import { VERDICT_HEADINGS } from './verdict-headings';
 import { formatSleepDuration } from './journal';
 import {
@@ -127,11 +128,16 @@ export function getExperimentLifecycleModel(inputs: {
   today: string;
 }): ExperimentLifecycleModel {
   const { consent, setup, entries, activePlan, historyPlans, today } = inputs;
+  // Every plan on the account, so the run-in count starts fresh in a new cycle.
+  const allPlans = [activePlan, ...historyPlans]
+    .filter((item): item is StoredExperimentPlan => item !== null)
+    .map(item => item.plan);
   const state = getHomeState({
     consent,
     setup,
     entries,
     plan: activePlan,
+    plans: allPlans,
     today,
   });
 
@@ -139,7 +145,7 @@ export function getExperimentLifecycleModel(inputs: {
     ? extractCutoffTime(activePlan.plan)
     : setup?.cutoffTime ?? '12:00';
 
-  const validDays = entries.filter(e => e.sleepMinutes !== null).length;
+  const validDays = validRunInDays(entries, allPlans, today);
 
   let durationText = 'Chosen when you start (42, 56, 70 or 84 days)';
   if (activePlan) {

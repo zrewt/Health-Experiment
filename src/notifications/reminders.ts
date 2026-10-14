@@ -5,7 +5,7 @@ import type { HomeState } from '../experiment/home-state';
 import { getHomeState } from '../experiment/home-state';
 import { parseLocalDate } from '../experiment/dates';
 import { getToday } from '../experiment/clock';
-import { getActivePlan, getConsent, getSetup, listEntries } from '@/data/experiment-store';
+import { getActivePlan, getConsent, getSetup, listEntries, listExperimentPlans } from '@/data/experiment-store';
 import { loadReminderPreferences } from './reminder-preferences';
 import { reminderSlotFrom, resolveReminderTap } from './tap-target';
 import {
@@ -177,16 +177,17 @@ export async function openNotificationSettings(): Promise<void> {
  * instead of paying for the reads twice.
  */
 export async function loadReminderSyncInput(userId: string): Promise<ReminderSyncInput> {
-  const [consent, setup, entries, plan] = await Promise.all([
+  const [consent, setup, entries, plan, savedPlans] = await Promise.all([
     getConsent(userId),
     getSetup(userId),
     listEntries(userId),
     getActivePlan(userId),
+    listExperimentPlans(userId),
   ]);
   const today = getToday();
 
   return {
-    state: getHomeState({ consent, setup, entries, plan, today }),
+    state: getHomeState({ consent, setup, entries, plan, plans: savedPlans.map(item => item.plan), today }),
     today,
     plan: plan
       ? {
@@ -216,14 +217,17 @@ export async function resolveReminderRoute(data: unknown, userId: string | null)
   if (slot !== 'morning-check-in' || !userId) return null;
 
   try {
-    const [consent, setup, entries, plan] = await Promise.all([
+    const [consent, setup, entries, plan, savedPlans] = await Promise.all([
       getConsent(userId),
       getSetup(userId),
       listEntries(userId),
       getActivePlan(userId),
+      listExperimentPlans(userId),
     ]);
     const today = getToday();
-    return resolveReminderTap(slot, getHomeState({ consent, setup, entries, plan, today }));
+    return resolveReminderTap(slot, getHomeState({
+      consent, setup, entries, plan, plans: savedPlans.map(item => item.plan), today,
+    }));
   } catch {
     // Reading the state failed: give up rather than guide the user to a screen that does
     // not match where they actually are.

@@ -48,6 +48,11 @@ export function toEngineRecord(
   };
 }
 
+/**
+ * The run-in baseline: eligibility, valid nights and the outcome SD the feasibility verdict
+ * reads. Feed it the run-in window (entriesForRunIn), never a whole account history, or days
+ * from an earlier test leak into the baseline.
+ */
 export function computeBaseline(
   entries: readonly DailyEntry[], engine: EngineFacade = realEngine,
 ): BaselineSummary {
@@ -313,6 +318,54 @@ export function entriesForPlan(
 ): DailyEntry[] {
   const scheduleDates = new Set(plan.schedule.map(d => d.date));
   return entries.filter(e => scheduleDates.has(e.date));
+}
+
+/**
+ * The last scheduled day across every plan on the account, or null when there is none.
+ *
+ * Local YYYY-MM-DD dates compare in calendar order as strings, so the maximum is the end of
+ * the last test the user ran. A plan with an empty schedule falls back to its start date,
+ * the same way the screens derive a last exposure date.
+ */
+export function lastPlannedDate(plans: readonly ExperimentPlan[]): string | null {
+  let last: string | null = null;
+  for (const plan of plans) {
+    const end = plan.schedule.length > 0 ? plan.schedule[plan.schedule.length - 1].date : plan.startDate;
+    if (last === null || end > last) last = end;
+  }
+  return last;
+}
+
+/**
+ * The entries a new cycle may use as its baseline ("getting to know your sleep").
+ *
+ * A day counts only if no earlier test can have shaped it: every day inside any plan's
+ * window is excluded, because caffeine was cut on some of those mornings, and so is any day
+ * after today. Days from a finished test never reach the baseline, the eligibility check or
+ * the run-in counters. With no earlier plan every entry up to today counts, so a first cycle
+ * is unchanged. Missing values stay missing; deciding what a valid day is happens in
+ * validRunInDays or in the engine.
+ */
+export function entriesForRunIn(
+  entries: readonly DailyEntry[], plans: readonly ExperimentPlan[], today: string,
+): DailyEntry[] {
+  const plannedDates = new Set<string>();
+  for (const plan of plans) {
+    for (const day of plan.schedule) plannedDates.add(day.date);
+  }
+  const cutoff = lastPlannedDate(plans);
+  return entries.filter(entry =>
+    (cutoff === null || entry.date > cutoff) &&
+    !plannedDates.has(entry.date) &&
+    entry.date <= today);
+}
+
+/** Nights logged inside the run-in window: the count Home, the run-in screen and the
+ *  "is this test worth doing?" gate all show. */
+export function validRunInDays(
+  entries: readonly DailyEntry[], plans: readonly ExperimentPlan[], today: string,
+): number {
+  return entriesForRunIn(entries, plans, today).filter(entry => entry.sleepMinutes !== null).length;
 }
 
 export function evaluate(
