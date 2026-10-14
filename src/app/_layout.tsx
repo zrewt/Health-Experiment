@@ -1,13 +1,3 @@
-import { useFonts } from 'expo-font';
-import {
-  BodoniModa_600SemiBold,
-  BodoniModa_600SemiBold_Italic,
-} from '@expo-google-fonts/bodoni-moda';
-import {
-  HankenGrotesk_400Regular,
-  HankenGrotesk_500Medium,
-  HankenGrotesk_600SemiBold,
-} from '@expo-google-fonts/hanken-grotesk';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
@@ -19,42 +9,33 @@ import { NotificationTapHandler } from '../notifications/notification-tap-handle
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    BodoniModa_600SemiBold,
-    BodoniModa_600SemiBold_Italic,
-    HankenGrotesk_400Regular,
-    HankenGrotesk_500Medium,
-    HankenGrotesk_600SemiBold,
-  });
-
   // Restore any persisted session before the first screen renders.
   useAuthHydration();
   const authLoading = useAuthStore((state) => state.loading);
   const session = useAuthStore((state) => state.session);
   const signedIn = !!session && !session.user.is_anonymous;
 
-  const appReady = (loaded || error) && !authLoading;
-
+  // The redesign is system-font only, so there is nothing to load before first paint.
   useEffect(() => {
-    if ((loaded || error) && !authLoading) {
+    if (!authLoading) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, error, authLoading]);
+  }, [authLoading]);
 
-  if (!appReady) {
+  if (authLoading) {
     return null;
   }
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       {/* Mounted inside the render that also mounts the navigator, and only when signed in,
           so it can never navigate before the routes it targets exist. */}
       {signedIn ? <NotificationTapHandler /> : null}
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: tokens.colors.ground },
+          contentStyle: { backgroundColor: tokens.colors.background },
           animation: 'fade',
         }}
       >

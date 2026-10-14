@@ -1,96 +1,147 @@
+/**
+ * Aevum design tokens — light, calm, premium.
+ *
+ * One palette, two names for each value while the app migrates:
+ * - Semantic names (background, surface, text, textMuted, accent, graphic, signal)
+ *   are what new and rebuilt code uses.
+ * - Legacy names (ground, ivory, champagne, hairline, ...) are aliases onto the same
+ *   light values, so screens that part 2 has not rebuilt yet still render light and
+ *   readable instead of dark leftovers. They are removed once every screen is migrated.
+ *
+ * This module must stay import-free: app.config.ts reads it from the Expo CLI, where
+ * react-native is not available.
+ *
+ * Contrast (WCAG 2.1, computed in scripts/contrast-sanity.cjs):
+ *   text on background 13.98 · text on surface 15.10 · textMuted on background 5.62
+ *   textMuted on surface 6.07 · accent on background 5.02 · accent on surface 5.42
+ *   surface on text (primary button) 15.10 · signalText on surface 5.99
+ *   lineStrong on background 3.18 (controls) · accent on background 5.02 (focus ring)
+ *   graphic (Mint) 1.46 and signal (Coral) 2.14 against the background fail 3:1 by
+ *   design: they are fills only, never the sole carrier of meaning.
+ */
+
 export const colors = {
-  // Midnight Obsidian base with deepest slate-emerald undertone
-  ground: '#080F0B',
-  surface: '#0F1A14',
-  surfaceHigh: '#15241C',
-  surfaceHighlight: '#1C3026',
-  surfaceGlass: 'rgba(15, 26, 20, 0.85)',
-  hairline: '#1B2C22',
-  hairlineBright: '#263E30',
-  hairlineHighlight: 'rgba(217, 193, 135, 0.22)',
-  hairlineGold: 'rgba(216, 187, 120, 0.28)',
+  // ---- Semantic ----
+  background: '#F3F7F6', // Mist
+  surface: '#FFFFFF', // Paper
+  surfaceTint: '#E8F1EF', // grouped area, tone only — never a second radius
+  text: '#0F2A2E', // Ink
+  textMuted: '#51666A', // Ink soft
+  accent: '#12776A', // Lagoon: links, focus, active text
+  graphic: '#7DE0C3', // Mint: fills and graphics only
+  signal: '#FF8A6B', // Coral: cutoff-day graphic only, always with a text label
+  signalText: '#A8432C', // Coral made readable: error text and error borders
+  line: '#E4ECEB', // decorative divider
+  lineStrong: '#788F8C', // controls only (input borders): 3.18:1 on the background
+  focus: '#12776A',
+  overlay: 'rgba(15, 42, 46, 0.45)',
 
-  // Warm luxury typography tones
-  ivory: '#F7F4EB',
-  ivorySecondary: '#D0DACF',
-  ivoryMuted: '#849688',
-  ivorySubtle: '#526356',
-
-  // Refined Horology Champagne Gold
-  champagne: '#D9C187',
-  champagneLight: '#EDE1BF',
-  champagneMuted: '#968352',
-  champagneSoft: 'rgba(217, 193, 135, 0.12)',
-
-  // Deep Rose Garnet
-  garnet: '#C4574C',
-  garnetSoft: 'rgba(196, 87, 76, 0.14)',
+  // ---- Legacy aliases (removed in part 2) ----
+  ground: '#F3F7F6',
+  surfaceHigh: '#E8F1EF',
+  surfaceHighlight: '#DCEAE7',
+  surfaceGlass: 'rgba(255, 255, 255, 0.88)',
+  hairline: '#E4ECEB',
+  hairlineBright: '#788F8C',
+  hairlineHighlight: 'rgba(18, 119, 106, 0.30)',
+  hairlineGold: 'rgba(18, 119, 106, 0.45)',
+  ivory: '#0F2A2E',
+  ivorySecondary: '#3E5457',
+  ivoryMuted: '#51666A',
+  ivorySubtle: '#566B6E',
+  champagne: '#12776A',
+  champagneLight: '#0F6A5E',
+  champagneMuted: '#4A5F63',
+  champagneSoft: 'rgba(18, 119, 106, 0.10)',
+  garnet: '#A8432C',
+  garnetSoft: 'rgba(168, 67, 44, 0.10)',
 } as const;
+
+/**
+ * System fonts only. Weights come from fontWeight, not from extra font files, so
+ * nothing has to be loaded before the first paint and the largest text sizes reflow.
+ */
+const systemStack =
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
 export const typography = {
   fonts: {
-    display: 'BodoniModa_600SemiBold',
-    displayItalic: 'BodoniModa_600SemiBold_Italic',
-    body: 'HankenGrotesk_400Regular',
-    bodyMedium: 'HankenGrotesk_500Medium',
-    bodySemiBold: 'HankenGrotesk_600SemiBold',
+    body: systemStack,
+    display: systemStack,
+    displayItalic: systemStack,
+    bodyMedium: systemStack,
+    bodySemiBold: systemStack,
   },
   sizes: {
-    overline: 11,
-    caption: 12,
-    sub: 14,
-    body: 16,
-    lead: 18,
-    titleSmall: 22,
-    titleMedium: 26,
-    titleLarge: 38,
-    displaySmall: 64,
-    displayLarge: 110,
+    // ---- Semantic scale ----
+    display: 40,
+    title: 28,
+    heading: 20,
+    body: 17,
+    caption: 13,
+    // ---- Legacy scale (mapped onto the semantic steps) ----
+    overline: 13,
+    sub: 15,
+    lead: 20,
+    titleSmall: 20,
+    titleMedium: 24,
+    titleLarge: 32,
+    displaySmall: 40,
+    displayLarge: 56,
   },
   lineHeights: {
-    overline: 14,
-    caption: 16,
-    sub: 20,
+    display: 44,
+    title: 34,
+    heading: 26,
     body: 24,
-    lead: 26,
-    titleSmall: 28,
-    titleMedium: 32,
-    titleLarge: 44,
-    displaySmall: 70,
-    displayLarge: 116,
+    caption: 18,
+    overline: 18,
+    sub: 21,
+    lead: 27,
+    titleSmall: 26,
+    titleMedium: 30,
+    titleLarge: 38,
+    displaySmall: 44,
+    displayLarge: 62,
+  },
+  weights: {
+    regular: '400',
+    medium: '500',
+    semiBold: '600',
   },
   letterSpacings: {
-    tighter: -0.8,
-    tight: -0.3,
+    tighter: -0.6,
+    tight: -0.2,
     normal: 0,
-    wide: 0.5,
-    widest: 1.5,
+    wide: 0.2,
+    widest: 0,
   },
 } as const;
 
 export const radii = {
-  none: 0,
-  control: 16,
-  card: 20,
-  sheet: 28,
+  control: 14, // inputs, buttons, chips
+  surface: 20, // surfaces
   pill: 9999,
+  // Legacy aliases
+  none: 0,
+  card: 20,
+  sheet: 20,
 } as const;
 
 export const spacing = {
   xs: 4,
   sm: 8,
+  inline: 12,
   md: 16,
   lg: 24,
   xl: 32,
   xxl: 48,
-  /** Horizontal page gutter. Material 3: 16 (compact) / 24 (medium) — 24 gives an editorial phone page air to breathe. */
+  /** Horizontal page gutter (brief: 20–24). */
   screen: 24,
-  /** Vertical gap between top-level blocks on a screen. Atlassian: 32–80 for page layout. */
+  /** Vertical gap between top-level blocks on a screen. */
   section: 32,
-  /** Inner padding for a grouped surface (the Card). Material 3 card: 16–24. */
-  card: 20,
-  /** Gap between the items inside one grouped surface. */
-  inline: 12,
+  /** Inner padding for a surface. */
+  card: 24,
 } as const;
 
 export const tokens = {

@@ -1,15 +1,6 @@
 import React from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  ViewStyle,
-  ActivityIndicator,
-} from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { Pressable, StyleSheet, ViewStyle, ActivityIndicator } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { colors, radii, spacing } from '@/design/tokens';
 import { Text } from './Text';
@@ -28,6 +19,12 @@ interface ButtonProps {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+/**
+ * One action per screen, sitting low in the thumb zone.
+ *
+ * No arrows, no borders (borders belong to inputs only), one radius: the primary
+ * action is Ink on Paper, which is the strongest contrast in the palette.
+ */
 export const Button: React.FC<ButtonProps> = ({
   label,
   onPress,
@@ -39,15 +36,11 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   const handlePressIn = () => {
     if (disabled || loading) return;
-    scale.value = withTiming(0.97, { duration: 110 });
+    scale.value = withTiming(0.98, { duration: 110 });
   };
 
   const handlePressOut = () => {
@@ -60,23 +53,16 @@ export const Button: React.FC<ButtonProps> = ({
       try {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       } catch {
-        // Haptics safe fallback
+        // Haptics are a nicety; a device without them must not block the action.
       }
     }
     onPress();
   };
 
-  const getBackgroundColor = () => {
-    if (variant === 'primary') return colors.champagne;
-    if (variant === 'secondary') return colors.surface;
-    return 'transparent';
-  };
-
-  const getBorderColor = () => {
-    if (variant === 'primary') return colors.champagneLight;
-    if (variant === 'secondary') return colors.hairlineBright;
-    return 'transparent';
-  };
+  const background =
+    variant === 'primary' ? colors.text : variant === 'secondary' ? colors.surfaceTint : 'transparent';
+  const labelColor =
+    variant === 'primary' ? colors.surface : variant === 'secondary' ? colors.text : colors.accent;
 
   return (
     <AnimatedPressable
@@ -85,35 +71,15 @@ export const Button: React.FC<ButtonProps> = ({
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={disabled || loading}
-      style={[
-        styles.base,
-        {
-          backgroundColor: getBackgroundColor(),
-          borderColor: getBorderColor(),
-          borderWidth: variant === 'quiet' ? 0 : 1,
-          opacity: disabled ? 0.35 : 1,
-        },
-        animatedStyle,
-        style,
-      ]}
+      style={[styles.base, { backgroundColor: background, opacity: disabled ? 0.4 : 1 }, animatedStyle, style]}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
     >
       {loading ? (
-        <ActivityIndicator
-          color={variant === 'primary' ? colors.ground : colors.champagne}
-          size="small"
-        />
+        <ActivityIndicator color={labelColor} size="small" />
       ) : (
-        <Text
-          variant="body"
-          weight="semiBold"
-          style={{
-            color: variant === 'primary' ? colors.ground : variant === 'secondary' ? colors.ivory : colors.ivoryMuted,
-            letterSpacing: 0.1,
-          }}
-        >
+        <Text variant="body" weight="semiBold" style={{ color: labelColor }}>
           {label}
         </Text>
       )}
@@ -125,10 +91,9 @@ const styles = StyleSheet.create({
   base: {
     minHeight: 54,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderRadius: radii.control,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderCurve: 'continuous',
   },
 });

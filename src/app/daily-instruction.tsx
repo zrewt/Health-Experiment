@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, ScrollView, Alert, Platform, View } from 'react-native';
+import { StyleSheet, ScrollView, Alert, Platform, Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-  Screen, ScreenHeader, Card, NavRow, StatStrip, Text, Button, Details, Disclosure,
+  Screen, Card, NavRow, StatStrip, Text, Button, Details, SplitDisc, type DiscTone,
 } from '@/components/ui';
 import { spacing } from '@/design/tokens';
+import { readTodayType } from '@/design/labels';
 import { useAuthStore } from '@/store/auth';
 import {
   getActivePlan,
@@ -30,6 +31,7 @@ export default function DailyInstructionScreen() {
   const [savingEntry, setSavingEntry] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const today = getToday();
   const yesterday = getMorningEntryDate(today);
@@ -58,7 +60,7 @@ export default function DailyInstructionScreen() {
   if (loading) {
     return (
       <Screen>
-        <Text color="ivorySecondary">Loading…</Text>
+        <Text color="textMuted">Loading…</Text>
       </Screen>
     );
   }
@@ -66,8 +68,8 @@ export default function DailyInstructionScreen() {
   if (!planRecord || planRecord.status === 'cancelled') {
     return (
       <Screen>
-        <Card overline="ENDED" title="Test stopped early">
-          <Text color="ivorySecondary">
+        <Card overline="Ended" title="Test stopped early">
+          <Text color="textMuted">
             Your entries are safe. Nothing was worked out, and you can start again any time.
           </Text>
           <NavRow label="Back to Today" onPress={() => router.replace('/')} />
@@ -109,6 +111,11 @@ export default function DailyInstructionScreen() {
   const dayLine = isScheduled
     ? `Starts in ${plan.chosenDuration} days from that date`
     : `Day ${currentDayNum} of ${plan.chosenDuration}`;
+
+  // Presentation only: the sentence is split into the hero line and its rule, and the
+  // disc's fill follows today's type. The text beside the disc is what carries it.
+  const todayType = readTodayType(todayLine);
+  const discTone: DiscTone = todayType.kind ?? 'none';
 
   const handleSaveCheckIn = async (entry: DailyEntry) => {
     if (!user) return;
@@ -158,58 +165,28 @@ export default function DailyInstructionScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
-        <ScreenHeader
-          overline="TODAY’S NOTE"
-          title="Today"
-          notice="This app is not medical advice."
-          action={<Button label="Home" variant="quiet" onPress={() => router.replace('/')} />}
-        />
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Where today sits in the test, and the way out of it. */}
+        <View style={styles.topRow}>
+          <Text variant="caption" color="textMuted" tabular>{dayLine}</Text>
+          <Pressable
+            onPress={() => setMenuOpen(prev => !prev)}
+            style={styles.menuButton}
+            accessibilityRole="button"
+            accessibilityLabel="Menu"
+            accessibilityState={{ expanded: menuOpen }}
+            // React Native Web does not emit aria-expanded from accessibilityState.
+            aria-expanded={menuOpen}
+          >
+            <Text variant="sub" color="accent" weight="semiBold">Menu</Text>
+            <Text variant="sub" color="accent" weight="semiBold">{menuOpen ? '–' : '+'}</Text>
+          </Pressable>
+        </View>
 
-        {statusMessage ? (
-          <Text variant="sub" color="champagneLight" accessibilityLiveRegion="polite">{statusMessage}</Text>
-        ) : null}
-
-        {/* The one line that matters today, and nothing else. */}
-        <Card tone="hero">
-          <Text variant="titleMedium" color="champagneLight" serif>
-            {todayLine}
-          </Text>
-          <Text variant="caption" color="ivoryMuted" tabular>{dayLine}</Text>
-        </Card>
-
-        {/* The log itself. Its Save button is the one main action on this screen. */}
-        <CheckInCard
-          date={yesterday}
-          label="LAST NIGHT"
-          initialSleepMinutes={yesterdayEntry?.sleepMinutes ?? null}
-          initialCaffeineTime={yesterdayEntry?.lastCaffeineTime ?? null}
-          onSave={handleSaveCheckIn}
-          saving={savingEntry}
-        />
-
-        {/* Counts are available, not in the way. */}
-        <Details summary="How the test is going">
-          <StatStrip
-            items={[
-              { label: 'Days logged', value: String(progress.daysLogged), emphasis: 'strong' },
-              { label: 'Days to go', value: String(progress.daysRemaining) },
-            ]}
-          />
-          <StatStrip
-            items={[
-              { label: 'Kept the rule', value: String(progress.adherenceCounts.ADHERENT) },
-              { label: 'Normal days', value: String(progress.adherenceCounts.CONTROL_CLEAN) },
-              { label: 'Normal, no caffeine', value: String(progress.adherenceCounts.CONTAMINATED) },
-              { label: 'Not sure', value: String(progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
-            ]}
-          />
-        </Details>
-
-        {/* Ending early is irreversible, so it lives in the menu. */}
-        <Disclosure label="Menu" summary="End this test early">
-          <View style={styles.menuBody}>
-            <Text variant="caption" color="ivoryMuted">
+        {menuOpen ? (
+          <Card tone="tint">
+            <Text variant="sub" weight="semiBold">End this test early</Text>
+            <Text variant="caption" color="textMuted">
               Ending early keeps your entries but works nothing out.
             </Text>
             <Button
@@ -218,8 +195,55 @@ export default function DailyInstructionScreen() {
               loading={cancelling}
               onPress={() => void handleEndEarly()}
             />
+          </Card>
+        ) : null}
+
+        {statusMessage ? (
+          <Text variant="sub" color="accent" accessibilityLiveRegion="polite">{statusMessage}</Text>
+        ) : null}
+
+        {/* The one thing that matters today: the mark, the type, and the rule. */}
+        <Card tone="hero">
+          <View style={styles.heroRow}>
+            <SplitDisc size={96} tone={discTone} />
+            <View style={styles.heroText}>
+              <Text variant="title" accessibilityRole="header">{todayType.clause}</Text>
+              {todayType.rule ? (
+                <Text variant="body" color="textMuted">{todayType.rule}</Text>
+              ) : null}
+            </View>
           </View>
-        </Disclosure>
+        </Card>
+
+        {/* The log itself. Its Save button is the one main action on this screen. */}
+        <CheckInCard
+          date={yesterday}
+          label="Last night"
+          initialSleepMinutes={yesterdayEntry?.sleepMinutes ?? null}
+          initialCaffeineTime={yesterdayEntry?.lastCaffeineTime ?? null}
+          onSave={handleSaveCheckIn}
+          saving={savingEntry}
+        />
+
+        {/* Counts are available, not in the way. */}
+        <Card tone="quiet">
+          <Details summary="How the test is going">
+            <StatStrip
+              items={[
+                { label: 'Days logged', value: String(progress.daysLogged), emphasis: 'strong' },
+                { label: 'Days to go', value: String(progress.daysRemaining) },
+              ]}
+            />
+            <StatStrip
+              items={[
+                { label: 'Kept the rule', value: String(progress.adherenceCounts.ADHERENT) },
+                { label: 'Normal days', value: String(progress.adherenceCounts.CONTROL_CLEAN) },
+                { label: 'Normal, no caffeine', value: String(progress.adherenceCounts.CONTAMINATED) },
+                { label: 'Not sure', value: String(progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
+              ]}
+            />
+          </Details>
+        </Card>
       </ScrollView>
     </Screen>
   );
@@ -227,5 +251,24 @@ export default function DailyInstructionScreen() {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.section, paddingBottom: spacing.section },
-  menuBody: { gap: spacing.sm, paddingTop: spacing.sm },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  menuButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    minHeight: 44,
+    minWidth: 44,
+  },
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  heroText: { flex: 1, gap: spacing.sm },
 });

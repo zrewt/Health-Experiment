@@ -3,7 +3,6 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import {
   Screen,
-  ScreenHeader,
   Card,
   NavRow,
   StatStrip,
@@ -11,8 +10,12 @@ import {
   Button,
   Details,
   PrimaryNav,
+  Banner,
+  SplitDisc,
+  type DiscTone,
 } from '@/components/ui';
 import { spacing } from '@/design/tokens';
+import { readTodayType, sentenceCase } from '@/design/labels';
 import { useAuthStore } from '@/store/auth';
 import {
   getConsent,
@@ -145,6 +148,12 @@ export default function HomeScreen() {
     .slice(1)
     .filter((d) => d.editable && d.statusTone !== 'logged');
 
+  // Presentation only: during a test the disc carries today's type, and the text label
+  // beside it is what makes the mark readable in greyscale.
+  const todayType =
+    dashboard.state === 'plan_active' ? readTodayType(dashboard.instruction.heading) : null;
+  const discTone: DiscTone = todayType?.kind ?? 'none';
+
   const handleSaveCheckIn = async (entry: DailyEntry) => {
     if (!user) return;
     setSavingEntry(true);
@@ -219,57 +228,79 @@ export default function HomeScreen() {
   return (
     <Screen>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenHeader
-          overline={`TODAY • ${today}`}
-          title="Today"
-          notice={dashboard.medicalNotice}
-        />
+        {/* Status line: where the study stands today, and today's date. */}
+        <View style={styles.statusRow}>
+          <Text variant="caption" color="textMuted">
+            {sentenceCase(dashboard.instruction.overline)}
+          </Text>
+          <Text variant="caption" color="textMuted" tabular>
+            {today}
+          </Text>
+        </View>
+
+        <Text variant="caption" color="textMuted">
+          {dashboard.medicalNotice}
+        </Text>
 
         {error ? (
-          <Card tone="danger" style={styles.alertCard}>
-            <Text color="garnet" accessibilityRole="alert">{error}</Text>
-            <Button label="Retry" variant="quiet" onPress={() => void loadDashboard()} />
-          </Card>
+          <Banner
+            tone="error"
+            action={<Button label="Retry" variant="quiet" onPress={() => void loadDashboard()} />}
+          >
+            {error}
+          </Banner>
         ) : null}
 
         {syncNotice || dashboard.unsyncedCount > 0 ? (
-          <Card style={styles.syncCard}>
-            <Text variant="sub" color="champagneLight" accessibilityLiveRegion="polite">
-              {syncNotice ??
-                `${dashboard.unsyncedCount} check-in${dashboard.unsyncedCount === 1 ? '' : 's'} saved on this device.`}
-            </Text>
-            <Button
-              label="Try again"
-              variant="quiet"
-              loading={syncing}
-              onPress={() => void handleRetrySync()}
-            />
-          </Card>
+          <Banner
+            tone="notice"
+            action={
+              <Button
+                label="Try again"
+                variant="quiet"
+                loading={syncing}
+                onPress={() => void handleRetrySync()}
+              />
+            }
+          >
+            {syncNotice ??
+              `${dashboard.unsyncedCount} check-in${dashboard.unsyncedCount === 1 ? '' : 's'} saved on this device.`}
+          </Banner>
         ) : null}
 
         {reminderNotice ? (
-          <Text variant="caption" color="ivoryMuted">{reminderNotice}</Text>
+          <Text variant="caption" color="textMuted">{reminderNotice}</Text>
         ) : null}
 
-        {/* What today asks of you. One statement, one status line, at most one action. */}
+        {/* The hero: what today asks of you, one statement, at most one action. */}
         <Card tone="hero">
-          <Text variant="overline" color="champagneMuted">{dashboard.instruction.overline}</Text>
-          <Text variant="titleMedium" color="champagneLight" serif>
+          {todayType?.kind ? (
+            <View style={styles.discRow}>
+              <SplitDisc size={88} tone={discTone} />
+              <Text variant="heading" color="text">
+                {todayType.label}
+              </Text>
+            </View>
+          ) : null}
+
+          <Text variant="title" accessibilityRole="header">
             {dashboard.instruction.heading}
           </Text>
+
           {/* A finished test leads with the plain heading; the engine's exact sentence
               stays one tap away instead of competing with it. */}
           {dashboard.state === 'plan_result_ready' ? (
             <>
-              <Text variant="body" color="ivorySecondary">Open it to read the full result.</Text>
+              <Text variant="body" color="textMuted">Open it to read the full result.</Text>
               <Details summary="The exact words from your test">
-                <Text variant="sub" color="ivorySecondary">{dashboard.instruction.body}</Text>
+                <Text variant="sub" color="textMuted">{dashboard.instruction.body}</Text>
               </Details>
             </>
           ) : (
-            <Text variant="body" color="ivorySecondary">{dashboard.instruction.body}</Text>
+            <Text variant="body" color="textMuted">{dashboard.instruction.body}</Text>
           )}
-          <Text variant="caption" color="ivoryMuted" tabular>{dashboard.instruction.detail}</Text>
+
+          <Text variant="caption" color="textMuted" tabular>{dashboard.instruction.detail}</Text>
 
           {/* A required step is a button; a step Today already covers stays a quiet row. */}
           {action && action.tone === 'primary' ? (
@@ -283,18 +314,15 @@ export default function HomeScreen() {
         {!loadingData && dashboard.checkIn.enabled ? (
           <>
             {saveMessage ? (
-              <Text variant="sub" color="champagneLight" accessibilityRole="alert" accessibilityLiveRegion="polite">
+              <Text variant="sub" color="accent" accessibilityRole="alert" accessibilityLiveRegion="polite">
                 {saveMessage}
               </Text>
             ) : null}
 
             {lastNightLogged && !editingCheckIn ? (
-              <Card>
-                <Text variant="overline" color="champagneMuted">
-                  LOGGED FOR LAST NIGHT ({dashboard.checkIn.defaultDate})
-                </Text>
-                <Text variant="titleSmall" color="champagneLight" serif>Last night is logged</Text>
-                <Text variant="body" color="ivorySecondary" tabular>{dashboard.checkIn.summary}</Text>
+              <Card tone="tint" overline={`Logged for last night (${dashboard.checkIn.defaultDate})`}>
+                <Text variant="heading">Last night is logged</Text>
+                <Text variant="body" color="textMuted" tabular>{dashboard.checkIn.summary}</Text>
                 <NavRow
                   label="Edit this check-in"
                   onPress={() => {
@@ -312,7 +340,7 @@ export default function HomeScreen() {
                 date={activeCheckInDate}
                 label={
                   activeCheckInDate === dashboard.checkIn.defaultDate
-                    ? `LAST NIGHT (${activeCheckInDate})`
+                    ? `Last night (${activeCheckInDate})`
                     : activeCheckInDate
                 }
                 initialSleepMinutes={activeDayItem?.sleepMinutes ?? null}
@@ -323,8 +351,8 @@ export default function HomeScreen() {
             ) : null}
 
             {checkInFormVisible && !canEditActiveDate ? (
-              <Card>
-                <Text variant="sub" color="ivorySecondary">
+              <Card tone="tint">
+                <Text variant="body" color="textMuted">
                   This day is locked, because you already saved what we found.
                 </Text>
                 <NavRow
@@ -373,11 +401,11 @@ export default function HomeScreen() {
 
         {/* Progress: figures only, no interim estimates. */}
         {dashboard.progress?.kind === 'run_in' ? (
-          <Card overline="PROGRESS">
-            <Text variant="titleMedium" color="champagneLight" tabular>
+          <Card tone="tint" overline="Progress">
+            <Text variant="heading" tabular>
               {dashboard.progress.validDays} of {dashboard.progress.targetDays} nights logged
             </Text>
-            <Text variant="sub" color="ivorySecondary">{dashboard.progress.nextStepText}</Text>
+            <Text variant="sub" color="textMuted">{dashboard.progress.nextStepText}</Text>
 
             {dashboard.progress.descriptiveStats ? (
               <StatStrip
@@ -405,8 +433,8 @@ export default function HomeScreen() {
         ) : null}
 
         {dashboard.progress?.kind === 'experiment' ? (
-          <Card overline="TEST">
-            <Text variant="titleMedium" color="champagneLight" tabular>
+          <Card tone="tint" overline="Test">
+            <Text variant="heading" tabular>
               {dashboard.progress.currentDayNum > 0
                 ? `Day ${dashboard.progress.currentDayNum} of ${dashboard.progress.totalDays}`
                 : `${dashboard.progress.totalDays} days to go`}
@@ -427,12 +455,12 @@ export default function HomeScreen() {
                 { label: 'Not sure', value: String(dashboard.progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
               ]}
             />
-            <Text variant="sub" color="ivorySecondary">{dashboard.progress.nextStepText}</Text>
+            <Text variant="sub" color="textMuted">{dashboard.progress.nextStepText}</Text>
           </Card>
         ) : null}
 
         {dashboard.progress?.kind === 'result' ? (
-          <Card overline="WHAT WE FOUND">
+          <Card tone="tint" overline="What we found">
             <StatStrip
               size="lg"
               items={[
@@ -441,7 +469,7 @@ export default function HomeScreen() {
                 { label: 'Nights not logged', value: String(dashboard.progress.missingOutcomeDays) },
               ]}
             />
-            <Text variant="sub" color="ivorySecondary">{dashboard.progress.nextStepText}</Text>
+            <Text variant="sub" color="textMuted">{dashboard.progress.nextStepText}</Text>
           </Card>
         ) : null}
 
@@ -464,6 +492,15 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { gap: spacing.section, paddingBottom: spacing.section },
-  alertCard: { gap: spacing.sm },
-  syncCard: { gap: spacing.sm },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  discRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
 });

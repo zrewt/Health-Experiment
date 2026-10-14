@@ -3,10 +3,15 @@ import { Text as RNText, TextStyle, TextProps as RNTextProps } from 'react-nativ
 import { colors, typography } from '@/design/tokens';
 
 export type TextVariant =
-  | 'overline'
-  | 'caption'
-  | 'sub'
+  // Semantic scale
+  | 'display'
+  | 'title'
+  | 'heading'
   | 'body'
+  | 'caption'
+  // Legacy names, mapped onto the semantic steps until part 2 migrates the rest
+  | 'overline'
+  | 'sub'
   | 'lead'
   | 'titleSmall'
   | 'titleMedium'
@@ -15,6 +20,13 @@ export type TextVariant =
   | 'displayLarge';
 
 export type TextColor =
+  // Semantic
+  | 'text'
+  | 'textMuted'
+  | 'accent'
+  | 'signalText'
+  | 'surface'
+  // Legacy aliases
   | 'ground'
   | 'ivory'
   | 'ivorySecondary'
@@ -30,61 +42,55 @@ export interface TextProps extends RNTextProps {
   color?: TextColor;
   weight?: 'regular' | 'medium' | 'semiBold';
   tabular?: boolean;
+  /** Accepted and ignored: the redesign is system-sans only, so nothing reverts to a serif. */
   serif?: boolean;
   letterSpacing?: number;
   style?: TextStyle | TextStyle[];
   children?: React.ReactNode;
 }
 
+/** Per-variant defaults, so a screen only has to say what differs. */
+const DEFAULTS: Record<TextVariant, { weight: TextProps['weight']; letterSpacing?: number }> = {
+  display: { weight: 'semiBold', letterSpacing: -0.6 },
+  displaySmall: { weight: 'semiBold', letterSpacing: -0.6 },
+  displayLarge: { weight: 'semiBold', letterSpacing: -0.6 },
+  title: { weight: 'semiBold', letterSpacing: -0.2 },
+  titleLarge: { weight: 'semiBold', letterSpacing: -0.2 },
+  titleMedium: { weight: 'semiBold', letterSpacing: -0.2 },
+  heading: { weight: 'semiBold' },
+  titleSmall: { weight: 'semiBold' },
+  lead: { weight: 'regular' },
+  body: { weight: 'regular' },
+  sub: { weight: 'regular' },
+  caption: { weight: 'medium' },
+  overline: { weight: 'medium' },
+};
+
 export const Text: React.FC<TextProps> = ({
   variant = 'body',
-  color = 'ivory',
-  weight = 'regular',
+  color = 'text',
+  weight,
   tabular = false,
-  serif,
-  letterSpacing,
   style,
   children,
   ...props
 }) => {
-  // Use display serif specifically for hero numerals & primary editorial display statements
-  const shouldUseSerif =
-    serif !== undefined
-      ? serif
-      : variant === 'displayLarge' || variant === 'displaySmall' || variant === 'titleLarge';
-
-  let fontFamily: string = typography.fonts.body;
-  if (shouldUseSerif) {
-    fontFamily = typography.fonts.display;
-  } else if (weight === 'medium') {
-    fontFamily = typography.fonts.bodyMedium;
-  } else if (weight === 'semiBold') {
-    fontFamily = typography.fonts.bodySemiBold;
-  }
-
-  const textColor = colors[color] || colors.ivory;
-  const fontSize = typography.sizes[variant] || typography.sizes.body;
-  const lineHeight = typography.lineHeights[variant] || typography.lineHeights.body;
-
-  let calculatedSpacing = letterSpacing;
-  if (calculatedSpacing === undefined) {
-    if (variant === 'overline') calculatedSpacing = typography.letterSpacings.widest;
-    else if (variant === 'displayLarge' || variant === 'displaySmall') calculatedSpacing = -1;
-    else if (variant === 'titleLarge') calculatedSpacing = -0.6;
-    else if (variant === 'titleMedium' || variant === 'titleSmall') calculatedSpacing = -0.2;
-    else if (variant === 'caption' || variant === 'sub') calculatedSpacing = 0.1;
-  }
+  const defaults = DEFAULTS[variant] ?? DEFAULTS.body;
+  const resolvedWeight = weight ?? defaults.weight ?? 'regular';
+  const textColor = (colors as Record<string, string>)[color] ?? colors.text;
+  const fontSize = typography.sizes[variant] ?? typography.sizes.body;
+  const lineHeight = typography.lineHeights[variant] ?? typography.lineHeights.body;
 
   return (
     <RNText
-      maxFontSizeMultiplier={shouldUseSerif ? 1.2 : 1.5}
       style={[
         {
-          fontFamily,
+          fontFamily: typography.fonts.body,
+          fontWeight: typography.weights[resolvedWeight],
           fontSize,
           lineHeight,
           color: textColor,
-          letterSpacing: calculatedSpacing,
+          letterSpacing: defaults.letterSpacing ?? typography.letterSpacings.normal,
           fontVariant: tabular ? ['tabular-nums'] : undefined,
         },
         style,

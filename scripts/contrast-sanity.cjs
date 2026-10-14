@@ -1,6 +1,27 @@
 const assert = require('node:assert/strict');
 
-// WCAG contrast calculation
+/**
+ * Contrast check for the light redesign palette.
+ *
+ * Mirrors the values in src/design/tokens.ts (this file is CJS and cannot import the
+ * TypeScript tokens module), so keep the two in step. Run: node scripts/contrast-sanity.cjs
+ *
+ * Required: 4.5:1 for body text, 3:1 for large text and UI parts (WCAG 2.1 AA).
+ */
+const colors = {
+  background: '#F3F7F6', // Mist
+  surface: '#FFFFFF', // Paper
+  surfaceTint: '#E8F1EF',
+  text: '#0F2A2E', // Ink
+  textMuted: '#51666A', // Ink soft
+  accent: '#12776A', // Lagoon
+  graphic: '#7DE0C3', // Mint: fills and graphics only
+  signal: '#FF8A6B', // Coral: cutoff graphic only, always with a text label
+  signalText: '#A8432C',
+  lineStrong: '#788F8C', // input borders only
+  line: '#E4ECEB',
+};
+
 function hexToRgb(hex) {
   const clean = hex.replace('#', '');
   const num = parseInt(clean, 16);
@@ -23,35 +44,49 @@ function contrast(hex1, hex2) {
   return (brightest + 0.05) / (darkest + 0.05);
 }
 
-const colors = {
-  ground: '#080F0B',
-  surface: '#0F1A14',
-  surfaceHigh: '#15241C',
-  hairline: '#1B2C22',
-  ivory: '#F7F4EB',
-  ivoryMuted: '#849688',
-  champagne: '#D9C187',
-  garnet: '#C4574C',
-};
+/** [label, foreground, background, minimum] */
+const pairs = [
+  ['text on background', 'text', 'background', 4.5],
+  ['text on surface', 'text', 'surface', 4.5],
+  ['text on surfaceTint', 'text', 'surfaceTint', 4.5],
+  ['textMuted on background', 'textMuted', 'background', 4.5],
+  ['textMuted on surface', 'textMuted', 'surface', 4.5],
+  ['textMuted on surfaceTint', 'textMuted', 'surfaceTint', 4.5],
+  ['accent on background', 'accent', 'background', 4.5],
+  ['accent on surface', 'accent', 'surface', 4.5],
+  ['accent on surfaceTint', 'accent', 'surfaceTint', 4.5],
+  ['surface on text (primary button label)', 'surface', 'text', 4.5],
+  ['text on graphic (label over a mint chip)', 'text', 'graphic', 4.5],
+  ['signalText on surface (error text)', 'signalText', 'surface', 4.5],
+  ['signalText on background (error text)', 'signalText', 'background', 4.5],
+  ['signalText on surface (error border, UI)', 'signalText', 'surface', 3],
+  ['accent on background (focus ring, UI)', 'accent', 'background', 3],
+  ['accent on surface (focus ring, UI)', 'accent', 'surface', 3],
+  ['lineStrong on background (input border, UI)', 'lineStrong', 'background', 3],
+  ['lineStrong on surface (input border, UI)', 'lineStrong', 'surface', 3],
+  ['graphic on text (disc half against the ink half)', 'graphic', 'text', 3],
+  ['signal on text (disc half against the ink half)', 'signal', 'text', 3],
+];
 
-// Test ivory on ground
-const ivoryOnGround = contrast(colors.ivory, colors.ground);
-console.log('Contrast ivory on ground:', ivoryOnGround.toFixed(2));
-assert.ok(ivoryOnGround >= 4.5, 'Ivory on ground must be >= 4.5 (WCAG AA)');
+let failures = 0;
+for (const [label, fg, bg, minimum] of pairs) {
+  const ratio = contrast(colors[fg], colors[bg]);
+  const ok = ratio >= minimum;
+  if (!ok) failures += 1;
+  console.log(
+    `${ok ? 'PASS' : 'FAIL'}  ${ratio.toFixed(2)}:1  need ${minimum}  ${label}`,
+  );
+  assert.ok(ok, `${label} must be at least ${minimum}:1 (got ${ratio.toFixed(2)}:1)`);
+}
 
-// Test champagne on ground
-const champagneOnGround = contrast(colors.champagne, colors.ground);
-console.log('Contrast champagne on ground:', champagneOnGround.toFixed(2));
-assert.ok(champagneOnGround >= 4.5, 'Champagne on ground must be >= 4.5');
+// Mint and Coral are fills and graphics only: they sit at 1.46:1 and 2.14:1 against the
+// background and are never the sole carrier of meaning (today's type always carries a
+// text label), so they are deliberately excluded from the checks above.
+const graphicOnBackground = contrast(colors.graphic, colors.background).toFixed(2);
+const signalOnBackground = contrast(colors.signal, colors.background).toFixed(2);
+console.log(
+  `NOTE  ${graphicOnBackground}:1 graphic on background and ${signalOnBackground}:1 signal on background — fills only, never a text or a lone cue.`,
+);
 
-// Test ground text inside primary champagne button
-const groundOnChampagne = contrast(colors.ground, colors.champagne);
-console.log('Contrast ground text on champagne button:', groundOnChampagne.toFixed(2));
-assert.ok(groundOnChampagne >= 4.5, 'Ground text on champagne button must be >= 4.5');
-
-// Test ivoryMuted on ground (minimum 3:1 for large/secondary or UI elements)
-const mutedOnGround = contrast(colors.ivoryMuted, colors.ground);
-console.log('Contrast ivoryMuted on ground:', mutedOnGround.toFixed(2));
-assert.ok(mutedOnGround >= 3.0, 'Muted on ground must be >= 3.0');
-
-console.log('All contrast tests passed.');
+assert.equal(failures, 0, `${failures} contrast pair(s) below the required ratio`);
+console.log(`All ${pairs.length} contrast pairs passed.`);

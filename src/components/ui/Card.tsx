@@ -3,9 +3,10 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { colors, radii, spacing } from '@/design/tokens';
 import { Text } from './Text';
 
-export type CardTone = 'default' | 'hero' | 'quiet' | 'danger';
+export type CardTone = 'default' | 'hero' | 'quiet' | 'tint' | 'danger';
 
 interface CardProps {
+  /** Small label above the title. Sentence case, never all-caps. */
   overline?: string;
   title?: string;
   subtitle?: string;
@@ -15,41 +16,33 @@ interface CardProps {
 }
 
 /**
- * The single card container used across the app.
+ * A surface, not a box.
  *
- * Tones:
- * - default: the ordinary grouped block.
- * - hero: the one block per screen that carries today's instruction or the current stage.
- * - quiet: no box at all — an editorial section separated by spacing only.
- * - danger: destructive actions, marked with the garnet hairline.
+ * Separation comes from background tone and whitespace, so there is exactly one
+ * surface radius, no shadows and no borders — except on `danger`, where the signal
+ * colour marks something that needs attention. `quiet` draws no surface at all.
  */
 export function Card({ overline, title, subtitle, tone = 'default', style, children }: CardProps) {
   return (
     <View style={[styles.base, TONES[tone], style]}>
       {overline ? (
-        <Text variant="overline" color={tone === 'danger' ? 'garnet' : 'champagneMuted'}>
+        <Text variant="caption" color={tone === 'danger' ? 'signalText' : 'textMuted'}>
           {overline}
         </Text>
       ) : null}
-      {title ? (
-        <Text variant="titleSmall" color={tone === 'hero' ? 'champagneLight' : 'ivory'}>
-          {title}
-        </Text>
-      ) : null}
-      {subtitle ? (
-        <Text variant="sub" color="ivorySecondary">
-          {subtitle}
-        </Text>
-      ) : null}
+      {title ? <Text variant="titleSmall" color="text">{title}</Text> : null}
+      {subtitle ? <Text variant="sub" color="textMuted">{subtitle}</Text> : null}
       {children}
     </View>
   );
 }
 
+/** Alias: new code reads better as a surface. */
+export const Surface = Card;
+
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radii.card,
-    borderCurve: 'continuous',
+    borderRadius: radii.surface,
     gap: spacing.inline,
   },
 });
@@ -58,24 +51,24 @@ const TONES: Record<CardTone, ViewStyle> = {
   default: {
     padding: spacing.card,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.hairline,
   },
   hero: {
-    padding: spacing.lg,
+    padding: spacing.card,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.hairlineGold,
     gap: spacing.md,
   },
+  tint: {
+    padding: spacing.card,
+    backgroundColor: colors.surfaceTint,
+  },
   quiet: {
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
     backgroundColor: 'transparent',
   },
   danger: {
     padding: spacing.card,
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.garnet,
+    borderColor: colors.signalText,
   },
 };

@@ -12,9 +12,10 @@ interface DisclosureProps {
 }
 
 /**
- * Progressive disclosure: detail that is available but not competing for
- * attention. Used for guides, privacy notes and FAQ blocks so a screen shows
- * its headline content first and keeps the explanation one tap away.
+ * Progressive disclosure: detail that is available but not competing for attention.
+ *
+ * The open/closed state is carried by the +/− glyph and by aria-expanded, never by
+ * colour alone, and the header keeps a 52 pt touch target.
  */
 export function Disclosure({ label, summary, defaultOpen = false, children }: DisclosureProps) {
   const [open, setOpen] = useState(defaultOpen);
@@ -33,16 +34,16 @@ export function Disclosure({ label, summary, defaultOpen = false, children }: Di
         aria-expanded={open}
       >
         <View style={styles.headerText}>
-          <Text variant="sub" color="champagneLight" weight="semiBold">
+          <Text variant="sub" color="text" weight="semiBold">
             {label}
           </Text>
           {summary && !open ? (
-            <Text variant="caption" color="ivoryMuted">
+            <Text variant="caption" color="textMuted">
               {summary}
             </Text>
           ) : null}
         </View>
-        <Text variant="sub" color="champagne">
+        <Text variant="sub" color="accent" weight="semiBold">
           {open ? '–' : '+'}
         </Text>
       </Pressable>
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     minHeight: 52,
   },
-  headerText: { flex: 1, gap: 4 },
+  headerText: { flex: 1, gap: spacing.xs },
   body: {
     gap: spacing.sm,
     paddingTop: spacing.md,

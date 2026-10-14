@@ -111,10 +111,10 @@ export function CheckInCard({
     : 'Set time';
 
   return (
-    <Card overline={`CHECK-IN FOR ${label ?? date}`}>
-      <Text variant="titleSmall" color="champagneLight">Morning check-in</Text>
+    <Card tone="tint" overline={`Check-in for ${label ?? date}`}>
+      <Text variant="heading">Morning check-in</Text>
 
-      <Text variant="sub" color="ivoryMuted">Sleep last night</Text>
+      <Text variant="sub" color="textMuted">Sleep last night</Text>
       <View style={styles.row}>
         <View style={styles.flexInput}>
           <Field
@@ -135,8 +135,8 @@ export function CheckInCard({
             onChangeText={setSleepMins}
             containerStyle={styles.inputContainer}
           />
-        </View>
-      </View>        <Text variant="sub" color="ivoryMuted">Last caffeine yesterday</Text>
+        </View>        </View>
+      <Text variant="sub" color="textMuted">Last caffeine yesterday</Text>
       <View style={styles.row}>
         <Pressable
           onPress={() => setTimePickerOpen(true)}
@@ -147,7 +147,7 @@ export function CheckInCard({
         >
           <Text
             variant="sub"
-            color={timeIsSelected ? 'ground' : 'ivory'}
+            color={timeIsSelected ? 'surface' : 'text'}
             weight="semiBold"
             tabular
           >
@@ -163,7 +163,7 @@ export function CheckInCard({
         >
           <Text
             variant="sub"
-            color={noCaffeine ? 'ground' : 'ivorySecondary'}
+            color={noCaffeine ? 'surface' : 'text'}
             weight="semiBold"
           >
             No caffeine
@@ -174,8 +174,8 @@ export function CheckInCard({
       <Modal visible={timePickerOpen} transparent animationType="fade" onRequestClose={() => setTimePickerOpen(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.timePickerCard}>
-            <Text variant="overline" color="champagneMuted">Pick a time</Text>
-            <Text variant="titleSmall" color="champagneLight" style={styles.timePickerTitle}>
+            <Text variant="caption" color="textMuted">Pick a time</Text>
+            <Text variant="heading" style={styles.timePickerTitle}>
               Last caffeine time
             </Text>
             <DateTimePicker
@@ -195,12 +195,12 @@ export function CheckInCard({
       </Modal>
 
       {storedUnreadable ? (
-        <Text variant="caption" color="garnet" accessibilityRole="alert">
+        <Text variant="caption" color="signalText" accessibilityRole="alert">
           {CAFFEINE_TIME_UNREADABLE_MESSAGE}
         </Text>
       ) : null}
-      {error ? <Text variant="caption" color="garnet">{error}</Text> : null}
-      {lastCaffeineValidationMessage ? <Text variant="caption" color="garnet">{lastCaffeineValidationMessage}</Text> : null}
+      {error ? <Text variant="caption" color="signalText">{error}</Text> : null}
+      {lastCaffeineValidationMessage ? <Text variant="caption" color="signalText">{lastCaffeineValidationMessage}</Text> : null}
 
       <Button
         label={saving ? 'Saving...' : 'Save check-in'}
@@ -217,33 +217,33 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
   flexInput: { flex: 1 },
   inputContainer: { marginVertical: 0 },
+  // The two answer controls are inputs, so they carry the one border the design allows,
+  // in lineStrong so their boundary is perceivable (3.18:1 on the background).
   segment: {
     flex: 1,
     minHeight: 52,
     borderRadius: radii.control,
     borderWidth: 1,
-    borderColor: colors.hairlineBright,
-    backgroundColor: colors.surfaceHigh,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
   segmentActive: {
-    backgroundColor: colors.champagne,
-    borderColor: colors.champagne,
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 18, 24, 0.6)',
+    backgroundColor: colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   timePickerCard: {
     backgroundColor: colors.surface,
-    borderRadius: radii.card,
+    borderRadius: radii.surface,
     padding: spacing.lg,
     gap: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.hairlineBright,
     width: '90%',
   },
   timePickerTitle: {

@@ -8,11 +8,14 @@ import {
   Row,
   Divider,
   NavRow,
+  StatStrip,
   Text,
   Button,
   Details,
+  Banner,
 } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
+import { sentenceCase } from '@/design/labels';
 import { useAuthStore } from '@/store/auth';
 import {
   getActivePlan,
@@ -81,7 +84,7 @@ export default function ResultScreen() {
   if (loading) {
     return (
       <Screen>
-        <Text color="ivorySecondary">Loading...</Text>
+        <Text color="textMuted">Loading...</Text>
       </Screen>
     );
   }
@@ -90,12 +93,12 @@ export default function ResultScreen() {
     return (
       <Screen>
         <ScreenHeader
-          overline="WHAT WE FOUND"
+          overline={today}
           title="Nothing here yet"
           notice={MEDICAL_NOTICE}
           action={<Button label="Today" variant="quiet" onPress={backToToday} />}
         />
-        <Card title="No sleep test is running">
+        <Card tone="tint" title="No sleep test is running">
           <NavRow
             label="See past tests"
             onPress={() => router.replace('/experiment' as Href)}
@@ -197,7 +200,7 @@ export default function ResultScreen() {
       <Screen>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <ScreenHeader
-            overline="WHAT WE FOUND"
+            overline={today}
             title="What we found"
             notice={MEDICAL_NOTICE}
             action={<Button label="Today" variant="quiet" onPress={backToToday} />}
@@ -205,29 +208,29 @@ export default function ResultScreen() {
 
           {/* 1. What we found: the plain heading leads. The engine's own sentence is
               kept word for word and sits under Details, with the reasons it gives. */}
-          <Card tone="hero" overline="WHAT WE FOUND">
-            <Text variant="titleMedium" color="champagneLight">{heading}</Text>
-            <Text variant="body" color="ivorySecondary">
+          <Card tone="hero">
+            <Text variant="title" accessibilityRole="header">{heading}</Text>
+            <Text variant="body" color="textMuted">
               Here is what your log showed, and how sure we can be about it.
             </Text>
 
             <Details summary="The exact wording, and what it does not say">
-              <Text variant="sub" color="ivory">{res.statement}</Text>
+              <Text variant="sub">{res.statement}</Text>
               {res.reasons && res.reasons.length > 0 ? (
                 <View style={styles.reasonsBox}>
                   {res.reasons.map((reason, idx) => (
-                    <Text key={idx} variant="caption" color="ivorySecondary">• {reason}</Text>
+                    <Text key={idx} variant="caption" color="textMuted">• {reason}</Text>
                   ))}
                 </View>
               ) : null}
 
               {explanation.whatItTellsYou.doesTell.map((line, idx) => (
-                <Text key={`does-${idx}`} variant="sub" color="ivorySecondary">• {line}</Text>
+                <Text key={`does-${idx}`} variant="sub" color="textMuted">• {line}</Text>
               ))}
               {explanation.whatItTellsYou.doesNotTell.map((line, idx) => (
-                <Text key={`not-${idx}`} variant="sub" color="ivoryMuted">• {line}</Text>
+                <Text key={`not-${idx}`} variant="sub" color="textMuted">• {line}</Text>
               ))}
-              <Text variant="caption" color="champagne">{MEDICAL_NOTICE}</Text>
+              <Text variant="caption" color="accent">{MEDICAL_NOTICE}</Text>
             </Details>
 
             {/* The days behind the result, available but not in the way. */}
@@ -236,14 +239,14 @@ export default function ResultScreen() {
                 {explanation.underlyingDays.map((day) => (
                   <View key={day.date} style={styles.dayRow}>
                     <View style={styles.dayRowHeader}>
-                      <Text variant="sub" color="ivory" weight="semiBold" tabular>
+                      <Text variant="sub" weight="semiBold" tabular>
                         {day.date}
                       </Text>
-                      <Text variant="caption" color="champagneLight">
+                      <Text variant="caption" color="textMuted">
                         {day.assignedLabel}
                       </Text>
                     </View>
-                    <Text variant="caption" color="ivorySecondary" tabular>
+                    <Text variant="caption" color="textMuted" tabular>
                       Sleep: {day.sleepText} • {day.caffeineText}
                     </Text>
                   </View>
@@ -253,24 +256,24 @@ export default function ResultScreen() {
           </Card>
 
           {/* 2. How sure we are: one plain line, then every number under Details. */}
-          <Card overline="HOW SURE WE ARE">
-            <Text variant="body" color="ivorySecondary">
+          <Card tone="tint" overline={sentenceCase('HOW SURE WE ARE')}>
+            <Text variant="body" color="textMuted">
               This is a cautious read of your own log.
             </Text>
 
             <Details summary="The numbers">
               {res.conservativeEstimate !== null ? (
-                <Text variant="titleSmall" color="champagneLight" tabular>
+                <Text variant="heading" tabular>
                   Cautious estimate: {res.conservativeEstimate} minutes a night more sleep on cutoff days
                 </Text>
               ) : null}
-              <Text variant="sub" color="ivorySecondary">
+              <Text variant="sub" color="textMuted">
                 {explanation.estimateExplanation.conservativeEstimateText}
               </Text>
-              <Text variant="sub" color="ivory" tabular>
+              <Text variant="sub" tabular>
                 {explanation.estimateExplanation.intervalText}
               </Text>
-              <Text variant="caption" color="ivoryMuted">
+              <Text variant="caption" color="textMuted">
                 {explanation.estimateExplanation.uncertaintyNote}
               </Text>
 
@@ -300,22 +303,22 @@ export default function ResultScreen() {
               <Row label="Days left out" value={String(res.daysExcluded)} emphasis="muted" />
 
               <Divider />
-              <Text variant="overline" color="champagneMuted">HOW OFTEN YOU KEPT TO IT</Text>
+              <Text variant="caption" color="textMuted">{sentenceCase('HOW OFTEN YOU KEPT TO IT')}</Text>
               {/* ADHERENT = a cutoff day with no caffeine after the cutoff.
                   CONTAMINATED = a normal day where caffeine was skipped or early, so the
                   label must not claim caffeine after the cutoff. */}
-              <Text color="ivory">
+              <Text>
                 Kept the rule on {res.adherence.counts.ADHERENT} of {intDays} cutoff days.
               </Text>
-              <Text color="ivory">
+              <Text>
                 No caffeine after cutoff on {res.adherence.counts.CONTAMINATED} of {ctrlDays} normal days.
               </Text>
 
               {res.limitations && res.limitations.length > 0 ? (
                 <View style={styles.explainBox}>
-                  <Text variant="overline" color="champagneMuted">WHAT WE COULD NOT RULE OUT</Text>
+                  <Text variant="caption" color="textMuted">{sentenceCase('WHAT WE COULD NOT RULE OUT')}</Text>
                   {res.limitations.map((lim, idx) => (
-                    <Text key={idx} variant="caption" color="ivoryMuted">• {lim}</Text>
+                    <Text key={idx} variant="caption" color="textMuted">• {lim}</Text>
                   ))}
                 </View>
               ) : null}
@@ -323,10 +326,11 @@ export default function ResultScreen() {
           </Card>
 
           {/* 3. What to do next: one action, then quiet ways onward. */}
-          <Card overline="WHAT TO DO NEXT">
-            <Text variant="sub" color="ivorySecondary">
+          <Card tone="tint" overline={sentenceCase('WHAT TO DO NEXT')}>
+            <Text variant="sub" color="textMuted">
               This is saved. You can start another test any time.
             </Text>
+
             <Button
               label="Start a new sleep test"
               variant="primary"
@@ -341,9 +345,7 @@ export default function ResultScreen() {
           </Card>
 
           {error ? (
-            <Card tone="danger">
-              <Text color="garnet" accessibilityRole="alert">{error}</Text>
-            </Card>
+            <Banner tone="error">{error}</Banner>
           ) : null}
         </ScrollView>
       </Screen>
@@ -353,16 +355,16 @@ export default function ResultScreen() {
   // SCREEN 5A: plan_awaiting_final
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader
-          overline="LAST DAY"
+          overline={sentenceCase('LAST DAY')}
           title="Last night to log"
           notice={MEDICAL_NOTICE}
           action={<Button label="Today" variant="quiet" onPress={backToToday} />}
         />
 
-        <Card title="Your sleep test is over">
-          <Text color="ivorySecondary">
+        <Card tone="hero" title="Your sleep test is over">
+          <Text variant="body" color="textMuted">
             {isFinalMissing
               ? `Log ${lastExposureDate} to see what we found.`
               : 'Every day is logged.'}
@@ -370,12 +372,19 @@ export default function ResultScreen() {
         </Card>
 
         {/* Counts only: never a comparison or a verdict before the result is opened. */}
-        <Card overline="SO FAR">
-          <Text color="ivory">Days logged: {progress.daysLogged} of {plan.chosenDuration}</Text>
+        <Card tone="tint" overline={sentenceCase('SO FAR')}>
+          <Text variant="heading" tabular>
+            Days logged: {progress.daysLogged} of {plan.chosenDuration}
+          </Text>
           <Details summary="How often you kept to it">
-            <Text variant="caption" color="ivoryMuted">
-              Kept the rule: {progress.adherenceCounts.ADHERENT} · Normal days: {progress.adherenceCounts.CONTROL_CLEAN} · Normal, no caffeine: {progress.adherenceCounts.CONTAMINATED} · Not sure: {progress.adherenceCounts.UNKNOWN}
-            </Text>
+            <StatStrip
+              items={[
+                { label: 'Kept the rule', value: String(progress.adherenceCounts.ADHERENT) },
+                { label: 'Normal days', value: String(progress.adherenceCounts.CONTROL_CLEAN) },
+                { label: 'Normal, no caffeine', value: String(progress.adherenceCounts.CONTAMINATED) },
+                { label: 'Not sure', value: String(progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
+              ]}
+            />
           </Details>
         </Card>
 
@@ -383,7 +392,7 @@ export default function ResultScreen() {
           <CheckInCard
             key={lastExposureDate}
             date={lastExposureDate}
-            label={`LAST DAY (${lastExposureDate})`}
+            label={`Last day (${lastExposureDate})`}
             initialSleepMinutes={lastEntry?.sleepMinutes ?? null}
             initialCaffeineTime={lastEntry?.lastCaffeineTime ?? null}
             onSave={handleSaveFinalCheckIn}
@@ -392,13 +401,11 @@ export default function ResultScreen() {
         ) : null}
 
         {error ? (
-          <Card tone="danger">
-            <Text color="garnet" accessibilityRole="alert">{error}</Text>
-          </Card>
+          <Banner tone="error">{error}</Banner>
         ) : null}
 
-        <Card>
-          <Text variant="sub" color="champagneLight" weight="medium">
+        <Card tone="hero">
+          <Text variant="sub" color="accent" weight="medium">
             Once you open what we found, these days are locked. Fix anything you need to first.
           </Text>
           <Button
@@ -432,7 +439,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     backgroundColor: colors.surfaceHigh,
     borderRadius: radii.control,
-    gap: 4,
+    gap: spacing.xs,
   },
   dayRowHeader: {
     flexDirection: 'row',

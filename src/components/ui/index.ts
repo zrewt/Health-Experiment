@@ -4,6 +4,8 @@ export * from './Button';
 export * from './Field';
 export * from './AccountSetupNotice';
 export * from './Card';
+export * from './Banner';
+export * from './SplitDisc';
 export * from './Row';
 export * from './ScreenHeader';
 export * from './NavRow';

@@ -6,11 +6,11 @@ import { Text, type TextColor } from './Text';
 export type RowEmphasis = 'default' | 'strong' | 'gold' | 'muted' | 'danger';
 
 const EMPHASIS_COLOR: Record<RowEmphasis, TextColor> = {
-  default: 'ivory',
-  strong: 'champagneLight',
-  gold: 'champagne',
-  muted: 'ivoryMuted',
-  danger: 'garnet',
+  default: 'text',
+  strong: 'text',
+  gold: 'accent',
+  muted: 'textMuted',
+  danger: 'signalText',
 };
 
 interface RowProps {
@@ -23,10 +23,15 @@ interface RowProps {
 export function Row({ label, value, emphasis = 'default' }: RowProps) {
   return (
     <View style={styles.row}>
-      <Text variant="sub" color="ivoryMuted" style={styles.rowLabel}>
+      <Text variant="sub" color="textMuted" style={styles.rowLabel}>
         {label}
       </Text>
-      <Text variant="sub" color={EMPHASIS_COLOR[emphasis]} weight="semiBold" tabular>
+      <Text
+        variant="sub"
+        color={EMPHASIS_COLOR[emphasis]}
+        weight={emphasis === 'strong' ? 'semiBold' : 'regular'}
+        tabular
+      >
         {value}
       </Text>
     </View>
@@ -49,14 +54,14 @@ export function StatStrip({ items, size = 'md' }: { items: readonly StatItem[]; 
       {items.map((item) => (
         <View key={item.label} style={styles.stat}>
           <Text
-            variant={size === 'lg' ? 'titleSmall' : 'body'}
+            variant={size === 'lg' ? 'title' : 'heading'}
             color={EMPHASIS_COLOR[item.emphasis ?? 'default']}
             weight="semiBold"
             tabular
           >
             {item.value}
           </Text>
-          <Text variant="caption" color="ivoryMuted">
+          <Text variant="caption" color="textMuted">
             {item.label}
           </Text>
         </View>
@@ -87,10 +92,8 @@ const styles = StyleSheet.create({
   stat: {
     flexGrow: 1,
     flexBasis: 64,
-    gap: 4,
+    gap: spacing.xs,
   },
-  divider: {
-    height: 1,
-    backgroundColor: colors.hairline,
-  },
+  /** Decorative only: the tone change is what groups, this just softens a long list. */
+  divider: { height: 1, backgroundColor: colors.line },
 });

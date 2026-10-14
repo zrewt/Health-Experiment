@@ -4,33 +4,33 @@ import { spacing } from '@/design/tokens';
 import { Text } from './Text';
 
 interface ScreenHeaderProps {
+  /** Small label above the title. Sentence case — this app has no all-caps eyebrows. */
   overline: string;
   title: string;
-  /** The standing non-medical-advice caption, or any single-line notice. */
+  /** Standing notice or one-line status. */
   notice?: string;
-  /** Optional trailing control, e.g. a quiet back action on a step screen. */
+  /** Optional trailing control, e.g. a quiet way back. */
   action?: React.ReactNode;
 }
 
 /**
- * The one header shape every screen uses: an uppercase overline, the serif
- * screen name, and the standing caption. Keeps the top of every page identical
- * so the content below it is what varies.
+ * One header shape for every screen: a quiet label, the screen title, and at most
+ * one supporting line. Nothing here competes with the content below it.
  */
 export function ScreenHeader({ overline, title, notice, action }: ScreenHeaderProps) {
   return (
     <View style={styles.wrapper}>
       <View style={styles.titleRow}>
         <View style={styles.titleBlock}>
-          <Text variant="overline" color="champagneMuted">
+          <Text variant="caption" color="textMuted">
             {overline}
           </Text>
-          <Text variant="titleLarge">{title}</Text>
+          <Text variant="title">{title}</Text>
         </View>
         {action}
       </View>
       {notice ? (
-        <Text variant="caption" color="champagne">
+        <Text variant="caption" color="textMuted">
           {notice}
         </Text>
       ) : null}
@@ -46,5 +46,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
-  titleBlock: { flexShrink: 1, gap: 6 },
+  titleBlock: { flexShrink: 1, gap: spacing.xs },
 });

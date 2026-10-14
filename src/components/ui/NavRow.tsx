@@ -15,14 +15,12 @@ interface NavRowProps {
 }
 
 /**
- * A quiet, single-line way to move somewhere or open something.
- *
- * Used instead of a stack of full-width buttons: navigation should read as
- * part of the page, not compete with the one action that matters.
+ * A quiet way to move somewhere. Reads as part of the page rather than competing
+ * with the one action that matters.
  */
 export function NavRow({ label, detail, value, onPress, tone = 'default', disabled = false }: NavRowProps) {
-  const accent: TextColor = tone === 'danger' ? 'garnet' : 'champagne';
-  const labelColor: TextColor = tone === 'danger' ? 'garnet' : 'ivory';
+  const accent: TextColor = tone === 'danger' ? 'signalText' : 'accent';
+  const labelColor: TextColor = tone === 'danger' ? 'signalText' : 'text';
 
   return (
     <Pressable
@@ -34,11 +32,11 @@ export function NavRow({ label, detail, value, onPress, tone = 'default', disabl
       accessibilityState={{ disabled }}
     >
       <View style={styles.info}>
-        <Text variant="body" color={disabled ? 'ivoryMuted' : labelColor}>
+        <Text variant="body" color={disabled ? 'textMuted' : labelColor}>
           {label}
         </Text>
         {detail ? (
-          <Text variant="caption" color="ivoryMuted">
+          <Text variant="caption" color="textMuted">
             {detail}
           </Text>
         ) : null}
@@ -49,7 +47,9 @@ export function NavRow({ label, detail, value, onPress, tone = 'default', disabl
             {value}
           </Text>
         ) : null}
-        <Text variant="sub" color={accent}>
+        {/* A list-row disclosure indicator, not a button arrow: it says "this leads
+            somewhere", which is what makes the row discoverable. */}
+        <Text variant="sub" color="textMuted">
           ›
         </Text>
       </View>
@@ -66,6 +66,6 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingVertical: spacing.sm,
   },
-  info: { flex: 1, gap: 4 },
+  info: { flex: 1, gap: spacing.xs },
   trailing: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
 });

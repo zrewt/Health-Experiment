@@ -13,6 +13,10 @@ const TABS: readonly { key: PrimaryTab; label: string; route: Href }[] = [
   { key: 'settings', label: 'Settings', route: '/settings' as Href },
 ];
 
+/**
+ * Whitespace plus one Ink pill marks the current tab: no border, no underline,
+ * no colour-only signal (the active label is also the only one on an Ink fill).
+ */
 export function PrimaryNav({ current }: { current: PrimaryTab }) {
   const router = useRouter();
 
@@ -34,11 +38,7 @@ export function PrimaryNav({ current }: { current: PrimaryTab }) {
               accessibilityLabel={tab.label}
               accessibilityState={{ selected: active }}
             >
-              <Text
-                variant="sub"
-                color={active ? 'champagneLight' : 'ivoryMuted'}
-                weight={active ? 'semiBold' : 'regular'}
-              >
+              <Text variant="sub" color={active ? 'surface' : 'textMuted'} weight={active ? 'semiBold' : 'regular'}>
                 {tab.label}
               </Text>
             </Pressable>
@@ -52,7 +52,7 @@ export function PrimaryNav({ current }: { current: PrimaryTab }) {
 const styles = StyleSheet.create({
   wrapper: {
     paddingTop: spacing.md,
-    backgroundColor: colors.ground,
+    backgroundColor: colors.background,
   },
   bar: {
     flexDirection: 'row',
@@ -60,8 +60,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: colors.surface,
     borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.hairlineBright,
     padding: 6,
   },
   item: {
@@ -73,6 +71,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   itemActive: {
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: colors.text,
   },
 });
