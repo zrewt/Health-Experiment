@@ -135,7 +135,8 @@ export function CheckInCard({
             onChangeText={setSleepMins}
             containerStyle={styles.inputContainer}
           />
-        </View>        </View>
+        </View>
+      </View>
       <Text variant="sub" color="textMuted">Last caffeine yesterday</Text>
       <View style={styles.row}>
         <Pressable
