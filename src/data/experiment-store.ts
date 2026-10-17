@@ -5,9 +5,15 @@ import { mergePendingEntries, retryPendingEntries } from './pending-entries';
 import { deviceKeysForUser } from './local-wipe';
 import { createPlanPersistence, type StoredExperimentPlan } from './plan-persistence';
 import { parseLocalDate } from '@/experiment/dates';
-import { sanitizeCaffeineTimeForWrite } from '@/experiment/caffeine-time';
+import { CAFFEINE_TIME_PATTERN, sanitizeCaffeineTimeForWrite } from '@/experiment/caffeine-time';
+import { CURRENT_CONSENT_VERSION } from '@/experiment/consent';
 
-export const HEALTH_DATA_POLICY_VERSION = '2026-10-health-draft-v1';
+/**
+ * Consent covers both exposures: the log stores sleep, caffeine and screen times, so one
+ * version names all three. The version itself lives in the pure consent module; this is the
+ * store's name for it.
+ */
+export const HEALTH_DATA_POLICY_VERSION = CURRENT_CONSENT_VERSION;
 export const DEFAULT_EXPERIMENT_ID = 'caffeine-cutoff';
 
 function plansHistoryKey(userId: string): string {
@@ -170,6 +176,16 @@ function consentKey(userId: string): string {
 }
 
 /**
+ * Write-side policy for last screen use: HH:mm or 'none', otherwise unknown (null).
+ * Same strict rule as caffeine time: a malformed value is never padded or guessed.
+ */
+function sanitizeScreenTimeForWrite(value: string | 'none' | null): string | 'none' | null {
+  if (value === 'none') return 'none';
+  if (typeof value === 'string' && CAFFEINE_TIME_PATTERN.test(value)) return value;
+  return null;
+}
+
+/**
  * Saves or updates setup configuration for the user.
  */
 export async function saveSetup(userId: string, setup: ExperimentSetupRecord): Promise<void> {
@@ -239,12 +255,14 @@ export async function saveEntry(userId: string, entry: DailyEntry): Promise<Stor
   // Write-side policy: a malformed time is never persisted; it is stored as unknown (null),
   // never padded and never turned into 'none'.
   const lastCaffeineTime = sanitizeCaffeineTimeForWrite(entry.lastCaffeineTime ?? null);
+  const lastScreenTime = sanitizeScreenTimeForWrite(entry.lastScreenTime ?? null);
   const editedAt = new Date().toISOString();
 
   const record: StoredDailyEntry = {
     date: entry.date,
     sleepMinutes,
     lastCaffeineTime,
+    lastScreenTime,
     editedAt,
     synced: false,
   };
@@ -263,6 +281,7 @@ export async function saveEntry(userId: string, entry: DailyEntry): Promise<Stor
         date: entry.date,
         sleep_minutes: sleepMinutes,
         last_caffeine_time: lastCaffeineTime,
+        last_screen_time: lastScreenTime,
         edited_at: editedAt,
       }, { onConflict: 'user_id,date' });
 
@@ -302,6 +321,7 @@ export async function syncUnsyncedEntries(userId: string): Promise<{ syncedCount
         date: entry.date,
         sleep_minutes: entry.sleepMinutes,
         last_caffeine_time: entry.lastCaffeineTime,
+        last_screen_time: entry.lastScreenTime ?? null,
         edited_at: entry.editedAt,
       }, { onConflict: 'user_id,date' });
       return !error;
@@ -325,7 +345,7 @@ export async function listEntries(userId: string): Promise<StoredDailyEntry[]> {
       const localEntries: StoredDailyEntry[] = rawCache ? Object.values(JSON.parse(rawCache)) : [];
       const { data, error } = await supabase
         .from('experiment_entries')
-        .select('date, sleep_minutes, last_caffeine_time, edited_at')
+        .select('date, sleep_minutes, last_caffeine_time, last_screen_time, edited_at')
         .eq('user_id', userId)
         .order('date', { ascending: true });
 
@@ -334,6 +354,7 @@ export async function listEntries(userId: string): Promise<StoredDailyEntry[]> {
           date: d.date,
           sleepMinutes: d.sleep_minutes !== null ? Number(d.sleep_minutes) : null,
           lastCaffeineTime: d.last_caffeine_time ?? null,
+          lastScreenTime: d.last_screen_time ?? null,
           editedAt: d.edited_at,
           synced: true,
         }));

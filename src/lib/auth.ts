@@ -53,9 +53,17 @@ export async function updateUserPassword(auth: PasswordUpdateClient, newPassword
 export async function deleteUserAccount(client: AccountDeleteClient): Promise<void> {
   const { error } = await client.rpc('delete_own_account');
   if (error) {
+    // The locked-day trigger can only refuse this call when the project is running an older
+    // copy of the app's schema: the current delete_own_account() raises a transaction-local
+    // flag the trigger honours, so the two are always deployed together or not at all.
+    const code = (error as { code?: string }).code;
+    if (code === '23000' || /is locked because it belongs to a completed experiment/i.test(error.message)) {
+      throw new Error(
+        'Could not delete the account: the database is missing an update this app needs, so nothing was deleted. Run supabase/schema-all.sql in the Supabase SQL editor, then try again.',
+      );
+    }
     // The code is carried into the message on purpose: it is what tells a missing database
     // function (PGRST202) apart from a server-side refusal (42501, 23503) in the UI.
-    const code = (error as { code?: string }).code;
     throw new Error(`Could not delete the account: ${error.message}${code ? ` (${code})` : ''}`);
   }
 }

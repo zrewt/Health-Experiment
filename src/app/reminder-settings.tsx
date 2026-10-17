@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, ScreenHeader, Card, Text, Button, Field } from '@/components/ui';
+import {
+  Screen,
+  ScreenHeader,
+  Card,
+  Text,
+  Button,
+  Field,
+  Banner,
+} from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
+import { sentenceCase } from '@/design/labels';
 import { useAuthStore } from '@/store/auth';
 import {
   getReminderPermission,
@@ -19,7 +28,10 @@ import {
   parseReminderTime,
   type ReminderPreferences,
 } from '@/notifications/reminder-plan';
-import { loadReminderPreferences, saveReminderPreferences } from '@/notifications/reminder-preferences';
+import {
+  loadReminderPreferences,
+  saveReminderPreferences,
+} from '@/notifications/reminder-preferences';
 import { getActivePlan } from '@/data/experiment-store';
 
 /**
@@ -46,8 +58,12 @@ function ReminderToggle({
   return (
     <View style={styles.toggleRow}>
       <View style={styles.toggleText}>
-        <Text variant="body" color="ivory">{label}</Text>
-        <Text variant="caption" color="ivoryMuted">{description}</Text>
+        <Text variant="body" color="text">
+          {label}
+        </Text>
+        <Text variant="caption" color="textMuted">
+          {description}
+        </Text>
       </View>
       <Pressable
         accessibilityRole="switch"
@@ -56,7 +72,11 @@ function ReminderToggle({
         onPress={onPress}
         style={[styles.toggle, active && styles.toggleOn]}
       >
-        <Text variant="caption" color={active ? 'ground' : 'ivory'} weight="semiBold">
+        <Text
+          variant="caption"
+          color={active ? 'surface' : 'text'}
+          weight="semiBold"
+        >
           {on ? 'On' : 'Off'}
         </Text>
       </Pressable>
@@ -68,7 +88,9 @@ export default function ReminderSettingsScreen() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
-  const [preferences, setPreferences] = useState<ReminderPreferences>(DEFAULT_REMINDER_PREFERENCES);
+  const [preferences, setPreferences] = useState<ReminderPreferences>(
+    DEFAULT_REMINDER_PREFERENCES,
+  );
   const [permission, setPermission] = useState<ReminderPermission>('undetermined');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -91,14 +113,22 @@ export default function ReminderSettingsScreen() {
         if (!current) return;
         setPreferences(stored);
         setPermission(currentPermission);
-        setHasActionableRule(conditionAction(plan?.plan.definition.conditionRule ?? null) !== null);
+        setHasActionableRule(
+          conditionAction(plan?.plan.definition.conditionRule ?? null) !== null,
+        );
       } catch (e) {
-        if (current) setError(e instanceof Error ? e.message : 'Could not load your reminder settings.');
+        if (current) {
+          setError(
+            e instanceof Error ? e.message : 'Could not load your reminder settings.',
+          );
+        }
       } finally {
         if (current) setLoading(false);
       }
     })();
-    return () => { current = false; };
+    return () => {
+      current = false;
+    };
   }, [user]);
 
   const update = (patch: Partial<ReminderPreferences>) => {
@@ -117,10 +147,18 @@ export default function ReminderSettingsScreen() {
       } else {
         const next = await requestReminderPermission();
         setPermission(next);
-        setStatus(next === 'granted' ? 'Notifications are on.' : 'Notifications were not enabled.');
+        setStatus(
+          next === 'granted'
+            ? 'Notifications are on.'
+            : 'Notifications were not enabled.',
+        );
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not change the notification permission.');
+      setError(
+        e instanceof Error
+          ? e.message
+          : 'Could not change the notification permission.',
+      );
     } finally {
       setRequesting(false);
     }
@@ -151,18 +189,26 @@ export default function ReminderSettingsScreen() {
       // the home screen happens to be opened.
       const outcome = await syncReminders(await loadReminderSyncInput(user.id));
       if (outcome.status === 'failed') {
-        setError(`Saved, but the reminders could not be rescheduled: ${outcome.message}`);
+        setError(
+          `Saved, but the reminders could not be rescheduled: ${outcome.message}`,
+        );
       } else if (outcome.status === 'skipped') {
-        setError('Saved. Notifications are still not permitted, so nothing will be delivered yet.');
+        setError(
+          'Saved. Notifications are still not permitted, so nothing will be delivered yet.',
+        );
       } else if (outcome.status === 'unavailable') {
         setStatus('Saved. Reminders are not available on this platform.');
       } else if (outcome.status === 'scheduled') {
-        setStatus(`Saved. ${outcome.count} reminder${outcome.count === 1 ? '' : 's'} scheduled.`);
+        setStatus(
+          `Saved. ${outcome.count} reminder${outcome.count === 1 ? '' : 's'} scheduled.`,
+        );
       } else {
         setStatus('Saved. No reminders are scheduled.');
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save your reminder settings.');
+      setError(
+        e instanceof Error ? e.message : 'Could not save your reminder settings.',
+      );
     } finally {
       setSaving(false);
     }
@@ -171,43 +217,70 @@ export default function ReminderSettingsScreen() {
   const permissionLine = !remindersSupported()
     ? 'Reminders are not available on this platform.'
     : permission === 'granted'
-      ? 'Notifications are on.'
-      : permission === 'denied'
-        ? 'Notifications are off. Turn them on for Aevum in Settings.'
-        : 'Notifications are not enabled yet.';
+    ? 'Notifications are on.'
+    : permission === 'denied'
+    ? 'Notifications are off. Turn them on for Aevum in Settings.'
+    : 'Notifications are not enabled yet.';
 
   if (loading) {
     return (
       <Screen>
-        <Text color="ivorySecondary">Loading reminder settings...</Text>
+        <Text color="textMuted">Loading reminder settings...</Text>
       </Screen>
     );
   }
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <ScreenHeader
-          overline="NOTIFICATIONS"
+          overline={sentenceCase('NOTIFICATIONS')}
           title="Reminders"
           notice="Gentle nudges to log your sleep. This app is not medical advice."
-          action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
+          action={
+            <Button label="Today" variant="quiet" onPress={() => router.replace('/')} />
+          }
         />
 
-        {status ? <Text color="champagneLight" accessibilityLiveRegion="polite">{status}</Text> : null}
+        {status ? <Banner tone="success">{status}</Banner> : null}
 
         {error ? (
-          <Card tone="danger">
-            <Text color="garnet" accessibilityRole="alert">{error}</Text>
-          </Card>
+          <Banner
+            tone="error"
+            action={
+              remindersSupported() && permission !== 'granted' ? (
+                <Button
+                  label={
+                    permission === 'denied'
+                      ? 'Open settings'
+                      : 'Turn on notifications'
+                  }
+                  variant="quiet"
+                  loading={requesting}
+                  onPress={() => void handleEnable()}
+                />
+              ) : undefined
+            }
+          >
+            {error}
+          </Banner>
         ) : null}
 
-        <Card overline="NOTIFICATIONS">
-          <Text variant="sub" color="ivorySecondary">{permissionLine}</Text>
+        <Card tone="hero" overline={sentenceCase('NOTIFICATIONS')}>
+          <Text variant="sub" color="textMuted">
+            {permissionLine}
+          </Text>
           {remindersSupported() && permission !== 'granted' ? (
             <Button
               testID="enable-notifications"
-              label={permission === 'denied' ? 'Open notification settings' : 'Turn on notifications'}
+              label={
+                permission === 'denied'
+                  ? 'Open notification settings'
+                  : 'Turn on notifications'
+              }
               variant="primary"
               loading={requesting}
               onPress={() => void handleEnable()}
@@ -215,7 +288,7 @@ export default function ReminderSettingsScreen() {
           ) : null}
         </Card>
 
-        <Card overline="DAILY CHECK-IN">
+        <Card overline={sentenceCase('DAILY CHECK-IN')}>
           <ReminderToggle
             label="Daily reminders"
             description="Turning this off clears every scheduled reminder."
@@ -236,7 +309,7 @@ export default function ReminderSettingsScreen() {
           />
         </Card>
 
-        <Card overline="TEST REMINDERS">
+        <Card tone="tint" overline={sentenceCase('TEST REMINDERS')}>
           {hasActionableRule ? (
             <>
               <ReminderToggle
@@ -245,7 +318,9 @@ export default function ReminderSettingsScreen() {
                 accessibilityLabel="Reminder before the cutoff"
                 on={preferences.actionEnabled}
                 active={preferences.actionEnabled && preferences.enabled}
-                onPress={() => update({ actionEnabled: !preferences.actionEnabled })}
+                onPress={() =>
+                  update({ actionEnabled: !preferences.actionEnabled })
+                }
               />
 
               <ReminderToggle
@@ -254,7 +329,9 @@ export default function ReminderSettingsScreen() {
                 accessibilityLabel="Evening heads-up"
                 on={preferences.previewEnabled}
                 active={preferences.previewEnabled && preferences.enabled}
-                onPress={() => update({ previewEnabled: !preferences.previewEnabled })}
+                onPress={() =>
+                  update({ previewEnabled: !preferences.previewEnabled })
+                }
               />
 
               <Field
@@ -268,7 +345,7 @@ export default function ReminderSettingsScreen() {
               />
             </>
           ) : (
-            <Text variant="sub" color="ivorySecondary">
+            <Text variant="sub" color="textMuted">
               These appear once a test is running.
             </Text>
           )}
@@ -296,15 +373,17 @@ const styles = StyleSheet.create({
   },
   toggleText: { flex: 1, gap: 2 },
   toggle: {
+    minHeight: 36,
+    justifyContent: 'center',
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     borderRadius: radii.pill,
     borderWidth: 1,
-    borderColor: colors.hairlineBright,
-    backgroundColor: colors.surfaceHigh,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface,
   },
   toggleOn: {
-    backgroundColor: colors.champagne,
-    borderColor: colors.champagne,
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
 });

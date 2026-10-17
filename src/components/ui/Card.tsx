@@ -30,7 +30,7 @@ export function Card({ overline, title, subtitle, tone = 'default', style, child
           {overline}
         </Text>
       ) : null}
-      {title ? <Text variant="titleSmall" color="text">{title}</Text> : null}
+      {title ? <Text variant="heading" color="text">{title}</Text> : null}
       {subtitle ? <Text variant="sub" color="textMuted">{subtitle}</Text> : null}
       {children}
     </View>

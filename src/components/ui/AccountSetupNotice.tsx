@@ -26,15 +26,15 @@ export const AccountSetupNotice: React.FC<AccountSetupNoticeProps> = ({
   compact = false,
 }) => {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessibilityRole="alert">
       <View style={styles.headerRow}>
         <View style={styles.pip} />
-        <Text variant="overline" color="champagne">
+        <Text variant="caption" color="signalText" weight="semiBold">
           Accounts unavailable
         </Text>
       </View>
 
-      <Text variant="body" color="ivory" style={styles.lead}>
+      <Text variant="body" color="text">
         {compact
           ? 'Accounts are not configured in this build.'
           : 'Aevum could not reach its account service in this build.'}
@@ -44,10 +44,10 @@ export const AccountSetupNotice: React.FC<AccountSetupNoticeProps> = ({
         <View style={styles.issueList}>
           {environmentIssues.map((issue) => (
             <View key={issue.variable} style={styles.issueRow}>
-              <Text variant="overline" color="garnet" style={styles.issueVar}>
+              <Text variant="caption" color="signalText" weight="semiBold">
                 {issue.variable}
               </Text>
-              <Text variant="caption" color="ivoryMuted" style={styles.issueReason}>
+              <Text variant="caption" color="textMuted">
                 {issue.reason}
               </Text>
             </View>
@@ -55,51 +55,45 @@ export const AccountSetupNotice: React.FC<AccountSetupNoticeProps> = ({
         </View>
       )}
 
-      <Text variant="caption" color="ivoryMuted" style={styles.hint}>
+      <Text variant="caption" color="textMuted">
         {environmentHint}
       </Text>
 
       <View style={styles.steps}>
-        <Text variant="overline" color="ivorySecondary">
+        <Text variant="caption" color="text" weight="semiBold">
           To fix
         </Text>
         {environmentFixSteps.map((step) => (
-          <Text key={step} variant="caption" color="ivoryMuted" style={styles.step}>
+          <Text key={step} variant="caption" color="textMuted">
             — {step}
           </Text>
         ))}
       </View>
 
-      {onBack && (
-        <Button label="Back" variant="secondary" onPress={onBack} />
-      )}
+      {onBack && <Button label="Back" variant="secondary" onPress={onBack} />}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radii.card,
-    borderCurve: 'continuous',
+    backgroundColor: colors.surface,
+    borderRadius: radii.surface,
     borderWidth: 1,
-    borderColor: colors.garnet,
+    borderColor: colors.signalText,
     padding: spacing.md,
     gap: spacing.sm,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   pip: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.garnet,
-  },
-  lead: {
-    lineHeight: 22,
+    width: 8,
+    height: 8,
+    borderRadius: 2,
+    backgroundColor: colors.signalText,
   },
   issueList: {
     gap: spacing.xs,
@@ -107,22 +101,10 @@ const styles = StyleSheet.create({
   issueRow: {
     gap: 2,
   },
-  issueVar: {
-    letterSpacing: 1,
-  },
-  issueReason: {
-    lineHeight: 18,
-  },
-  hint: {
-    lineHeight: 18,
-  },
   steps: {
     gap: 2,
     paddingTop: spacing.xs,
-    borderTopWidth: StyleSheet.hairlineWidth || 1,
-    borderTopColor: colors.hairline,
-  },
-  step: {
-    lineHeight: 18,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
   },
 });

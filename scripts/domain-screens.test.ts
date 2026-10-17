@@ -82,10 +82,14 @@ test('getRunInDescriptiveStats exposes descriptive counts only', () => {
   assert.equal(stats.daysLogged, 4);
   assert.equal(stats.validDays, 3);
   assert.equal(stats.averageSleepMinutes, 450);
-  assert.equal(stats.afternoonCaffeineDays, 1);
-  assert.equal(stats.unknownCaffeineDays, 1);
+  assert.equal(stats.afterCutoffDays, 1);
+  assert.equal(stats.unknownExposureDays, 1);
+  // The caffeine-only names still mirror the exposure-neutral fields.
+  assert.equal(stats.afternoonCaffeineDays, stats.afterCutoffDays);
+  assert.equal(stats.unknownCaffeineDays, stats.unknownExposureDays);
   assert.deepEqual(Object.keys(stats).sort(), [
-    'afternoonCaffeineDays', 'averageSleepMinutes', 'daysLogged', 'unknownCaffeineDays', 'validDays',
+    'afterCutoffDays', 'afternoonCaffeineDays', 'averageSleepMinutes', 'daysLogged',
+    'unknownCaffeineDays', 'unknownExposureDays', 'validDays',
   ]);
 });
 

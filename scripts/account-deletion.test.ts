@@ -72,6 +72,25 @@ test('account deletion calls the server routine and reports a refusal with its c
   );
 });
 
+test('a stale schema that still locks finished days is reported as a missing database update', async () => {
+  // This is what an older project returns: the trigger has no account-delete bypass, so it
+  // refuses the day inside a completed test and the whole call rolls back.
+  await assert.rejects(
+    deleteUserAccount({
+      rpc() {
+        return Promise.resolve({
+          data: null,
+          error: {
+            message: 'Entry for date 2026-10-16 is locked because it belongs to a completed experiment.',
+            code: '23000',
+          },
+        }) as never;
+      },
+    }),
+    /missing an update this app needs, so nothing was deleted[.] Run supabase\/schema-all[.]sql/,
+  );
+});
+
 test('the schema lets account deletion through the locked-day rule', () => {
   const sql = fs.readFileSync(path.join(process.cwd(), 'supabase', 'schema-all.sql'), 'utf8');
   const lock = sql.slice(sql.indexOf('create or replace function public.check_entry_edit_lock()'));

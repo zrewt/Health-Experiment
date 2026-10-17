@@ -1,6 +1,7 @@
 import type { HomeState } from '../experiment/home-state';
 import type { ConditionRuleConfig } from '../engine';
 import { addDaysToLocalDate } from '../experiment/dates';
+import { experimentForRuleType, cutoffRuleText } from '../experiment/experiments';
 
 /**
  * Marker written into the notification payload so the app can recognise the reminders it
@@ -157,7 +158,8 @@ export interface ReminderScheduleInput {
  * What the assigned condition asks of the user, in the one place that maps a rule type to
  * copy. Returns null for anything unrecognised, which is the whole point: a rule this
  * build does not understand degrades to the generic reminder rather than announcing a
- * rule it cannot actually describe. A new experiment type needs one more case here.
+ * rule it cannot actually describe. Both shipped tests (caffeine and screens) are named
+ * below, and their words come from the experiment registry so they cannot drift apart.
  */
 export interface ConditionAction {
   cutoff: { hour: number; minute: number };
@@ -172,20 +174,25 @@ export interface ConditionAction {
 
 export function conditionAction(rule: ConditionRuleConfig | null | undefined): ConditionAction | null {
   if (!rule || typeof rule !== 'object') return null;
-  if ((rule as { type?: unknown }).type !== 'caffeine-cutoff') return null;
+  const type = (rule as { type?: unknown }).type;
+  if (type !== 'caffeine-cutoff' && type !== 'screen-cutoff') return null;
 
   const cutoffTime = (rule as { cutoffTime?: unknown }).cutoffTime;
   if (typeof cutoffTime !== 'string') return null;
   const cutoff = parseReminderTime(cutoffTime);
   if (!cutoff) return null;
 
+  const ruleText = cutoffRuleText(experimentForRuleType(type), cutoffTime);
+  // A sentence starts with a capital: "No caffeine after 12:00 today."
+  const sentence = ruleText.charAt(0).toUpperCase() + ruleText.slice(1);
+
   return {
     cutoff,
     leadMinutes: CUTOFF_LEAD_MINUTES,
     title: 'Last call',
-    body: `No caffeine after ${cutoffTime} today.`,
+    body: `${sentence} today.`,
     previewTitle: 'Heads up for tomorrow',
-    previewBody: `Tomorrow: no caffeine after ${cutoffTime}.`,
+    previewBody: `Tomorrow: ${ruleText}.`,
   };
 }
 
@@ -304,8 +311,8 @@ function conditionReminders(
  * The full reminder queue for a state: exactly one repeating morning reminder whenever a
  * daily log is expected, plus dated reminders on the days a rule actually applies.
  *
- * Nothing here is caffeine-specific except `conditionAction`, and an unrecognised rule
- * simply yields no day-specific reminders.
+ * Nothing here is exposure-specific: `conditionAction` maps the plan's rule to its words,
+ * and an unrecognised rule simply yields no day-specific reminders.
  */
 export function buildReminderSchedule(input: ReminderScheduleInput): ReminderSpec[] {
   const { state, today, plan = null } = input;

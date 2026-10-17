@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { StyleSheet, ScrollView, Alert, Platform, Share, View } from 'react-native';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import {
   Screen,
@@ -12,8 +12,10 @@ import {
   Button,
   Field,
   PrimaryNav,
+  Banner,
 } from '@/components/ui';
 import { spacing } from '@/design/tokens';
+import { sentenceCase } from '@/design/labels';
 import { useAuthStore } from '@/store/auth';
 import { supabase } from '@/lib/supabase';
 import {
@@ -26,12 +28,38 @@ import {
   getConsent,
   getSetup,
   listEntries,
+  getActivePlan,
+  listExperimentPlans,
   syncUnsyncedEntries,
   clearLocalUserData,
   type ConsentRecord,
   type ExperimentSetupRecord,
+  type StoredDailyEntry,
 } from '@/data/experiment-store';
+import type { StoredExperimentPlan } from '@/data/plan-persistence';
+import { buildEntriesCsv, buildUserDataJson } from '@/data/data-export';
 import { clearDailyReminder } from '@/notifications/reminders';
+import { experimentById, experimentForRuleType } from '@/experiment/experiments';
+
+function triggerWebDownload(filename: string, content: string, mimeType: string): boolean {
+  if (Platform.OS !== 'web' || typeof document === 'undefined' || typeof Blob === 'undefined') {
+    return false;
+  }
+  try {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -41,6 +69,8 @@ export default function SettingsScreen() {
 
   const [consent, setConsent] = useState<ConsentRecord | null>(null);
   const [setup, setSetup] = useState<ExperimentSetupRecord | null>(null);
+  const [entries, setEntries] = useState<StoredDailyEntry[]>([]);
+  const [plans, setPlans] = useState<StoredExperimentPlan[]>([]);
   const [unsyncedCount, setUnsyncedCount] = useState(0);
 
   const [newPassword, setNewPassword] = useState('');
@@ -50,6 +80,7 @@ export default function SettingsScreen() {
   const [signingOut, setSigningOut] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [clearingLocal, setClearingLocal] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -57,13 +88,26 @@ export default function SettingsScreen() {
   const loadSettings = useCallback(async () => {
     if (!user) return;
     try {
-      const [loadedConsent, loadedSetup, loadedEntries] = await Promise.all([
-        getConsent(user.id),
-        getSetup(user.id),
-        listEntries(user.id),
-      ]);
+      const [loadedConsent, loadedSetup, loadedEntries, loadedActive, loadedHistory] =
+        await Promise.all([
+          getConsent(user.id),
+          getSetup(user.id),
+          listEntries(user.id),
+          getActivePlan(user.id).catch(() => null),
+          listExperimentPlans(user.id).catch(() => []),
+        ]);
       setConsent(loadedConsent);
       setSetup(loadedSetup);
+      setEntries(loadedEntries);
+      const seen = new Set<string>();
+      const allPlans: StoredExperimentPlan[] = [];
+      for (const p of [loadedActive, ...loadedHistory]) {
+        if (p && !seen.has(p.id)) {
+          seen.add(p.id);
+          allPlans.push(p);
+        }
+      }
+      setPlans(allPlans);
       setUnsyncedCount(loadedEntries.filter((e) => e.synced === false).length);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load settings.');
@@ -77,6 +121,53 @@ export default function SettingsScreen() {
       void loadSettings();
     }, [loadSettings]),
   );
+
+  // The active test names its own rows and data bullets. A plan owns the test while one
+  // exists; otherwise the setup row does, which is what the setup empty state writes.
+  const activePlan =
+    plans.find((item) => item.status !== 'completed' && item.status !== 'cancelled') ?? null;
+  const experiment = activePlan
+    ? experimentForRuleType(activePlan.plan.definition.conditionRule.type)
+    : experimentById(setup?.experimentId);
+  // "screen use" rather than "screens", so the sentences below read naturally.
+  const exposureNote = experiment.id === 'screens-off-cutoff' ? 'screen use' : 'caffeine';
+
+  const handleExportData = async (format: 'json' | 'csv') => {
+    if (!user || exporting) return;
+    setExporting(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const dateStamp = new Date().toISOString().slice(0, 10);
+      const filename =
+        format === 'json' ? `aevum-log-${dateStamp}.json` : `aevum-log-${dateStamp}.csv`;
+      const content =
+        format === 'json'
+          ? buildUserDataJson({
+              exportedAt: new Date().toISOString(),
+              accountEmail: user.email ?? null,
+              setup,
+              consent,
+              entries,
+              plans,
+            })
+          : buildEntriesCsv(entries);
+
+      if (triggerWebDownload(filename, content, format === 'json' ? 'application/json' : 'text/csv')) {
+        setNotice(`Downloaded ${filename} (${entries.length} logged day${entries.length === 1 ? '' : 's'}).`);
+      } else {
+        await Share.share({
+          title: filename,
+          message: content,
+        });
+        setNotice(`Prepared ${filename} (${entries.length} logged day${entries.length === 1 ? '' : 's'}).`);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not export your log.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleUpdatePassword = async () => {
     if (!supabase || updatingPassword) return;
@@ -172,7 +263,7 @@ export default function SettingsScreen() {
   const handleDeleteAccount = async () => {
     if (!user || deletingAccount) return;
     const message =
-      'This deletes your account and every sleep and caffeine entry you have logged. It cannot be undone.';
+      'This deletes your account and every sleep, caffeine and screen entry you have logged. It cannot be undone.';
     const confirmed =
       Platform.OS === 'web'
         ? window.confirm(message)
@@ -237,30 +328,46 @@ export default function SettingsScreen() {
 
   return (
     <Screen>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <ScreenHeader
-          overline="PREFERENCES & ACCOUNT"
+          overline={sentenceCase('PREFERENCES & ACCOUNT')}
           title="Settings"
           notice="This app is not medical advice."
         />
 
         {error ? (
-          <Card tone="danger">
-            <Text color="garnet" accessibilityRole="alert">{error}</Text>
-          </Card>
+          <Banner
+            tone="error"
+            action={
+              unsyncedCount > 0 ? (
+                <Button
+                  label="Try sync again"
+                  variant="quiet"
+                  loading={syncing}
+                  onPress={() => void handleRetrySync()}
+                />
+              ) : (
+                <Button
+                  label="Export backup"
+                  variant="quiet"
+                  onPress={() => void handleExportData('json')}
+                />
+              )
+            }
+          >
+            {error}
+          </Banner>
         ) : null}
 
-        {notice ? (
-          <Card>
-            <Text variant="sub" color="champagneLight" accessibilityLiveRegion="polite">
-              {notice}
-            </Text>
-          </Card>
-        ) : null}
+        {notice ? <Banner tone="success">{notice}</Banner> : null}
 
         {/* 1. Reminders */}
-        <Card overline="REMINDERS">
-          <Row label="Your caffeine cutoff" value={setup?.cutoffTime ?? 'Not set'} />
+        <Card overline={sentenceCase('REMINDERS')}>
+          <Row label={`Your ${experiment.exposureWord} cutoff`} value={setup?.cutoffTime ?? 'Not set'} />
           <Row
             label="Sync"
             value={unsyncedCount === 0 ? 'All synced' : `${unsyncedCount} waiting`}
@@ -288,7 +395,7 @@ export default function SettingsScreen() {
         </Card>
 
         {/* 2. Account */}
-        <Card overline="ACCOUNT">
+        <Card overline={sentenceCase('ACCOUNT')}>
           <Row label="Signed in as" value={user?.email ?? 'Unknown'} />
 
           <Disclosure label="Change password" summary="Set a new password">
@@ -323,59 +430,78 @@ export default function SettingsScreen() {
           <NavRow label="Sign out" onPress={() => void handleSignOut()} />
         </Card>
 
-        {/* 3. Privacy & Data */}
-        <Card overline="YOUR DATA">
+        {/* 3. Privacy & Data (with one-tap export) */}
+        <Card tone="tint" overline={sentenceCase('YOUR DATA')}>
           <Row
             label="Consent"
             value={consent?.granted ? 'Agreed' : 'Not agreed'}
             emphasis={consent?.granted ? 'strong' : 'danger'}
           />
+          <Row label="Days in your log" value={String(entries.length)} />
+
+          <View style={styles.exportRow}>
+            <Button
+              label="Export JSON"
+              variant="secondary"
+              loading={exporting}
+              onPress={() => void handleExportData('json')}
+              style={styles.flexBtn}
+            />
+            <Button
+              label="Export CSV"
+              variant="secondary"
+              loading={exporting}
+              onPress={() => void handleExportData('csv')}
+              style={styles.flexBtn}
+            />
+          </View>
+
           <Disclosure label="How your data is stored" summary="What we keep and where">
-            <Text variant="caption" color="ivorySecondary">
-              • Your sleep and caffeine times are used only to run your own sleep test.
+            <Text variant="caption" color="textMuted">
+              • {`Your sleep and ${exposureNote} times are used only to run your own sleep test.`}
             </Text>
-            <Text variant="caption" color="ivorySecondary">
+            <Text variant="caption" color="textMuted">
               • Entries are cached on your device for offline reliability and synced to your private account.
             </Text>
-            <Text variant="caption" color="ivorySecondary">
+            <Text variant="caption" color="textMuted">
               • Reminder preferences stay on this device and can be turned off at any time.
             </Text>
-            <Text variant="caption" color="champagne">
+            <Text variant="caption" color="accent">
               This app is not medical advice.
             </Text>
           </Disclosure>
         </Card>
 
         {/* 4. Help */}
-        <Card overline="HELP">
+        <Card overline={sentenceCase('HELP')}>
           <Disclosure label="Questions people ask" summary="Dates, missing fields and locked days">
-            <Text variant="sub" color="champagneLight" weight="semiBold">
+            <Text variant="sub" color="accent" weight="semiBold">
               Why does my check-in use yesterday’s date?
             </Text>
-            <Text variant="caption" color="ivorySecondary">
-              Yesterday’s caffeine goes with the sleep you just woke up from. Logging this morning answers for last night.
+            <Text variant="caption" color="textMuted">
+              Yesterday’s {exposureNote} goes with the sleep you just woke up from. Logging this morning answers for last night.
             </Text>
 
-            <Text variant="sub" color="champagneLight" weight="semiBold">
+            <Text variant="sub" color="accent" weight="semiBold">
               What if I skip a field or forget a day?
             </Text>
-            <Text variant="caption" color="ivorySecondary">
-              A blank field stays blank. It never becomes zero sleep or no caffeine, and you can edit yesterday and the 3 days before it.
+            <Text variant="caption" color="textMuted">
+              A blank field stays blank. It never becomes zero sleep or {exposureNote === 'caffeine' ? 'no caffeine' : 'no screens'}, and you can edit yesterday and the 3 days before it.
             </Text>
 
-            <Text variant="sub" color="champagneLight" weight="semiBold">
+            <Text variant="sub" color="accent" weight="semiBold">
               Why can’t I change some days?
             </Text>
-            <Text variant="caption" color="ivorySecondary">
+            <Text variant="caption" color="textMuted">
               Days lock once you have saved what we found for a test. That keeps the saved reading matched to your log.
             </Text>
           </Disclosure>
         </Card>
 
         {/* 5. Delete */}
-        <Card tone="danger" overline="DELETE">
-          <Text variant="caption" color="ivoryMuted">
-            Clear what is stored on this device, or delete your account and all your records for good.
+        <Card tone="danger" overline={sentenceCase('DELETE')}>
+          <Text variant="caption" color="textMuted">
+            Export a copy of your log above before deleting if you want to keep it. Clearing this device removes only local cache; deleting your account removes all records for good.
           </Text>
           <Button
             label="Clear this device"
@@ -400,4 +526,11 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { gap: spacing.section, paddingBottom: spacing.section },
+  exportRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  flexBtn: {
+    flex: 1,
+  },
 });

@@ -1,3 +1,4 @@
+import { CURRENT_CONSENT_VERSION } from '../src/experiment/consent';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { generateSchedule } from '../src/engine';
@@ -86,7 +87,7 @@ function memory(): PlanStorage & { values: Map<string, string> } {
 
 test('router transitions across last exposure date E, E+1, and completed status', () => {
   const plan = makePlan('2026-02-01', 14); // schedule: 2026-02-01 to 2026-02-14 (E = 2026-02-14)
-  const defaultConsent = { userId: 'u1', consentType: 'health-data' as const, policyVersion: 'v1', granted: true, createdAt: '' };
+  const defaultConsent = { userId: 'u1', consentType: 'health-data' as const, policyVersion: CURRENT_CONSENT_VERSION, granted: true, createdAt: '' };
   const defaultSetup = { experimentId: 'caffeine-cutoff', cutoffTime: '12:00', screeningAnswer: 'usually' as const, runInStartDate: '2026-01-01' };
 
   // On last exposure date E (2026-02-14): plan_active
@@ -347,7 +348,7 @@ test('failed result persistence leaves plan uncompleted and caches no result', a
 });
 
 test('cancelled plans do not transition to result ready or produce results', () => {
-  const defaultConsent = { userId: 'u1', consentType: 'health-data' as const, policyVersion: 'v1', granted: true, createdAt: '' };
+  const defaultConsent = { userId: 'u1', consentType: 'health-data' as const, policyVersion: CURRENT_CONSENT_VERSION, granted: true, createdAt: '' };
   const defaultSetup = { experimentId: 'caffeine-cutoff', cutoffTime: '12:00', screeningAnswer: 'usually' as const, runInStartDate: '2026-01-01' };
   const plan = makePlan('2026-02-01', 14, '12:00', 'cancelled');
 
@@ -438,17 +439,18 @@ test('getResultExplanationModel preserves engine statement verbatim and explains
   assert.match(explanation.estimateExplanation.intervalText, /8 to 28 minutes/);
   assert.equal(explanation.contributingDays.analyzedTotal, 3);
   assert.equal(explanation.contributingDays.missingSleepDays, 1);
-  assert.equal(explanation.contributingDays.unknownCaffeineDays, 1);
+  assert.equal(explanation.contributingDays.unknownExposureDays, 1);
+  assert.equal(explanation.contributingDays.exposureWord, 'caffeine');
   assert.equal(explanation.underlyingDays.length, 4);
   assert.equal(explanation.underlyingDays[1].contributedToAnalysis, false);
   assert.equal(explanation.underlyingDays[1].sleepText, 'Not logged');
-  assert.equal(explanation.underlyingDays[3].caffeineText, CAFFEINE_TIME_UNREADABLE_MARKER);
+  assert.equal(explanation.underlyingDays[3].exposureText, CAFFEINE_TIME_UNREADABLE_MARKER);
   assert.ok(explanation.whatItTellsYou.doesTell.length >= 2);
   assert.ok(explanation.whatItTellsYou.doesNotTell.length >= 2);
 });
 
 test('getExperimentLifecycleModel lists guide steps, saved results, and next cycle eligibility', () => {
-  const defaultConsent = { userId: 'u1', consentType: 'health-data' as const, policyVersion: 'v1', granted: true, createdAt: '' };
+  const defaultConsent = { userId: 'u1', consentType: 'health-data' as const, policyVersion: CURRENT_CONSENT_VERSION, granted: true, createdAt: '' };
   const defaultSetup = { experimentId: 'caffeine-cutoff', cutoffTime: '13:30', screeningAnswer: 'usually' as const, runInStartDate: '2026-01-01' };
   const completedPlan: StoredExperimentPlan = {
     ...makePlan('2026-02-01', 14, '13:30', 'completed'),

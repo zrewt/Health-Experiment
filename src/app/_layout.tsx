@@ -42,12 +42,14 @@ export default function RootLayout() {
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="index" />
           <Stack.Screen name="setup-consent" />
+          <Stack.Screen name="allow-notifications" options={{ animation: 'none' }} />
           <Stack.Screen name="run-in" options={{ animation: 'none' }} />
           <Stack.Screen name="feasibility" options={{ animation: 'none' }} />
           <Stack.Screen name="daily-instruction" options={{ animation: 'none' }} />
           <Stack.Screen name="result" options={{ animation: 'none' }} />
           <Stack.Screen name="journal" options={{ animation: 'none' }} />
           <Stack.Screen name="experiment" options={{ animation: 'none' }} />
+          <Stack.Screen name="choose-test" options={{ animation: 'none' }} />
           <Stack.Screen name="settings" options={{ animation: 'none' }} />
           <Stack.Screen name="reminder-settings" options={{ animation: 'none' }} />
           {typeof __DEV__ !== 'undefined' && __DEV__ ? (

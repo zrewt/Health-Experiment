@@ -3,39 +3,20 @@ import { Text as RNText, TextStyle, TextProps as RNTextProps } from 'react-nativ
 import { colors, typography } from '@/design/tokens';
 
 export type TextVariant =
-  // Semantic scale
   | 'display'
   | 'title'
   | 'heading'
-  | 'body'
-  | 'caption'
-  // Legacy names, mapped onto the semantic steps until part 2 migrates the rest
-  | 'overline'
-  | 'sub'
   | 'lead'
-  | 'titleSmall'
-  | 'titleMedium'
-  | 'titleLarge'
-  | 'displaySmall'
-  | 'displayLarge';
+  | 'body'
+  | 'sub'
+  | 'caption';
 
 export type TextColor =
-  // Semantic
   | 'text'
   | 'textMuted'
   | 'accent'
   | 'signalText'
-  | 'surface'
-  // Legacy aliases
-  | 'ground'
-  | 'ivory'
-  | 'ivorySecondary'
-  | 'ivoryMuted'
-  | 'ivorySubtle'
-  | 'champagne'
-  | 'champagneLight'
-  | 'champagneMuted'
-  | 'garnet';
+  | 'surface';
 
 export interface TextProps extends RNTextProps {
   variant?: TextVariant;
@@ -52,18 +33,12 @@ export interface TextProps extends RNTextProps {
 /** Per-variant defaults, so a screen only has to say what differs. */
 const DEFAULTS: Record<TextVariant, { weight: TextProps['weight']; letterSpacing?: number }> = {
   display: { weight: 'semiBold', letterSpacing: -0.6 },
-  displaySmall: { weight: 'semiBold', letterSpacing: -0.6 },
-  displayLarge: { weight: 'semiBold', letterSpacing: -0.6 },
   title: { weight: 'semiBold', letterSpacing: -0.2 },
-  titleLarge: { weight: 'semiBold', letterSpacing: -0.2 },
-  titleMedium: { weight: 'semiBold', letterSpacing: -0.2 },
   heading: { weight: 'semiBold' },
-  titleSmall: { weight: 'semiBold' },
   lead: { weight: 'regular' },
   body: { weight: 'regular' },
   sub: { weight: 'regular' },
   caption: { weight: 'medium' },
-  overline: { weight: 'medium' },
 };
 
 export const Text: React.FC<TextProps> = ({
@@ -77,7 +52,7 @@ export const Text: React.FC<TextProps> = ({
 }) => {
   const defaults = DEFAULTS[variant] ?? DEFAULTS.body;
   const resolvedWeight = weight ?? defaults.weight ?? 'regular';
-  const textColor = (colors as Record<string, string>)[color] ?? colors.text;
+  const textColor = colors[color] ?? colors.text;
   const fontSize = typography.sizes[variant] ?? typography.sizes.body;
   const lineHeight = typography.lineHeights[variant] ?? typography.lineHeights.body;
 

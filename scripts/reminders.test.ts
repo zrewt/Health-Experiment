@@ -592,3 +592,8 @@ test('a 14-day plan with all days assigned schedules within the cap and never du
     assert.ok(count <= MAX_REMINDERS_PER_DAY, `${date} carried ${count}, cap is ${MAX_REMINDERS_PER_DAY}`);
   }
 });
+
+test('onboarding reminders land on the test picker, not a defaulted test', () => {
+  assert.equal(routeForHomeState('needs_consent'), '/choose-test');
+  assert.equal(routeForHomeState('needs_setup'), '/choose-test');
+});

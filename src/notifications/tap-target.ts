@@ -8,8 +8,9 @@ import type { HomeState } from '../experiment/home-state';
  * keeps it importable by the tests, and the navigation site casts once.
  */
 export const ROUTE_FOR_HOME_STATE: Record<HomeState, string> = {
-  needs_consent: '/setup-consent',
-  needs_setup: '/setup-consent',
+  // Onboarding starts by choosing a test, so no default test is chosen for the user.
+  needs_consent: '/choose-test',
+  needs_setup: '/choose-test',
   run_in: '/run-in',
   feasibility_ready: '/feasibility',
   plan_scheduled: '/daily-instruction',
