@@ -126,7 +126,7 @@ function isLowPower(result: ResultViewModel): boolean {
 }
 
 function analyzedDays(result: ResultViewModel): number {
-  return result.daysAnalyzed.intervention + result.daysAnalyzed.control;
+  return (result.daysAnalyzed?.intervention ?? 0) + (result.daysAnalyzed?.control ?? 0);
 }
 
 /** The opening every paragraph shares: days in the test, nights logged, plan followed. */
@@ -177,7 +177,8 @@ export function buildPlainResult(input: PlainResultInputs): PlainResult {
   }
 
   const logged = Math.max(0, Math.min(daysLogged, plannedDays));
-  const kept = result.adherence.counts.ADHERENT;
+  // A stored snapshot from an older build can be missing adherence: read it as unknown.
+  const kept = result.adherence?.counts?.ADHERENT ?? 0;
   const low = result.interval ? result.interval[0] : null;
   const high = result.interval ? result.interval[1] : null;
   const analyzed = analyzedDays(result);

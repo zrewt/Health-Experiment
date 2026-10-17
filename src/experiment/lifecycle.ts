@@ -10,6 +10,12 @@ import {
   readCaffeineTime,
 } from './caffeine-time';
 import { runInMinValidDays } from './config';
+import {
+  experimentForRuleType,
+  experimentById,
+  exposureForExperimentId,
+  type ExperimentInfo,
+} from './experiments';
 
 export interface GuideStep {
   stepNumber: 1 | 2 | 3;
@@ -38,6 +44,8 @@ export interface ExperimentLifecycleModel {
   medicalNotice: 'This app is not medical advice.';
   guideSteps: readonly [GuideStep, GuideStep, GuideStep];
   detail: {
+    experimentId: string;
+    exposureWord: string;
     name: string;
     purpose: string;
     cutoffTime: string;
@@ -56,7 +64,8 @@ export interface UnderlyingResultDay {
   assignedCondition: 'intervention' | 'control';
   assignedLabel: string;
   sleepText: string;
-  caffeineText: string;
+  /** Last exposure of the test (caffeine or screens), in words. */
+  exposureText: string;
   contributedToAnalysis: boolean;
 }
 
@@ -78,7 +87,8 @@ export interface ResultExplanationModel {
     assignedIntervention: number;
     assignedControl: number;
     missingSleepDays: number;
-    unknownCaffeineDays: number;
+    unknownExposureDays: number;
+    exposureWord: string;
     excludedDays: number;
     adherentDays: number;
     contaminatedDays: number;
@@ -90,7 +100,7 @@ export interface ResultExplanationModel {
   underlyingDays: UnderlyingResultDay[];
 }
 
-function extractCutoffTime(plan: ExperimentPlan): string {
+export function extractCutoffTime(plan: ExperimentPlan): string {
   const rule = plan.definition.conditionRule;
   if (rule && 'cutoffTime' in rule && typeof (rule as { cutoffTime?: unknown }).cutoffTime === 'string') {
     return (rule as { cutoffTime: string }).cutoffTime;
@@ -98,26 +108,30 @@ function extractCutoffTime(plan: ExperimentPlan): string {
   return '12:00';
 }
 
-export const EXPERIMENT_GUIDE_STEPS: readonly [GuideStep, GuideStep, GuideStep] = [
-  {
-    stepNumber: 1,
-    title: '1. Getting to know your sleep',
-    description:
-      'Log each morning how long you slept and when you last had caffeine. Keep your usual habits. After 14 nights we check whether a test can show a real difference.',
-  },
-  {
-    stepNumber: 2,
-    title: '2. The test itself',
-    description:
-      'Days come in pairs, picked at random: a cutoff day (no caffeine after your cutoff time) or a normal day. The app shows you one day at a time.',
-  },
-  {
-    stepNumber: 3,
-    title: '3. What we found',
-    description:
-      'On the morning after your last day, log your night and lock the test to see what we found.',
-  },
-];
+/** The three steps in the app's words, rewritten for the test the user is running. */
+export function guideStepsFor(info: ExperimentInfo): readonly [GuideStep, GuideStep, GuideStep] {
+  return [
+    {
+      stepNumber: 1,
+      title: '1. Getting to know your sleep',
+      description: `Log each morning how long you slept and ${info.exposureLogPhrase}. Keep your usual habits. After 14 nights we check whether a test can show a real difference.`,
+    },
+    {
+      stepNumber: 2,
+      title: '2. The test itself',
+      description: `Days come in pairs, picked at random: a cutoff day (${info.cutoffRule} after your cutoff time) or a normal day. The app shows you one day at a time.`,
+    },
+    {
+      stepNumber: 3,
+      title: '3. What we found',
+      description:
+        'On the morning after your last day, log your night and lock the test to see what we found.',
+    },
+  ];
+}
+
+/** The original caffeine steps, kept for anything that still reads them directly. */
+export const EXPERIMENT_GUIDE_STEPS = guideStepsFor(experimentById('caffeine-cutoff'));
 
 export function getExperimentLifecycleModel(inputs: {
   consent: ConsentRecord | null;
@@ -141,11 +155,19 @@ export function getExperimentLifecycleModel(inputs: {
     today,
   });
 
+  // The test the user is running: the active plan owns it while one exists, otherwise the
+  // setup row does. Every label below is read from that test, never assumed to be caffeine.
+  const experiment = activePlan
+    ? experimentForRuleType(activePlan.plan.definition.conditionRule.type)
+    : experimentById(setup?.experimentId);
+  const exposure = exposureForExperimentId(experiment.id);
+  const exposureWord = exposure === 'screens' ? 'screens' : 'caffeine';
+
   const cutoffTime = activePlan
     ? extractCutoffTime(activePlan.plan)
-    : setup?.cutoffTime ?? '12:00';
+    : setup?.cutoffTime ?? experiment.defaultCutoff;
 
-  const validDays = validRunInDays(entries, allPlans, today);
+  const validDays = validRunInDays(entries, allPlans, today, exposure);
 
   let durationText = 'Chosen when you start (42, 56, 70 or 84 days)';
   if (activePlan) {
@@ -164,15 +186,15 @@ export function getExperimentLifecycleModel(inputs: {
   switch (state) {
     case 'needs_consent':
       stageLabel = 'Not set up';
-      stageDescription = 'Read how your log is used, then agree.';
-      nextStepLabel = 'Set up';
-      nextStepRoute = '/setup-consent';
+      stageDescription = 'Pick a test, read how your log is used, then agree.';
+      nextStepLabel = 'Choose a test';
+      nextStepRoute = '/choose-test';
       break;
     case 'needs_setup':
       stageLabel = 'Not set up';
-      stageDescription = 'Pick your daily caffeine cutoff time.';
-      nextStepLabel = 'Set up';
-      nextStepRoute = '/setup-consent';
+      stageDescription = 'Pick the test you want to run first.';
+      nextStepLabel = 'Choose a test';
+      nextStepRoute = '/choose-test';
       break;
     case 'run_in':
       stageLabel = `Getting to know your sleep (${validDays} of ${runInMinValidDays} nights)`;
@@ -257,10 +279,18 @@ export function getExperimentLifecycleModel(inputs: {
       cutoffTime: planCutoff,
       status: item.status,
       statusLabel,
-      verdictHeading: res ? (VERDICT_HEADINGS[res.verdictLabel] ?? res.verdictLabel) : null,
-      statement: res ? res.statement : null,
-      conservativeEstimate: res ? res.conservativeEstimate : null,
-      daysAnalyzed: res ? res.daysAnalyzed.intervention + res.daysAnalyzed.control : null,
+      // A snapshot saved by an older build may lack whole sections, so each field is
+      // read on its own rather than trusting the shape of the stored JSON.
+      verdictHeading: res?.verdictLabel
+        ? (VERDICT_HEADINGS[res.verdictLabel] ?? res.verdictLabel)
+        : null,
+      statement: typeof res?.statement === 'string' ? res.statement : null,
+      conservativeEstimate: typeof res?.conservativeEstimate === 'number'
+        ? res.conservativeEstimate
+        : null,
+      daysAnalyzed: res?.daysAnalyzed
+        ? res.daysAnalyzed.intervention + res.daysAnalyzed.control
+        : null,
       evaluatedAt: res?.evaluatedAt ?? item.completed_at ?? null,
     };
   });
@@ -269,11 +299,12 @@ export function getExperimentLifecycleModel(inputs: {
     today,
     state,
     medicalNotice: 'This app is not medical advice.',
-    guideSteps: EXPERIMENT_GUIDE_STEPS,
+    guideSteps: guideStepsFor(experiment),
     detail: {
-      name: 'Caffeine cutoff',
-      purpose:
-        'See whether your sleep is different on cutoff days.',
+      experimentId: experiment.id,
+      exposureWord,
+      name: experiment.name,
+      purpose: 'See whether your sleep is different on cutoff days.',
       cutoffTime,
       durationText,
       stageLabel,
@@ -293,10 +324,20 @@ export function getResultExplanationModel(
 ): ResultExplanationModel {
   const verdictHeading = VERDICT_HEADINGS[result.verdictLabel] ?? result.verdictLabel;
   const cutoffTime = extractCutoffTime(plan);
+  const experiment = experimentForRuleType(plan.definition.conditionRule.type);
+  const exposureWord = experiment.exposureWord;
+  const isScreens = experiment.id === 'screens-off-cutoff';
+  const exposureTextFor = (time: string): string =>
+    isScreens ? `Last screen ${time}` : `Last caffeine ${time}`;
 
   const assignedIntervention = plan.schedule.filter(s => s.condition === 'intervention').length;
   const assignedControl = plan.schedule.filter(s => s.condition === 'control').length;
-  const analyzedTotal = result.daysAnalyzed.intervention + result.daysAnalyzed.control;
+  const analyzedIntervention = result.daysAnalyzed?.intervention ?? 0;
+  const analyzedControl = result.daysAnalyzed?.control ?? 0;
+  const analyzedTotal = analyzedIntervention + analyzedControl;
+  const adherentDays = result.adherence?.counts?.ADHERENT ?? 0;
+  const contaminatedDays = result.adherence?.counts?.CONTAMINATED ?? 0;
+  const reasons = Array.isArray(result.reasons) ? [...result.reasons] : [];
 
   const conservativeEstimateText =
     result.conservativeEstimate !== null
@@ -318,13 +359,16 @@ export function getResultExplanationModel(
     const entry = byDate.get(slot.date);
     const sleepMinutes = entry?.sleepMinutes ?? null;
     const sleepText = formatSleepDuration(sleepMinutes);
-    const parsedCaffeine = readCaffeineTime(entry?.lastCaffeineTime ?? null);
-    let caffeineText = 'Not logged';
-    if (parsedCaffeine.kind === 'none') caffeineText = 'No caffeine';
-    else if (parsedCaffeine.kind === 'valid' && parsedCaffeine.time) {
-      caffeineText = `Last caffeine ${parsedCaffeine.time}`;
-    } else if (parsedCaffeine.kind === 'unreadable') {
-      caffeineText = CAFFEINE_TIME_UNREADABLE_MARKER;
+    const rawExposure = isScreens
+      ? entry?.lastScreenTime ?? null
+      : entry?.lastCaffeineTime ?? null;
+    const parsedExposure = readCaffeineTime(rawExposure);
+    let exposureText = 'Not logged';
+    if (parsedExposure.kind === 'none') exposureText = isScreens ? 'No screens' : 'No caffeine';
+    else if (parsedExposure.kind === 'valid' && parsedExposure.time) {
+      exposureText = exposureTextFor(parsedExposure.time);
+    } else if (parsedExposure.kind === 'unreadable') {
+      exposureText = CAFFEINE_TIME_UNREADABLE_MARKER;
     }
 
     return {
@@ -335,7 +379,7 @@ export function getResultExplanationModel(
           ? `Cutoff day (${cutoffTime})`
           : 'Normal day',
       sleepText,
-      caffeineText,
+      exposureText,
       contributedToAnalysis: sleepMinutes !== null,
     };
   });
@@ -344,7 +388,7 @@ export function getResultExplanationModel(
     medicalNotice: 'This app is not medical advice.',
     verdictHeading,
     statement: result.statement,
-    reasons: [...result.reasons],
+    reasons,
     estimateExplanation: {
       conservativeEstimateText,
       intervalText,
@@ -353,15 +397,16 @@ export function getResultExplanationModel(
     contributingDays: {
       totalScheduled: plan.chosenDuration,
       analyzedTotal,
-      analyzedIntervention: result.daysAnalyzed.intervention,
-      analyzedControl: result.daysAnalyzed.control,
+      analyzedIntervention,
+      analyzedControl,
       assignedIntervention,
       assignedControl,
       missingSleepDays: result.missingOutcomeDays,
-      unknownCaffeineDays: result.unknownExposureDays,
+      unknownExposureDays: result.unknownExposureDays,
+      exposureWord,
       excludedDays: result.daysExcluded,
-      adherentDays: result.adherence.counts.ADHERENT,
-      contaminatedDays: result.adherence.counts.CONTAMINATED,
+      adherentDays,
+      contaminatedDays,
     },
     whatItTellsYou: {
       doesTell: [
@@ -369,7 +414,9 @@ export function getResultExplanationModel(
         `How many days went into it (${analyzedTotal} of ${plan.chosenDuration}) and how often the rule was followed.`,
       ],
       doesNotTell: [
-        'It cannot tell you why your sleep differed. Caffeine is not separated from everything else in your day.',
+        `It cannot tell you why your sleep differed. ${
+          isScreens ? 'Screens are' : 'Caffeine is'
+        } not separated from everything else in your day.`,
         'It is a summary of your own log, not a diagnosis or treatment advice.',
       ],
     },

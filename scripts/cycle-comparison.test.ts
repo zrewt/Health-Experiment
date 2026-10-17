@@ -135,6 +135,23 @@ test('unclear tests say they are too noisy to compare', () => {
   );
 });
 
+test('a partial legacy result never breaks Past tests', () => {
+  const legacy = finishedPlan('a', '2026-08-01', '12:00', 0, null);
+  // A snapshot stored by an older build may be missing whole sections.
+  (legacy as { result: unknown }).result = { verdictLabel: 'SUPPORTED' };
+  const newer = finishedPlan('b', '2026-09-01', '12:00', 30, 10);
+
+  const comparison = buildCycleComparison([legacy, newer]);
+  assert.ok(comparison);
+  assert.equal(comparison.rows[0].ruleFollowedDays, null);
+  assert.equal(comparison.rows[0].sleepEstimateMinutes, null);
+  assert.ok(
+    comparison.sentences.includes(
+      'A single sleep estimate could not be worked out for one of these tests, so they cannot be compared on sleep.',
+    ),
+  );
+});
+
 test('no comparison sentence ever shows a bare number or an unlabelled unit', () => {
   const comparison = buildCycleComparison([
     finishedPlan('a', '2026-08-01', '12:00', 30, 75),

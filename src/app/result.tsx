@@ -383,15 +383,15 @@ export default function ResultScreen() {
               />
               <Row
                 label="Nights not logged"
-                value={String(res.missingOutcomeDays)}
+                value={String(res.missingOutcomeDays ?? 0)}
                 emphasis="muted"
               />
               <Row
                 label={isScreens ? 'Screen time not logged' : 'Caffeine time not logged'}
-                value={String(res.unknownExposureDays)}
+                value={String(res.unknownExposureDays ?? 0)}
                 emphasis="muted"
               />
-              <Row label="Days left out" value={String(res.daysExcluded)} emphasis="muted" />
+              <Row label="Days left out" value={String(res.daysExcluded ?? 0)} emphasis="muted" />
 
               <Divider />
               <Text variant="caption" color="textMuted">{sentenceCase('HOW OFTEN YOU KEPT TO IT')}</Text>
@@ -399,10 +399,10 @@ export default function ResultScreen() {
                   CONTAMINATED = a normal day where the exposure was skipped or early, so the
                   label must not claim the exposure happened after the cutoff. */}
               <Text>
-                Kept the rule on {res.adherence.counts.ADHERENT} of {intDays} cutoff days.
+                Kept the rule on {res.adherence?.counts?.ADHERENT ?? 0} of {intDays} cutoff days.
               </Text>
               <Text>
-                {noExposureOnNormalDay} on {res.adherence.counts.CONTAMINATED} of {ctrlDays} normal days.
+                {noExposureOnNormalDay} on {res.adherence?.counts?.CONTAMINATED ?? 0} of {ctrlDays} normal days.
               </Text>
 
               {res.limitations && res.limitations.length > 0 ? (

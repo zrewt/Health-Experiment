@@ -72,6 +72,10 @@ function cautiousReading(minutes: number): string {
 function rowFor(item: StoredExperimentPlan): CycleComparisonRow {
   const result = item.result ?? null;
   const experiment = experimentOf(item);
+  // A snapshot saved by an older build may be missing whole sections. Read each field on
+  // its own so a partial result shows "Not recorded" instead of breaking Past tests.
+  const followed = result?.adherence?.counts?.ADHERENT;
+  const estimate = result?.conservativeEstimate;
   return {
     id: item.id,
     experimentId: experiment.id,
@@ -79,9 +83,11 @@ function rowFor(item: StoredExperimentPlan): CycleComparisonRow {
     startDate: item.plan.startDate,
     cutoffTime: cutoffOf(item),
     plannedDays: item.plan.chosenDuration,
-    ruleFollowedDays: result ? result.adherence.counts.ADHERENT : null,
-    sleepEstimateMinutes: result ? result.conservativeEstimate : null,
-    verdictHeading: result ? (VERDICT_HEADINGS[result.verdictLabel] ?? result.verdictLabel) : null,
+    ruleFollowedDays: typeof followed === 'number' ? followed : null,
+    sleepEstimateMinutes: typeof estimate === 'number' && Number.isFinite(estimate) ? estimate : null,
+    verdictHeading: result?.verdictLabel
+      ? (VERDICT_HEADINGS[result.verdictLabel] ?? result.verdictLabel)
+      : null,
     comparable: result ? isComparable(result) : false,
   };
 }
