@@ -13,9 +13,17 @@ const config: ExpoConfig = {
   // Light UI in the OS: keyboard appearance, alerts and the status bar follow this.
   userInterfaceStyle: 'light',
   backgroundColor: tokens.colors.background,
+  // The SplitDisc mark on the Mist background (generated from the design tokens).
+  icon: './assets/icon.png',
   androidStatusBar: {
     barStyle: 'dark-content',
     backgroundColor: tokens.colors.background,
+  },
+  android: {
+    adaptiveIcon: {
+      foregroundImage: './assets/adaptive-icon.png',
+      backgroundColor: tokens.colors.background,
+    },
   },
   ios: {
     supportsTablet: false,
@@ -25,7 +33,14 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     'expo-font',
-    ['expo-splash-screen', { backgroundColor: tokens.colors.background }],
+    [
+      'expo-splash-screen',
+      {
+        backgroundColor: tokens.colors.background,
+        image: './assets/splash-icon.png',
+        imageWidth: 200,
+      },
+    ],
     // Local daily check-in reminders. No `icon` option: the plugin's icon is Android-only
     // and needs a 96x96 all-white asset, which this project does not ship, so the tray
     // icon falls back to the default rather than pointing at a file that does not exist.
