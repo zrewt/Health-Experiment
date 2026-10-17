@@ -73,6 +73,10 @@ create table if not exists public.experiment_entries (
 alter table public.experiment_entries
   add column if not exists is_sample boolean not null default false;
 
+-- Screens-off cutoff test: last screen use, 'HH:MM' | 'none' | null. Null for caffeine-only days.
+alter table public.experiment_entries
+  add column if not exists last_screen_time text;
+
 alter table public.experiment_entries enable row level security;
 
 drop policy if exists "Users can view own experiment entries" on public.experiment_entries;

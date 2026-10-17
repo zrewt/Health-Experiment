@@ -90,12 +90,8 @@
   ],
   "engine": [
     {
-      "path": "src/engine/README.md",
-      "sha256": "192e647b28c68ef76a11adbace3afd37bd92a35509a649eba505b724303e0dab"
-    },
-    {
       "path": "src/engine/adherence.ts",
-      "sha256": "788d13221101a5e604ddb48c22d2ff9d073c3b92a40a7f797dc1b323817b344d"
+      "sha256": "44a1234dfba4216da12de5e6efc2eea278b1d4cf47dc3b439ab8d42ae2deea94"
     },
     {
       "path": "src/engine/analysis.ts",
@@ -115,11 +111,19 @@
     },
     {
       "path": "src/engine/index.ts",
-      "sha256": "7b8ca6c5aa79680c9a1a8759951acb142b81df1991ca52feeaf66fd9f1fc49a6"
+      "sha256": "6196876c83b5055412fa2db3e3863f8d67cdc3d4859e2b2a3ee9cf9afcccbd41"
+    },
+    {
+      "path": "src/engine/README.md",
+      "sha256": "192e647b28c68ef76a11adbace3afd37bd92a35509a649eba505b724303e0dab"
     },
     {
       "path": "src/engine/schedule.ts",
       "sha256": "64f7d1aa5746dad5e6bc6446c09b4f14080f0120eb22bb90af3f26c9a349c1ce"
+    },
+    {
+      "path": "src/engine/screen-cutoff.ts",
+      "sha256": "cf1c412d7ab7b31728d7c03e6c1e4503d9406905041c104b6f7373e0dc55ea21"
     },
     {
       "path": "src/engine/types.ts",
@@ -128,6 +132,17 @@
     {
       "path": "src/engine/verdict.ts",
       "sha256": "8316f7e35074fb9b17c883c156b3dcd2eca8887f7dabf83138ee18ce2dc3bc25"
+    }
+  ],
+  "reenfrozen": [
+    {
+      "date": "2026-10-17",
+      "reason": "Screens-off cutoff: added screen-cutoff exposure rule and eligibility check; dispatch branch in adherence.ts; export in index.ts. Caffeine logic unchanged.",
+      "files": [
+        "src/engine/adherence.ts",
+        "src/engine/index.ts",
+        "src/engine/screen-cutoff.ts"
+      ]
     }
   ]
 }

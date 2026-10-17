@@ -1,20 +1,44 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, View, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, ScreenHeader, Card, NavRow, Text, Button, Details } from '@/components/ui';
+import {
+  Screen,
+  ScreenHeader,
+  Card,
+  NavRow,
+  Text,
+  Button,
+  Details,
+  Banner,
+  SplitDisc,
+  type DiscTone,
+} from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
+import { sentenceCase } from '@/design/labels';
 import { useAuthStore } from '@/store/auth';
 import {
-  getSetup, getConsent, listEntries, getActivePlan, getPendingPlan, savePlan, saveNextCheckDate,
+  getSetup,
+  getConsent,
+  listEntries,
+  getActivePlan,
+  getPendingPlan,
+  savePlan,
+  saveNextCheckDate,
   listExperimentPlans,
   type ExperimentSetupRecord,
 } from '@/data/experiment-store';
-import { computeBaseline, assessFeasibility, entriesForRunIn } from '@/experiment/adapter';
+import { computeExperimentBaseline, assessFeasibility, entriesForRunIn } from '@/experiment/adapter';
+import { exposureForExperimentId, experimentById } from '@/experiment/experiments';
 import { getFeasibilityScreenState } from '@/experiment/view-model';
 import { getStartAttempt, isFeasibilityDue } from '@/experiment/start-attempt';
 import { getToday } from '@/experiment/clock';
 import { addDaysToLocalDate } from '@/experiment/dates';
-import type { BaselineSummary, ExperimentPlan, FeasibilityScreenState, FeasibilityViewModel } from '@/experiment/types';
+import type {
+  BaselineSummary,
+  ExperimentPlan,
+  FeasibilityScreenState,
+  FeasibilityViewModel,
+} from '@/experiment/types';
 
 interface Assessment {
   setup: ExperimentSetupRecord;
@@ -25,7 +49,7 @@ interface Assessment {
 
 export default function FeasibilityScreen() {
   const router = useRouter();
-  const userId = useAuthStore(state => state.user?.id);
+  const userId = useAuthStore((state) => state.user?.id);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
@@ -39,6 +63,9 @@ export default function FeasibilityScreen() {
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
 
+  const today = getToday();
+  const nextRefreshDate = addDaysToLocalDate(today, 7);
+
   useEffect(() => {
     let current = true;
     if (!userId) return;
@@ -48,7 +75,8 @@ export default function FeasibilityScreen() {
         const setup = await getSetup(userId);
         if (!current) return;
         if (!consent?.granted || !setup) {
-          router.replace('/setup-consent');
+          // Onboarding starts at the test picker, so no test is chosen for the user.
+          router.replace('/choose-test');
           return;
         }
         const active = await getActivePlan(userId);
@@ -66,26 +94,36 @@ export default function FeasibilityScreen() {
         // The baseline is built from the run-in window only. Days inside an earlier plan's
         // schedule had caffeine cut on some mornings, so letting them through would bias
         // both this verdict-worthiness check and the afternoon-caffeine eligibility share.
-        const runInEntries = entriesForRunIn(entries, savedPlans.map(item => item.plan), getToday());
-        const baseline = pending?.feasibilitySnapshot.inputs.baseline ?? computeBaseline(runInEntries);
+        const runInEntries = entriesForRunIn(entries, savedPlans.map((item) => item.plan), getToday());
+        const exposure = exposureForExperimentId(setup.experimentId);
+        // The saved cutoff is the one the baseline is judged against; the default would
+        // measure a different habit than the test the user is about to run.
+        const baseline = pending?.feasibilitySnapshot.inputs.baseline
+          ?? computeExperimentBaseline(exposure, runInEntries, { cutoffTime: setup.cutoffTime });
         if (!pending && !isFeasibilityDue(baseline.validDays, setup.nextCheckDate ?? null, getToday())) {
           router.replace('/run-in');
           return;
         }
         const feasibility = pending?.feasibilitySnapshot ?? assessFeasibility(baseline);
-        const screen = getFeasibilityScreenState(baseline, feasibility, setup);
+        const screen = getFeasibilityScreenState(baseline, feasibility, setup, exposure);
         setAssessment({ setup, baseline, feasibility, screen });
         setDuration(pending?.chosenDuration ?? feasibility.defaultDuration);
         attemptRef.current = pending;
         setAttempt(pending);
-        if (pending) setError('This plan is not confirmed on the server yet. Retry saving to confirm it.');
+        if (pending) {
+          setError(
+            'Your exact test schedule is saved on this device, waiting for server confirmation. Tap Try saving again to finish.',
+          );
+        }
       } catch (e) {
         if (current) setError(e instanceof Error ? e.message : 'Could not load your log. Try again.');
       } finally {
         if (current) setLoading(false);
       }
     })();
-    return () => { current = false; };
+    return () => {
+      current = false;
+    };
   }, [userId, router, reload]);
 
   const start = async () => {
@@ -97,15 +135,22 @@ export default function FeasibilityScreen() {
     setError(null);
     try {
       const plan = getStartAttempt(attemptRef.current, {
-        baseline: assessment.baseline, feasibility: assessment.feasibility,
-        duration, today: getToday(), acknowledged, cutoffTime: assessment.setup.cutoffTime,
+        baseline: assessment.baseline,
+        feasibility: assessment.feasibility,
+        duration,
+        today: getToday(),
+        acknowledged,
+        cutoffTime: assessment.setup.cutoffTime,
+        ruleType: experimentById(assessment.setup.experimentId).ruleType,
       });
       attemptRef.current = plan;
       setAttempt(plan);
       const stored = await savePlan(userId, plan);
       setSaved(stored.plan);
     } catch (e) {
-      setError(`${e instanceof Error ? e.message : 'Could not save the plan.'} Your test is not set yet. Retry saving the same plan.`);
+      setError(
+        `${e instanceof Error ? e.message : 'Could not save the plan.'} Your exact schedule is safely held on this device — tap Try saving again when ready.`,
+      );
     } finally {
       busy.current = false;
       setSaving(false);
@@ -130,9 +175,11 @@ export default function FeasibilityScreen() {
 
   const state = assessment?.screen;
   const startState = state && (state.kind === 'informative' || state.kind === 'long_shot') ? state : null;
-  const keepState = state && (
-    state.kind === 'cannot_assess' || state.kind === 'ineligible' || state.kind === 'not_informative'
-  ) ? state : null;
+  const keepState =
+    state &&
+    (state.kind === 'cannot_assess' || state.kind === 'ineligible' || state.kind === 'not_informative')
+      ? state
+      : null;
 
   // One plain verdict per tier. The engine's own sentences and every number sit under
   // the Details toggle, so nothing statistical leads this screen.
@@ -150,74 +197,160 @@ export default function FeasibilityScreen() {
     ? 'Your log is steady enough for this test to show a real difference.'
     : keepState?.message ?? '';
 
+  const discTone: DiscTone =
+    state?.kind === 'informative'
+      ? 'normal'
+      : state?.kind === 'long_shot'
+      ? 'cutoff'
+      : 'none';
+
   // The engine's own sentence for a negative verdict is kept word for word and shown
   // under Details, so the plain reason above never replaces it.
-  const keepStatement = keepState && 'duration' in keepState && keepState.duration !== null
-    ? assessment?.feasibility.options.find(option => option.duration === keepState.duration)?.statement ?? null
-    : null;
+  const keepStatement =
+    keepState && 'duration' in keepState && keepState.duration !== null
+      ? assessment?.feasibility.options.find((option) => option.duration === keepState.duration)
+          ?.statement ?? null
+      : null;
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader
-          overline="AFTER 14 NIGHTS"
+          overline={sentenceCase('AFTER 14 NIGHTS')}
           title="Is this test worth doing?"
           notice="This app is not medical advice."
-          action={<Button label="Home" variant="quiet" onPress={() => router.replace('/')} />}
+          action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
         />
-        {loading ? <Text accessibilityLiveRegion="polite">Loading your log…</Text> : null}
-        {error ? <Text color="champagneLight" accessibilityRole="alert">{error}</Text> : null}
-        {!loading && !state && !saved
-          ? <Button label="Try again" onPress={() => { setLoading(true); setError(null); setReload(n => n + 1); }} />
-          : null}
+
+        {loading ? <Text color="textMuted" accessibilityLiveRegion="polite">Loading your log…</Text> : null}
+
+        {error ? (
+          <Banner
+            tone="error"
+            action={
+              attempt ? (
+                <Button
+                  label="Try saving again"
+                  variant="quiet"
+                  loading={saving}
+                  onPress={() => void start()}
+                />
+              ) : (
+                <Button
+                  label="Reload"
+                  variant="quiet"
+                  onPress={() => {
+                    setLoading(true);
+                    setError(null);
+                    setReload((n) => n + 1);
+                  }}
+                />
+              )
+            }
+          >
+            {error}
+          </Banner>
+        ) : null}
+
+        {!loading && !state && !saved ? (
+          <Button
+            label="Try again"
+            onPress={() => {
+              setLoading(true);
+              setError(null);
+              setReload((n) => n + 1);
+            }}
+          />
+        ) : null}
+
         {saved ? (
-          <Card overline="ALL SET">
-            <Text variant="titleSmall" accessibilityRole="header">Your test is set</Text>
-            <Text accessibilityLiveRegion="polite">
-              It starts on {saved.startDate} and runs for {saved.chosenDuration} days.
+          <Card tone="hero" overline={sentenceCase('ALL SET')}>
+            <View style={styles.heroRow}>
+              <SplitDisc size={76} tone="normal" />
+              <View style={styles.heroText}>
+                <Text variant="title" accessibilityRole="header">
+                  Your test is set
+                </Text>
+                <Text variant="body" color="textMuted" accessibilityLiveRegion="polite" tabular>
+                  Starts {saved.startDate} · {saved.chosenDuration} days
+                </Text>
+              </View>
+            </View>
+            <Text variant="body" color="textMuted">
+              One short note a day, all the way through.
             </Text>
-            <Text color="ivorySecondary">One short note a day, all the way through.</Text>
+            <Button label="Go to Today" variant="primary" onPress={() => router.replace('/')} />
             <NavRow label="Back to my log" onPress={() => router.replace('/run-in')} />
           </Card>
-        ) : !loading && state ? (
+        ) : !loading && state && assessment ? (
           <>
-            {/* One verdict, one reason. */}
+            {/* One verdict, one reason, and structured count badge. */}
             <Card tone="hero">
-              <Text variant="titleMedium" color="champagneLight" serif>{verdict}</Text>
-              <Text variant="body" color="ivorySecondary">{reason}</Text>
+              <View style={styles.heroRow}>
+                <SplitDisc size={76} tone={discTone} />
+                <View style={styles.heroText}>
+                  <Text variant="caption" color="textMuted" tabular>
+                    {assessment.baseline.validDays} of {assessment.baseline.targetDays} nights logged · Cutoff {assessment.setup.cutoffTime}
+                  </Text>
+                  <Text variant="title" accessibilityRole="header">
+                    {verdict}
+                  </Text>
+                </View>
+              </View>
+              <Text variant="body" color="textMuted">
+                {reason}
+              </Text>
+              {keepState ? (
+                <Text variant="caption" color="textMuted" tabular>
+                  Next check unlocks on {nextRefreshDate} after 7 more nights.
+                </Text>
+              ) : null}
             </Card>
 
             {startState ? (
               <>
-                <Card overline="HOW LONG">
-                  <Text variant="sub" color="ivorySecondary">Pick how many days to run it.</Text>
-                  <View accessibilityRole="radiogroup" accessibilityLabel="Test length" style={styles.group}>
-                    {startState.options.map(option => (
-                      <Pressable
-                        key={option.duration}
-                        onPress={() => setDuration(option.duration)}
-                        disabled={attempt !== null || saving}
-                        accessibilityRole="radio"
-                        accessibilityLabel={`${option.duration} days`}
-                        aria-checked={duration === option.duration}
-                        accessibilityState={{ checked: duration === option.duration, disabled: attempt !== null || saving }}
-                        style={[styles.chip, duration === option.duration && styles.chipActive]}
-                      >
-                        <Text
-                          variant="sub"
-                          color={duration === option.duration ? 'ground' : 'ivory'}
-                          weight="semiBold"
+                <Card tone="tint" overline={sentenceCase('HOW LONG')}>
+                  <Text variant="sub" color="textMuted">
+                    Pick how many days to run it.
+                  </Text>
+                  <View
+                    accessibilityRole="radiogroup"
+                    accessibilityLabel="Test length"
+                    style={styles.group}
+                  >
+                    {startState.options.map((option) => {
+                      const active = duration === option.duration;
+                      return (
+                        <Pressable
+                          key={option.duration}
+                          onPress={() => setDuration(option.duration)}
+                          disabled={attempt !== null || saving}
+                          accessibilityRole="radio"
+                          accessibilityLabel={`${option.duration} days`}
+                          aria-checked={active}
+                          accessibilityState={{
+                            checked: active,
+                            disabled: attempt !== null || saving,
+                          }}
+                          style={[styles.chip, active && styles.chipActive]}
                         >
-                          {option.duration} days
-                        </Text>
-                      </Pressable>
-                    ))}
+                          <Text
+                            variant="sub"
+                            color={active ? 'surface' : 'text'}
+                            weight="semiBold"
+                            tabular
+                          >
+                            {option.duration} days
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
                   </View>
                 </Card>
 
                 {startState.requiresAcknowledgement ? (
                   <Pressable
-                    onPress={() => setAcknowledged(value => !value)}
+                    onPress={() => setAcknowledged((value) => !value)}
                     disabled={saving}
                     accessibilityRole="checkbox"
                     accessibilityLabel="I understand this test may tell me nothing."
@@ -225,70 +358,118 @@ export default function FeasibilityScreen() {
                     accessibilityState={{ checked: acknowledged, disabled: saving }}
                     style={styles.checkRow}
                   >
-                    <Text>{acknowledged ? '☑' : '☐'} I understand this test may tell me nothing.</Text>
+                    <View style={[styles.checkbox, acknowledged && styles.checkboxChecked]}>
+                      {acknowledged ? (
+                        <Text variant="body" color="surface" weight="semiBold">
+                          ✓
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Text variant="body" color="text" style={styles.checkLabel}>
+                      I understand this test may tell me nothing.
+                    </Text>
                   </Pressable>
                 ) : null}
 
                 <Button
                   label={attempt ? 'Try saving again' : 'Start the test'}
+                  variant="primary"
                   loading={saving}
                   disabled={!duration || (startState.requiresAcknowledgement && !acknowledged)}
                   onPress={() => void start()}
                 />
-                {!attempt ? <NavRow label="Not now" disabled={saving} onPress={() => router.replace('/run-in')} /> : null}
+                {!attempt ? (
+                  <NavRow
+                    label="Not now"
+                    disabled={saving}
+                    onPress={() => router.replace('/run-in')}
+                  />
+                ) : null}
 
-                <Details summary="The numbers behind this">
-                  <Text variant="caption" color="ivoryMuted">{startState.simulationNote}</Text>
-                  {startState.conservativeNote ? (
-                    <Text variant="caption" color="ivorySecondary">{startState.conservativeNote}</Text>
-                  ) : null}
-                  {startState.options.map(option => (
-                    <View key={option.duration} style={styles.factBlock}>
-                      <Text variant="sub" color="champagneLight" weight="semiBold">{option.duration} days</Text>
-                      <Text variant="caption" color="ivorySecondary">
-                        {option.mdeLabel}: {option.numberQualifier === 'at least' ? 'at least ' : ''}
-                        {typeof option.mdeDirectMinutes === 'number'
-                          ? `${option.mdeDirectMinutes} minutes`
-                          : option.mdeDirectMinutes === 'larger_than_60'
-                          ? 'larger than 60 minutes'
-                          : 'not available'}
+                <Card tone="quiet">
+                  <Details summary="The numbers behind this">
+                    <Text variant="caption" color="textMuted">
+                      {startState.simulationNote}
+                    </Text>
+                    {startState.conservativeNote ? (
+                      <Text variant="caption" color="textMuted">
+                        {startState.conservativeNote}
                       </Text>
-                      {option.mdeAssignedDayEquivalent !== null ? (
-                        <Text variant="caption" color="ivorySecondary">
-                          about {Math.round(option.mdeAssignedDayEquivalent)} minutes per cutoff day
+                    ) : null}
+                    {startState.options.map((option) => (
+                      <View key={option.duration} style={styles.factBlock}>
+                        <Text variant="sub" color="accent" weight="semiBold" tabular>
+                          {option.duration} days
                         </Text>
-                      ) : null}
-                      <Text variant="caption" color="ivorySecondary">{option.adherenceAssumptionText}</Text>
-                      {option.statement !== null ? (
-                        <Text variant="caption" color="ivorySecondary">{option.statement}</Text>
-                      ) : null}
-                    </View>
-                  ))}
-                  <Text variant="caption" color="ivorySecondary">
-                    {assessment.feasibility.autocorrelationAssumptionText}
-                  </Text>
-                  {startState.startInstruction ? (
-                    <Text variant="caption" color="ivorySecondary">{startState.startInstruction}</Text>
-                  ) : null}
-                </Details>
+                        <Text variant="caption" color="textMuted">
+                          {option.mdeLabel}: {option.numberQualifier === 'at least' ? 'at least ' : ''}
+                          {typeof option.mdeDirectMinutes === 'number'
+                            ? `${option.mdeDirectMinutes} minutes`
+                            : option.mdeDirectMinutes === 'larger_than_60'
+                            ? 'larger than 60 minutes'
+                            : 'not available'}
+                        </Text>
+                        {option.mdeAssignedDayEquivalent !== null ? (
+                          <Text variant="caption" color="textMuted">
+                            about {Math.round(option.mdeAssignedDayEquivalent)} minutes per cutoff day
+                          </Text>
+                        ) : null}
+                        <Text variant="caption" color="textMuted">
+                          {option.adherenceAssumptionText}
+                        </Text>
+                        {option.statement !== null ? (
+                          <Text variant="caption" color="textMuted">
+                            {option.statement}
+                          </Text>
+                        ) : null}
+                      </View>
+                    ))}
+                    <Text variant="caption" color="textMuted">
+                      {assessment.feasibility.autocorrelationAssumptionText}
+                    </Text>
+                    {startState.startInstruction ? (
+                      <Text variant="caption" color="textMuted">
+                        {startState.startInstruction}
+                      </Text>
+                    ) : null}
+                  </Details>
+                </Card>
               </>
             ) : keepState ? (
               <>
                 {/* One action: keep logging. The engine's own reasons stay under Details. */}
-                <Button label={keepState.actions[0]} loading={saving} onPress={() => void recheck()} />
-                <Details summary="What your log shows">
-                  {'detailFacts' in keepState
-                    ? keepState.detailFacts.map(fact => (
-                        <Text key={fact} variant="caption" color="ivorySecondary">{fact}</Text>
-                      ))
-                    : null}
-                  {keepState.reasons.map((line, index) => (
-                    <Text key={index} variant="caption" color="ivorySecondary">{line}</Text>
-                  ))}
-                  {keepStatement ? (
-                    <Text variant="caption" color="ivorySecondary">{keepStatement}</Text>
-                  ) : null}
-                </Details>
+                <Button
+                  label={keepState.actions[0]}
+                  variant="primary"
+                  loading={saving}
+                  onPress={() => void recheck()}
+                />
+                <NavRow
+                  label="Not now"
+                  disabled={saving}
+                  onPress={() => router.replace('/run-in')}
+                />
+                <Card tone="quiet">
+                  <Details summary="What your log shows">
+                    {'detailFacts' in keepState
+                      ? keepState.detailFacts.map((fact) => (
+                          <Text key={fact} variant="caption" color="textMuted">
+                            {fact}
+                          </Text>
+                        ))
+                      : null}
+                    {keepState.reasons.map((line, index) => (
+                      <Text key={index} variant="caption" color="textMuted">
+                        {line}
+                      </Text>
+                    ))}
+                    {keepStatement ? (
+                      <Text variant="caption" color="textMuted">
+                        {keepStatement}
+                      </Text>
+                    ) : null}
+                  </Details>
+                </Card>
               </>
             ) : null}
           </>
@@ -300,24 +481,50 @@ export default function FeasibilityScreen() {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.section, paddingBottom: spacing.xxl },
-  group: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  heroText: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  group: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: {
     minHeight: 48,
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
-    borderRadius: radii.pill,
+    borderRadius: radii.control,
     borderWidth: 1,
-    borderColor: colors.hairlineBright,
-    backgroundColor: colors.surfaceHigh,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface,
   },
   chipActive: {
-    backgroundColor: colors.champagne,
-    borderColor: colors.champagneLight,
+    backgroundColor: colors.text,
+    borderColor: colors.text,
   },
   checkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
     minHeight: 52,
-    justifyContent: 'center',
     paddingVertical: spacing.sm,
   },
+  checkbox: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: colors.text,
+    borderColor: colors.text,
+  },
+  checkLabel: { flex: 1 },
   factBlock: { gap: 2, marginTop: spacing.sm },
 });

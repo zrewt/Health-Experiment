@@ -1,8 +1,9 @@
 import * as realEngine from '../engine';
 import * as config from './config';
 import { engineCaffeineTime, engineCaffeineServings } from './caffeine-time';
+import { EXPERIMENTS, type ExposureKind } from './experiments';
 import type {
-  AdapterErrorCode, BaselineSummary, Condition, DailyEntry, DayRecord,
+  AdapterErrorCode, BaselineSummary, CaffeineExposure, Condition, DailyEntry, DayRecord, ScreenExposure,
   EngineFacade, ExperimentPlan, FeasibilityLookup, FeasibilityScreenState, FeasibilityTier,
   FeasibilityViewModel, MdeDirectMinutes, ProgressSummary, ResultViewModel,
 } from './types';
@@ -48,17 +49,29 @@ export function toEngineRecord(
   };
 }
 
+/** A cutoff a rule can actually run on: strict local HH:mm, the same shape the engine reads. */
+export function assertCutoffTime(cutoffTime: string): void {
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(cutoffTime)) {
+    throw new ExperimentAdapterError('INVALID_CUTOFF', 'A cutoff time must be local HH:mm.');
+  }
+}
+
 /**
  * The run-in baseline: eligibility, valid nights and the outcome SD the feasibility verdict
  * reads. Feed it the run-in window (entriesForRunIn), never a whole account history, or days
  * from an earlier test leak into the baseline.
+ *
+ * The cutoff is the one the user chose in setup, not the default: a 14:00 cutoff must judge
+ * a 13:00 coffee as on time, and the eligibility share is read against that same time.
  */
 export function computeBaseline(
   entries: readonly DailyEntry[], engine: EngineFacade = realEngine,
+  cutoffTime: string = config.conditionRule.cutoffTime,
 ): BaselineSummary {
+  assertCutoffTime(cutoffTime);
   const records = entries.map(entry => toEngineRecord(entry, 'control', engine));
   const result = engine.checkCaffeineEligibility(records, {
-    minRunInDays: config.runInMinValidDays, cutoffTime: config.conditionRule.cutoffTime,
+    minRunInDays: config.runInMinValidDays, cutoffTime,
   });
   const validDays = records.filter(record => record.outcome.sleepMinutes !== null).length;
   const reasons = [...result.reasons];
@@ -72,6 +85,97 @@ export function computeBaseline(
     knownExposureDays: result.knownExposureDaysCount,
     unknownExposureDays: result.unknownExposureDaysCount,
   };
+}
+
+/** Any engine record, of either exposure kind. The engine reads both through its exposure rule. */
+export type AnyEngineRecord = DayRecord<CaffeineExposure | ScreenExposure>;
+
+const SCREEN_RULE_TYPE = EXPERIMENTS['screens-off-cutoff'].ruleType;
+
+/** Last screen use read strictly: 'HH:mm' or 'none'. Anything else is unknown (null). */
+function screenExposureFor(entry: DailyEntry): ScreenExposure {
+  const value = entry.lastScreenTime ?? null;
+  const valid = value === 'none' || (typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value));
+  return { lastScreenTime: valid ? value : null };
+}
+
+/** The screens-off record for one day. Missing screen time stays unknown, never screens-on. */
+export function toScreenEngineRecord(
+  entry: DailyEntry, assignedCondition: Condition, engine: EngineFacade = realEngine,
+): DayRecord<ScreenExposure> {
+  engine.parseDate(entry.date);
+  const sleepMinutes = entry.sleepMinutes ?? null;
+  if (sleepMinutes !== null && (!Number.isFinite(sleepMinutes) || sleepMinutes < 0)) {
+    throw new ExperimentAdapterError('INVALID_ENTRY', 'Sleep minutes must be nonnegative, finite, or null.');
+  }
+  return {
+    date: entry.date,
+    assignedCondition,
+    exposure: screenExposureFor(entry),
+    covariates: { alcohol: null, illness: null, travel: null, lateWorkout: null },
+    outcome: { sleepMinutes, hrvMs: null },
+    exclusionReason: null,
+  };
+}
+
+/** Picks the record shape for the test a plan belongs to. The caffeine path is unchanged. */
+export function recordFor(
+  ruleType: string, entry: DailyEntry, assignedCondition: Condition, engine: EngineFacade = realEngine,
+): AnyEngineRecord {
+  return ruleType === SCREEN_RULE_TYPE
+    ? toScreenEngineRecord(entry, assignedCondition, engine)
+    : toEngineRecord(entry, assignedCondition, engine);
+}
+
+/** True when the day has any exposure logged for its test (caffeine or screens). */
+export function exposureRecorded(record: AnyEngineRecord): boolean {
+  const exposure = record.exposure as Partial<CaffeineExposure & ScreenExposure>;
+  return (exposure.lastCaffeineTime ?? null) !== null
+    || (exposure.lastScreenTime ?? null) !== null
+    || exposure.servings === 0;
+}
+
+/**
+ * Run-in baseline for the screens-off test. Same statistics as computeBaseline; only the
+ * eligibility rule differs, because it reads screen use instead of caffeine.
+ */
+export function computeScreenBaseline(
+  entries: readonly DailyEntry[], engine: EngineFacade = realEngine,
+  cutoffTime: string = EXPERIMENTS['screens-off-cutoff'].defaultCutoff,
+): BaselineSummary {
+  assertCutoffTime(cutoffTime);
+  const records = entries.map(entry => toScreenEngineRecord(entry, 'control', engine));
+  // Through the facade, so a test can stub the screens rule the same way it stubs caffeine.
+  const result = engine.checkScreenEligibility(records, {
+    minRunInDays: config.runInMinValidDays, cutoffTime,
+  });
+  const validDays = records.filter(record => record.outcome.sleepMinutes !== null).length;
+  const reasons = [...result.reasons];
+  if (validDays < config.runInMinValidDays) reasons.push(`need ${config.runInMinValidDays - validDays} more valid days`);
+  return {
+    validDays, targetDays: config.runInMinValidDays,
+    sd: result.baselineOutcomeSd,
+    eligible: result.eligible && validDays >= config.runInMinValidDays,
+    reasons, engineReasons: [...result.reasons],
+    lateCaffeineDays: result.lateCaffeineDaysCount,
+    knownExposureDays: result.knownExposureDaysCount,
+    unknownExposureDays: result.unknownExposureDaysCount,
+  };
+}
+
+/**
+ * One baseline entry point for both tests, so a screen can never pick the wrong rule.
+ * The cutoff defaults to the test's own default; callers pass the saved setup cutoff.
+ */
+export function computeExperimentBaseline(
+  exposure: ExposureKind,
+  entries: readonly DailyEntry[],
+  options: { cutoffTime?: string; engine?: EngineFacade } = {},
+): BaselineSummary {
+  const engine = options.engine ?? realEngine;
+  return exposure === 'screens'
+    ? computeScreenBaseline(entries, engine, options.cutoffTime)
+    : computeBaseline(entries, engine, options.cutoffTime);
 }
 
 function tierFor(mde: MdeDirectMinutes): FeasibilityTier {
@@ -170,6 +274,7 @@ export function startExperiment(
   startDate: string, acknowledged: boolean, seed: number,
   engine: EngineFacade = realEngine,
   cutoffTime = config.conditionRule.cutoffTime,
+  ruleType: string = 'caffeine-cutoff',
 ): ExperimentPlan {
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) {
     throw new ExperimentAdapterError('INVALID_SEED', 'An explicit uint32 seed is required.');
@@ -183,6 +288,8 @@ export function startExperiment(
   if (!config.durations.some(duration => duration === chosenDuration)) {
     throw new ExperimentAdapterError('INVALID_DURATION', 'Duration must be one of the configured durations.');
   }
+  // Both rules read a real clock time; an unreadable one is rejected before a plan exists.
+  assertCutoffTime(cutoffTime);
   const selected = feasibility.options.find(option => option.duration === chosenDuration);
   const original = feasibility.inputs.baseline;
   const baselineMatches = baseline.sd === original.sd && baseline.eligible === original.eligible &&
@@ -195,9 +302,12 @@ export function startExperiment(
     throw new ExperimentAdapterError('INVALID_FEASIBILITY', 'A current, assessable baseline and duration option are required.');
   }
   const definition = {
-    name: config.experimentName, startDate, lengthDays: chosenDuration,
+    name: ruleType === SCREEN_RULE_TYPE ? EXPERIMENTS['screens-off-cutoff'].name : config.experimentName,
+    startDate, lengthDays: chosenDuration,
     design: { ...config.experimentDesign }, seed, outcomeMetric: config.outcomeMetric,
-    conditionRule: { ...config.conditionRule, cutoffTime },
+    conditionRule: ruleType === SCREEN_RULE_TYPE
+      ? { type: SCREEN_RULE_TYPE, cutoffTime }
+      : { ...config.conditionRule, cutoffTime },
   };
   const schedule = engine.generateSchedule(startDate, chosenDuration, definition.design, seed);
   const analysisSeed = ((seed * 1664525 + 1013904223) >>> 0);
@@ -215,7 +325,7 @@ export function startExperiment(
 
 function scheduledRecords(
   plan: ExperimentPlan, entries: readonly DailyEntry[], engine: EngineFacade,
-): DayRecord[] {
+): AnyEngineRecord[] {
   const byDate = new Map(plan.schedule.map(day => [day.date, day.condition]));
   const seen = new Set<string>();
   return entries.map(entry => {
@@ -224,7 +334,7 @@ function scheduledRecords(
       throw new ExperimentAdapterError('INVALID_ENTRY', 'Duplicate or out-of-experiment entry date.');
     }
     seen.add(entry.date);
-    return toEngineRecord(entry, condition, engine);
+    return recordFor(plan.definition.conditionRule.type, entry, condition, engine);
   });
 }
 
@@ -250,16 +360,22 @@ export function getFeasibilityScreenState(
   baseline: BaselineSummary,
   feasibility: FeasibilityViewModel,
   setup: { cutoffTime: string },
+  exposure: ExposureKind = 'caffeine',
 ): FeasibilityScreenState {
+  const isScreens = exposure === 'screens';
   const actions: ['Keep logging for now', 'Not now'] = [
     'Keep logging for now', 'Not now',
   ];
   if (!baseline.eligible || feasibility.tier === 'cannot_assess') {
     const detailFacts = [
-      `You logged caffeine after noon on ${baseline.lateCaffeineDays} of ${baseline.knownExposureDays + baseline.unknownExposureDays} days.`,
+      isScreens
+        ? `You used screens after ${setup.cutoffTime} on ${baseline.lateCaffeineDays} of ${baseline.knownExposureDays + baseline.unknownExposureDays} nights.`
+        : `You logged caffeine after ${setup.cutoffTime} on ${baseline.lateCaffeineDays} of ${baseline.knownExposureDays + baseline.unknownExposureDays} days.`,
     ];
     if (baseline.unknownExposureDays > 0) {
-      detailFacts.push(`${baseline.unknownExposureDays} days had no caffeine time logged, so they do not count. Log it every morning.`);
+      detailFacts.push(isScreens
+        ? `${baseline.unknownExposureDays} nights had no screen time logged, so they do not count. Log it every morning.`
+        : `${baseline.unknownExposureDays} days had no caffeine time logged, so they do not count. Log it every morning.`);
     }
     return {
       kind: !baseline.eligible ? 'ineligible' : 'cannot_assess',
@@ -307,8 +423,9 @@ export function getFeasibilityScreenState(
     simulationNote: 'These numbers come from computer simulations of your log, so they are rough — about six points either way.',
     conservativeNote: feasibility.conservative
       ? 'Your sleep is steadier than the range we tested, so read these as the low end.'
-      : null,
-    startInstruction: `Days come in pairs, picked at random: a cutoff day (no caffeine after ${setup.cutoffTime}) or a normal day. The app tells you which, one day at a time.`,
+      : null,      startInstruction: isScreens
+        ? `Days come in pairs, picked at random: a cutoff day (no screens after ${setup.cutoffTime}) or a normal day. The app tells you which, one day at a time.`
+        : `Days come in pairs, picked at random: a cutoff day (no caffeine after ${setup.cutoffTime}) or a normal day. The app tells you which, one day at a time.`,
   };
 }
 
@@ -364,8 +481,17 @@ export function entriesForRunIn(
  *  "is this test worth doing?" gate all show. */
 export function validRunInDays(
   entries: readonly DailyEntry[], plans: readonly ExperimentPlan[], today: string,
+  exposure: ExposureKind = 'caffeine',
 ): number {
-  return entriesForRunIn(entries, plans, today).filter(entry => entry.sleepMinutes !== null).length;
+  return entriesForRunIn(entries, plans, today).filter(entry => {
+    if (entry.sleepMinutes === null) return false;
+    // A screens night only counts once its screen time is logged: the screens eligibility
+    // rule has nothing to read otherwise, so letting it through would unlock the check on
+    // nights the run-in never actually observed. Caffeine keeps its existing rule.
+    return exposure === 'screens'
+      ? (entry.lastScreenTime ?? null) !== null
+      : true;
+  }).length;
 }
 
 export function evaluate(
@@ -421,10 +547,10 @@ export function progressSummary(
   let daysLogged = 0;
   for (const day of plan.schedule) {
     if (day.date > today) continue;
-    const record = byDate.get(day.date) ?? toEngineRecord({
-      date: day.date, sleepMinutes: null, lastCaffeineTime: null,
+    const record = byDate.get(day.date) ?? recordFor(plan.definition.conditionRule.type, {
+      date: day.date, sleepMinutes: null, lastCaffeineTime: null, lastScreenTime: null,
     }, day.condition, engine);
-    if (record.outcome.sleepMinutes !== null || record.exposure.lastCaffeineTime !== null || record.exposure.servings === 0) daysLogged++;
+    if (record.outcome.sleepMinutes !== null || exposureRecorded(record)) daysLogged++;
     adherenceCounts[engine.adherenceStatus(record, plan.definition.conditionRule)]++;
   }
   return {

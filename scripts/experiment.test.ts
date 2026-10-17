@@ -589,7 +589,8 @@ test('adapter import scan permits only local engine/module imports and no React,
 
 test('freeze verifier passes real files and reports changed or missing files with nonzero CLI exit', () => {
   const real = verifyEngineFreeze(resolve(__dirname, '..'));
-  assert.equal(real.checked, 10);
+  // 11 since the screens-off rule was added as a frozen engine file (see the manifest's reenfrozen note).
+  assert.equal(real.checked, 11);
   assert.deepEqual(real.mismatches, []);
   const root = mkdtempSync(join(tmpdir(), 'experiment-freeze-'));
   try {

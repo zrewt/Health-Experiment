@@ -79,7 +79,7 @@ test('ineligible facts are baseline counts only and reasons pass through the stu
   assert.equal(state.detailsHeading, 'Details');
   assert.deepEqual(state.reasons, ['Exact engine reason.\nNo edits.']);
   assert.deepEqual(state.detailFacts, [
-    'You logged caffeine after noon on 3 of 14 days.',
+    'You logged caffeine after 12:00 on 3 of 14 days.',
     '5 days had no caffeine time logged, so they do not count. Log it every morning.',
   ]);
 });
@@ -89,7 +89,7 @@ test('zero unknown days omit the missing-time line; null SD cannot assess', () =
   const state = getFeasibilityScreenState(summary, assessFeasibility(summary), setup);
   assert.equal(state.kind, 'cannot_assess');
   if (state.kind !== 'cannot_assess') assert.fail();
-  assert.deepEqual(state.detailFacts, ['You logged caffeine after noon on 9 of 14 days.']);
+  assert.deepEqual(state.detailFacts, ['You logged caffeine after 12:00 on 9 of 14 days.']);
 });
 
 test('SD 24 shows conservative notice and SD 76 shows no unsupported numbers or start option', () => {

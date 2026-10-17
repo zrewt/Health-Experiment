@@ -1,8 +1,8 @@
 import type {
   AdherenceSummary, AnalysisResult, BaselineStatistics,
-  CaffeineExposure, Condition, DayRecord, ExperimentDefinition,
+  CaffeineExposure, ScreenExposure, Condition, DayRecord, ExperimentDefinition,
   FeasibilityLookupInput, FeasibilityLookupResult, ScheduledDay, Verdict,
-  checkCaffeineEligibility, lookupFeasibility, generateSchedule,
+  checkCaffeineEligibility, checkScreenEligibility, lookupFeasibility, generateSchedule,
   analyzeExperiment, getVerdict, adherenceStatus, parseDate,
 } from '../engine';
 
@@ -10,6 +10,8 @@ export interface DailyEntry {
   date: string;
   sleepMinutes: number | null;
   lastCaffeineTime: string | 'none' | null;
+  /** Last screen use, HH:mm or 'none'. Optional: only the screens-off test reads it. */
+  lastScreenTime?: string | 'none' | null;
 }
 
 export interface BaselineSummary {
@@ -117,7 +119,7 @@ export interface ProgressSummary {
 }
 
 // Engine-native types are reused rather than recreating statistical contracts.
-export type { BaselineStatistics, CaffeineExposure, Condition, DayRecord };
+export type { BaselineStatistics, CaffeineExposure, ScreenExposure, Condition, DayRecord };
 
 
 export type FeasibilityScreenState =
@@ -165,6 +167,7 @@ export type FeasibilityScreenState =
 
 export interface EngineFacade {
   checkCaffeineEligibility: typeof checkCaffeineEligibility;
+  checkScreenEligibility: typeof checkScreenEligibility;
   lookupFeasibility: typeof lookupFeasibility;
   generateSchedule: typeof generateSchedule;
   analyzeExperiment: typeof analyzeExperiment;
@@ -175,7 +178,7 @@ export interface EngineFacade {
 
 export type FeasibilityLookup = EngineFacade['lookupFeasibility'];
 export type AdapterErrorCode = 'CANNOT_START' | 'ACKNOWLEDGEMENT_REQUIRED' |
-  'INVALID_DURATION' | 'INTERIM_LOOK' | 'INVALID_ENTRY' | 'INVALID_PLAN' |
+  'INVALID_DURATION' | 'INVALID_CUTOFF' | 'INTERIM_LOOK' | 'INVALID_ENTRY' | 'INVALID_PLAN' |
   'INVALID_FEASIBILITY' | 'INVALID_SEED' | 'MISSING_ENGINE_STATEMENT';
 
 export interface ResultSnapshot extends ResultViewModel {

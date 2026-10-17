@@ -1,4 +1,5 @@
 import type { DayRecord, ExposureRule, AdherenceStatus, AdherenceSummary, ExclusionConfig, EligibilityConfig, EligibilityResult, ConditionRuleConfig, CaffeineExposure } from './types';
+import { DEFAULT_SCREEN_CUTOFF, SCREEN_CUTOFF_RULE_TYPE, ScreenCutoffRule } from './screen-cutoff';
 
 export function timeMinutes(time: string): number {
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error('Time must be local HH:mm.');
@@ -35,6 +36,10 @@ export function resolveExposureRule(config: ConditionRuleConfig): ExposureRule<a
   if (config.type === 'caffeine-cutoff') {
     const cutoff = (config as any).cutoffTime || '12:00';
     return new CaffeineCutoffRule(cutoff);
+  }
+  if (config.type === SCREEN_CUTOFF_RULE_TYPE) {
+    const cutoff = (config as any).cutoffTime || DEFAULT_SCREEN_CUTOFF;
+    return new ScreenCutoffRule(cutoff);
   }
   throw new Error(`Unknown condition rule type: ${config.type}`);
 }
