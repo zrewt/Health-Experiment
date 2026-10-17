@@ -13,8 +13,12 @@ import {
   Text,
   Button,
   PrimaryNav,
+  Banner,
+  SplitDisc,
+  type DiscTone,
 } from '@/components/ui';
 import { spacing } from '@/design/tokens';
+import { sentenceCase } from '@/design/labels';
 import { useAuthStore } from '@/store/auth';
 import {
   getConsent,
@@ -30,8 +34,7 @@ import {
 import type { StoredExperimentPlan } from '@/data/plan-persistence';
 import { getToday } from '@/experiment/clock';
 import { getExperimentLifecycleModel } from '@/experiment/lifecycle';
-import { validRunInDays } from '@/experiment/adapter';
-import { runInMinValidDays } from '@/experiment/config';
+import { buildCycleComparison } from '@/experiment/cycle-comparison';
 
 export default function ExperimentScreen() {
   const router = useRouter();
@@ -101,15 +104,10 @@ export default function ExperimentScreen() {
         await archiveCompletedPlanForRepeat(user.id, activePlan);
       }
       await loadLifecycle();
-      // Counted over the new run-in window only: the test that just finished must not
-      // decide that the next cycle already has its 14 nights.
-      const validDays = validRunInDays(
-        entries,
-        [activePlan, ...historyPlans].filter((item): item is StoredExperimentPlan => item !== null).map(item => item.plan),
-        today,
-      );
-      setNotice('Your last test is saved. Taking you to the next step.');
-      router.push((validDays >= runInMinValidDays ? '/feasibility' : '/run-in') as Href);
+      // The choose screen owns the next step: it starts the other test's own run-in, or
+      // re-enters the same one, so the finished test's nights never carry over.
+      setNotice('Your last test is saved. Pick what to try next.');
+      router.push('/choose-test' as Href);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not start another test.');
     } finally {
@@ -117,38 +115,57 @@ export default function ExperimentScreen() {
     }
   };
 
+  // Only finished tests are compared, so the card never shows a test that is still running.
+  const comparison = buildCycleComparison(
+    [activePlan, ...historyPlans].filter((item): item is StoredExperimentPlan => item !== null),
+  );
+
+  const discTone: DiscTone =
+    model.state === 'plan_active'
+      ? 'cutoff'
+      : model.state === 'run_in' ||
+        model.state === 'feasibility_ready' ||
+        model.state === 'plan_result_ready'
+      ? 'normal'
+      : 'none';
+
   return (
     <Screen>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <ScreenHeader
-          overline="YOUR SLEEP TEST"
+          overline={sentenceCase('YOUR SLEEP TEST')}
           title="Your sleep test"
           notice={model.medicalNotice}
         />
 
         {error ? (
-          <Card tone="danger">
-            <Text color="garnet" accessibilityRole="alert">{error}</Text>
-            <Button label="Retry" variant="quiet" onPress={() => void loadLifecycle()} />
-          </Card>
+          <Banner
+            tone="error"
+            action={<Button label="Retry" variant="quiet" onPress={() => void loadLifecycle()} />}
+          >
+            {error}
+          </Banner>
         ) : null}
 
-        {notice ? (
-          <Card>
-            <Text variant="sub" color="champagneLight" accessibilityLiveRegion="polite">
-              {notice}
-            </Text>
-          </Card>
-        ) : null}
+        {notice ? <Banner tone="success">{notice}</Banner> : null}
 
         {/* The current test and the one step that comes next. */}
-        <Card tone="hero" overline="NOW">
-          <Text variant="titleMedium" color="champagneLight" serif>
-            {model.detail.name}
-          </Text>
-          <Text variant="body" color="ivorySecondary">
-            {model.detail.purpose}
-          </Text>
+        <Card tone="hero" overline={sentenceCase('NOW')}>
+          <View style={styles.heroRow}>
+            <SplitDisc size={72} tone={discTone} />
+            <View style={styles.heroText}>
+              <Text variant="title" accessibilityRole="header">
+                {model.detail.name}
+              </Text>
+              <Text variant="body" color="textMuted">
+                {model.detail.purpose}
+              </Text>
+            </View>
+          </View>
 
           <View style={styles.metaList}>
             <Row label="Cutoff time" value={model.detail.cutoffTime} />
@@ -160,7 +177,7 @@ export default function ExperimentScreen() {
             />
           </View>
 
-          <Text variant="sub" color="ivorySecondary">
+          <Text variant="sub" color="textMuted">
             {model.detail.stageDescription}
           </Text>
 
@@ -187,10 +204,10 @@ export default function ExperimentScreen() {
           <Disclosure label="How this works" summary="Three short steps">
             {model.guideSteps.map((step) => (
               <View key={step.stepNumber} style={styles.step}>
-                <Text variant="sub" color="champagneLight" weight="semiBold">
+                <Text variant="sub" color="accent" weight="semiBold">
                   {step.title}
                 </Text>
-                <Text variant="sub" color="ivorySecondary">
+                <Text variant="sub" color="textMuted">
                   {step.description}
                 </Text>
               </View>
@@ -198,11 +215,55 @@ export default function ExperimentScreen() {
           </Disclosure>
         </Card>
 
-        <Card overline="PAST TESTS">
+        {comparison ? (
+          <Card tone="tint" overline={sentenceCase('COMPARE YOUR TESTS')}>
+            {comparison.rows.map((row, index) => (
+              <View key={row.id} style={styles.savedItem}>
+                {index > 0 ? <Divider /> : null}
+                <Row label="Test" value={row.testName} />
+                <Row label="Test starting" value={row.startDate} emphasis="default" />
+                <Row label="Cutoff time" value={row.cutoffTime} />
+                <Row
+                  label="Rule followed"
+                  value={
+                    row.ruleFollowedDays === null
+                      ? 'Not recorded'
+                      : `${row.ruleFollowedDays} of ${row.plannedDays} days`
+                  }
+                />
+                <Row
+                  label="Sleep estimate"
+                  value={
+                    row.sleepEstimateMinutes === null
+                      ? 'Could not be worked out'
+                      : `${row.sleepEstimateMinutes} min a night more on cutoff days`
+                  }
+                />
+              </View>
+            ))}
+            <View style={styles.emptyBlock}>
+              {comparison.sentences.map(sentence => (
+                <Text key={sentence} variant="sub" color="textMuted">
+                  {sentence}
+                </Text>
+              ))}
+            </View>
+          </Card>
+        ) : null}
+
+        <Card tone="tint" overline={sentenceCase('PAST TESTS')}>
           {model.savedExperiments.length === 0 ? (
-            <Text variant="sub" color="ivoryMuted">
-              No tests yet. Log 14 nights to find out whether a test is worth doing.
-            </Text>
+            <View style={styles.emptyBlock}>
+              <Text variant="sub" color="textMuted">
+                No finished tests yet. Log 14 nights to find out whether a test is worth doing.
+              </Text>
+              {model.detail.nextStepRoute ? (
+                <NavRow
+                  label={model.detail.nextStepLabel}
+                  onPress={() => router.push(model.detail.nextStepRoute as Href)}
+                />
+              ) : null}
+            </View>
           ) : (
             model.savedExperiments.map((saved, index) => (
               <View key={saved.id} style={styles.savedItem}>
@@ -224,13 +285,13 @@ export default function ExperimentScreen() {
 
                 {saved.verdictHeading ? (
                   <View style={styles.verdictSnippet}>
-                    <Text variant="sub" color="champagne" weight="semiBold">
+                    <Text variant="sub" color="accent" weight="semiBold">
                       What we found: {saved.verdictHeading}
                     </Text>
                     {/* The engine's own sentence is kept word for word, under Details. */}
                     {saved.statement ? (
                       <Details summary="The exact wording">
-                        <Text variant="caption" color="ivorySecondary">
+                        <Text variant="caption" color="textMuted">
                           {saved.statement}
                         </Text>
                       </Details>
@@ -241,7 +302,9 @@ export default function ExperimentScreen() {
                 {saved.status === 'completed' ? (
                   <NavRow
                     label="Read what we found"
-                    onPress={() => router.push(`/result?planId=${encodeURIComponent(saved.id)}` as Href)}
+                    onPress={() =>
+                      router.push(`/result?planId=${encodeURIComponent(saved.id)}` as Href)
+                    }
                   />
                 ) : null}
               </View>
@@ -258,6 +321,15 @@ export default function ExperimentScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { gap: spacing.section, paddingBottom: spacing.section },
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  heroText: {
+    flex: 1,
+    gap: spacing.xs,
+  },
   metaList: {
     paddingVertical: spacing.md,
     gap: spacing.sm,
@@ -265,6 +337,9 @@ const styles = StyleSheet.create({
   step: {
     paddingVertical: spacing.sm,
     gap: 4,
+  },
+  emptyBlock: {
+    gap: spacing.sm,
   },
   savedItem: {
     gap: spacing.md,
