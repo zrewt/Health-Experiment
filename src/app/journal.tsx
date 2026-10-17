@@ -84,12 +84,16 @@ export default function JournalScreen() {
     }, [loadJournal]),
   );
 
+  // A running test hides the sleep average: averaging its own days would be an interim
+  // reading of what the test is measuring.
+  const midTest = plan?.status === 'scheduled';
   const journal = getJournalViewModel({
     entries,
     today,
     setup,
     plan,
     plans: savedPlans,
+    hideAverage: midTest,
   });
 
   const unsyncedCount = entries.filter((e) => e.synced === false).length;
@@ -254,13 +258,15 @@ export default function JournalScreen() {
                 value: String(journal.summary.missingDays),
                 emphasis: 'muted',
               },
-              {
-                label: 'Avg sleep',
-                value:
-                  journal.summary.averageSleepMinutes !== null
-                    ? formatSleepDuration(journal.summary.averageSleepMinutes)
-                    : '—',
-              },
+              ...(midTest
+                ? []
+                : [{
+                    label: 'Avg sleep',
+                    value:
+                      journal.summary.averageSleepMinutes !== null
+                        ? formatSleepDuration(journal.summary.averageSleepMinutes)
+                        : '—',
+                  }]),
             ]}
           />
           <Text variant="caption" color="textMuted">

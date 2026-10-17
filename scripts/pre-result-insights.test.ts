@@ -40,6 +40,8 @@ test('progress figures count kept days, pairs and the best run', () => {
   assert.equal(figures.cutoffDaysPlanned, 2);
   assert.equal(figures.cutoffDaysKept, 2);
   assert.equal(figures.daysElapsed, 4);
+  assert.equal(figures.nightsLogged, 4);
+  assert.equal(figures.cutoffDaysElapsed, 2);
   assert.equal(figures.pairsPlanned, 2);
   assert.equal(figures.pairsDone, 2);
   assert.equal(figures.bestRun, 2);
@@ -169,7 +171,7 @@ test('the mirror counts kept cutoff days in a row when a schedule is available',
   assert.equal(mirror.facts[1], 'That is 3 cutoff days kept in a row.');
 });
 
-test('a range milestone needs three nights, and a weekday claim needs two nights each', () => {
+test('a range milestone needs three nights, and a weekday claim needs four nights each', () => {
   const twoNights = getMilestones({
     entries: [entry('2026-03-02', 450, '11:00'), entry('2026-03-03', 470, '11:00')],
     today: '2026-03-03',
@@ -199,9 +201,23 @@ test('a range milestone needs three nights, and a weekday claim needs two nights
   for (const date of ['2026-03-07', '2026-03-14', '2026-03-21']) weekdayEntries.push(entry(date, 420, '11:00'));
   for (const date of ['2026-03-08', '2026-03-15', '2026-03-22']) weekdayEntries.push(entry(date, 500, '11:00'));
 
-  const weekday = getMilestones({
+  // Three Saturdays and three Sundays are not enough for either group.
+  assert.equal(getMilestones({
     entries: weekdayEntries,
     today: '2026-03-22',
+    exposure: 'caffeine',
+    cutoffTime: '12:00',
+  }).some(item => item.id === 'weekday'), false);
+
+  // Four nights of each weekday is the floor.
+  const fourEach: DailyEntry[] = [
+    ...weekdayEntries,
+    entry('2026-03-28', 420, '11:00'),
+    entry('2026-03-29', 500, '11:00'),
+  ];
+  const weekday = getMilestones({
+    entries: fourEach,
+    today: '2026-03-29',
     exposure: 'caffeine',
     cutoffTime: '12:00',
   }).find(item => item.id === 'weekday');
@@ -218,7 +234,7 @@ test('a range milestone needs three nights, and a weekday claim needs two nights
   assert.equal(thin.some(item => item.id === 'weekday'), false);
 });
 
-test('best-run and buffer milestones read the schedule and the cutoff', () => {
+test('milestones never praise a run or a buffer', () => {
   const schedule = [
     day('2026-04-01', 'intervention', 0),
     day('2026-04-03', 'intervention', 1),
@@ -236,14 +252,8 @@ test('best-run and buffer milestones read the schedule and the cutoff', () => {
     cutoffTime: '12:00',
     schedule,
   });
-  const bestRun = milestones.find(item => item.id === 'best-run');
-  assert.ok(bestRun);
-  assert.match(bestRun.title, /3 cutoff days kept/);
-
-  const buffer = milestones.find(item => item.id === 'buffer');
-  assert.ok(buffer);
-  // 30, 60 and 15 minutes before the cutoff average to 35.
-  assert.match(buffer.title, /stop 35 min before the cutoff/);
+  assert.equal(milestones.some(item => item.id === 'best-run'), false);
+  assert.equal(milestones.some(item => item.id === 'buffer'), false);
 });
 
 test('the report trailer opens at the midpoint and near the end, and never after it', () => {

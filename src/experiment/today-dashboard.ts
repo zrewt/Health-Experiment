@@ -3,6 +3,8 @@ import type { HomeState, HomeStateInputs } from './home-state';
 import { getHomeState } from './home-state';
 import { entriesForPlan, entriesForRunIn, validRunInDays, progressSummary } from './adapter';
 import { getRunInDescriptiveStats, type RunInDescriptiveStats } from './view-model';
+import { buildRunInRange, type RunInRange } from './wait-value';
+import { getProgressFigures } from './progress-figures';
 import { addDaysToLocalDate, canEditDate, getMorningEntryDate } from './dates';
 import { runInMinValidDays } from './config';
 import {
@@ -75,6 +77,8 @@ export interface TodayDashboardModel {
         cutoffTime: string;
         nextStepText: string;
         descriptiveStats: RunInDescriptiveStats | null;
+        /** The user's own run-in range, or null below three logged nights. */
+        range: RunInRange | null;
       }
     | {
         kind: 'experiment';
@@ -84,6 +88,14 @@ export interface TodayDashboardModel {
         daysRemaining: number;
         adherenceCounts: ProgressSummary['adherenceCounts'];
         nextStepText: string;
+        /** Nights with a sleep figure, among the scheduled days that have happened. */
+        nightsLogged: number;
+        nightsSoFar: number;
+        /** Cutoff days that have happened, and how many of them were kept. */
+        cutoffDaysSoFar: number;
+        cutoffDaysKept: number;
+        pairsDone: number;
+        pairsPlanned: number;
       }
     | {
         kind: 'result';
@@ -335,6 +347,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
         cutoffTime,
         nextStepText,
         descriptiveStats,
+        range: buildRunInRange(runInEntries),
       },
       unsyncedCount,
     };
@@ -408,6 +421,15 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
   const lastExposureDate =
     activePlan.schedule[activePlan.schedule.length - 1]?.date ?? activePlan.startDate;
   const cutoffTime = getCutoffTime(activePlan);
+  // Counts the user controls. They are read from the schedule and the log only, so no
+  // test-day sleep value can reach the progress card.
+  const figures = getProgressFigures(
+    activePlan.schedule,
+    narrowedEntries,
+    cutoffTime,
+    exposure,
+    today,
+  );
 
   if (state === 'plan_scheduled') {
     return {
@@ -438,6 +460,12 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
         daysRemaining: summary.daysRemaining,
         adherenceCounts: summary.adherenceCounts,
         nextStepText: `Next step: your first note on ${activePlan.startDate}.`,
+        nightsLogged: figures.nightsLogged,
+        nightsSoFar: figures.daysElapsed,
+        cutoffDaysSoFar: figures.cutoffDaysElapsed,
+        cutoffDaysKept: figures.cutoffDaysKept,
+        pairsDone: figures.pairsDone,
+        pairsPlanned: figures.pairsPlanned,
       },
       unsyncedCount,
     };
@@ -480,6 +508,12 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
         daysRemaining: summary.daysRemaining,
         adherenceCounts: summary.adherenceCounts,
         nextStepText: `Next step: finish on ${lastExposureDate}. What we found opens the next day.`,
+        nightsLogged: figures.nightsLogged,
+        nightsSoFar: figures.daysElapsed,
+        cutoffDaysSoFar: figures.cutoffDaysElapsed,
+        cutoffDaysKept: figures.cutoffDaysKept,
+        pairsDone: figures.pairsDone,
+        pairsPlanned: figures.pairsPlanned,
       },
       unsyncedCount,
     };
@@ -521,6 +555,12 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       daysRemaining: summary.daysRemaining,
       adherenceCounts: summary.adherenceCounts,
       nextStepText: 'Next step: lock your log to see what we found.',
+      nightsLogged: figures.nightsLogged,
+      nightsSoFar: figures.daysElapsed,
+      cutoffDaysSoFar: figures.cutoffDaysElapsed,
+      cutoffDaysKept: figures.cutoffDaysKept,
+      pairsDone: figures.pairsDone,
+      pairsPlanned: figures.pairsPlanned,
     },
     unsyncedCount,
   };

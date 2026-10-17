@@ -11,15 +11,9 @@ import type { ScheduledDay } from '../engine';
 import type { ExposureKind } from './experiments';
 import { formatSleepFriendly } from './plain-language';
 import { addDaysToLocalDate, parseLocalDate } from './dates';
-import { getProgressFigures } from './progress-figures';
+import { WEEKDAY_MIN_NIGHTS } from './wait-value';
 
-export type MilestoneId =
-  | 'range'
-  | 'weekday'
-  | 'best-run'
-  | 'fortnight'
-  | 'buffer'
-  | 'consistency';
+export type MilestoneId = 'range' | 'weekday' | 'fortnight' | 'consistency';
 
 export interface Milestone {
   id: MilestoneId;
@@ -61,14 +55,14 @@ function meanByWeekday(entries: readonly DailyEntry[]): Map<number, number[]> {
 
 /**
  * The weekday with the longest average, when it is at least 20 minutes longer than another
- * weekday that also has at least two logged nights. Needs six nights in total, so a single
- * unusual Saturday can never become a claim.
+ * weekday that also has at least four logged nights. The per-weekday floor matters more
+ * than the total: three Saturdays are not a weekday group.
  */
 function weekdayMilestone(entries: readonly DailyEntry[]): Milestone | null {
   if (entries.length < MIN_WEEKDAY_NIGHTS) return null;
   const byWeekday = meanByWeekday(entries);
   const eligible = [...byWeekday.entries()]
-    .filter(([, nights]) => nights.length >= 2)
+    .filter(([, nights]) => nights.length >= WEEKDAY_MIN_NIGHTS)
     .map(([weekday, nights]) => ({ weekday, average: average(nights) }));
   if (eligible.length < 2) return null;
 
@@ -89,7 +83,9 @@ function weekdayMilestone(entries: readonly DailyEntry[]): Milestone | null {
  * so a single card is enough; the result screen can list them.
  */
 export function getMilestones(input: MilestoneInput): Milestone[] {
-  const { entries, today, exposure, cutoffTime, schedule } = input;
+  // exposure and cutoffTime stay on the input shape for callers, but no milestone now
+  // reads timing or a streak: plain counts and own sleep only.
+  const { entries, today, schedule } = input;
   const logged = entries
     .filter(entry => entry.sleepMinutes !== null && entry.date <= today)
     .slice()
@@ -118,19 +114,6 @@ export function getMilestones(input: MilestoneInput): Milestone[] {
   const weekday = weekdayMilestone(relevant);
   if (weekday) milestones.push(weekday);
 
-  const scheduleDays = schedule ?? [];
-  const figures = scheduleDays.length > 0
-    ? getProgressFigures(scheduleDays, entries, cutoffTime, exposure, today)
-    : null;
-
-  if (figures && figures.bestRun >= 2) {
-    milestones.push({
-      id: 'best-run',
-      title: `Your best run: ${figures.bestRun} cutoff days kept.`,
-      body: 'That is the longest run in this test so far.',
-    });
-  }
-
   if (relevant.length >= 14) {
     const windowStart = addDaysToLocalDate(today, -13);
     const recent = relevant.filter(entry => entry.date >= windowStart && entry.date <= today).length;
@@ -138,17 +121,6 @@ export function getMilestones(input: MilestoneInput): Milestone[] {
       id: 'fortnight',
       title: `${relevant.length} nights logged.`,
       body: `${recent} of the last 14 nights are in your log.`,
-    });
-  }
-
-  if (figures && figures.bufferAverageMinutes !== null && figures.cutoffDaysKept >= 3) {
-    milestones.push({
-      id: 'buffer',
-      title: `You stop ${figures.bufferAverageMinutes} min before the cutoff.`,
-      body:
-        figures.bufferTrendMinutes !== null && figures.bufferTrendMinutes >= 5
-          ? `That is ${figures.bufferTrendMinutes} min earlier than the weeks before.`
-          : 'That is the average on the cutoff days you kept.',
     });
   }
 

@@ -26,9 +26,8 @@ import {
 } from '@/experiment/experiments';
 import type { DailyEntry, ProgressSummary } from '@/experiment/types';
 import { CheckInCard } from '@/components/CheckInCard';
-import { MorningMirrorCard } from '@/components/MorningMirrorCard';
+
 import { CutoffCountdown } from '@/components/CutoffCountdown';
-import { getMorningMirror } from '@/experiment/morning-mirror';
 import { getProgressFigures } from '@/experiment/progress-figures';
 import { getReportTrailer } from '@/experiment/milestones';
 import { getMotivation } from '@/data/motivation';
@@ -129,9 +128,6 @@ export default function DailyInstructionScreen() {
   // Progress that counts what the user controls, plus the own-baseline reading of the
   // night just logged. Neither can become an interim result.
   const progressFigures = getProgressFigures(plan.schedule, entries, cutoffTime, exposure, today);
-  const mirror = yesterdayEntry?.sleepMinutes != null
-    ? getMorningMirror({ entries, today, exposure, cutoffTime, schedule: plan.schedule })
-    : null;
   const cutoffDaysPlanned = plan.schedule.filter(day => day.condition === 'intervention').length;
   const trailer = getReportTrailer(currentDayNum, plan.chosenDuration);
   const storedExposure = exposureValue(yesterdayEntry, exposure);
@@ -273,9 +269,6 @@ export default function DailyInstructionScreen() {
             </View>
           </View>
         </Card>
-
-        {/* The receipt for the night just logged: own baseline, timing, behavior. */}
-        {mirror ? <MorningMirrorCard model={mirror} /> : null}
 
         {/* Evening ritual, only on a cutoff day and only near the cutoff time. */}
         {!isScheduled && !isAfterLastExposure && todayScheduled?.condition === 'intervention' ? (

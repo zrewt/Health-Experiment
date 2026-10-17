@@ -22,6 +22,10 @@ export interface ProgressFigures {
   cutoffDaysKept: number;
   /** Every scheduled day that has happened. */
   daysElapsed: number;
+  /** Nights with a sleep figure, among the days that have happened. */
+  nightsLogged: number;
+  /** Cutoff days that have happened (whether or not the rule was kept). */
+  cutoffDaysElapsed: number;
   /** Unique day-pairs on the schedule. */
   pairsPlanned: number;
   /** Pairs whose every day is fully logged (sleep and that day's exposure). */
@@ -72,6 +76,7 @@ export function getProgressFigures(
 
   const cutoffDays = schedule.filter(day => day.condition === 'intervention');
   const elapsed = schedule.filter(day => day.date <= today);
+  const nightsLogged = elapsed.filter(day => (byDate.get(day.date)?.sleepMinutes ?? null) !== null).length;
 
   let cutoffDaysKept = 0;
   let bestRun = 0;
@@ -121,6 +126,8 @@ export function getProgressFigures(
     cutoffDaysPlanned: cutoffDays.length,
     cutoffDaysKept,
     daysElapsed: elapsed.length,
+    nightsLogged,
+    cutoffDaysElapsed: cutoffDays.filter(day => day.date <= today).length,
     pairsPlanned: pairs.size,
     pairsDone,
     bestRun,

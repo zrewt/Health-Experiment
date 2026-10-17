@@ -48,7 +48,7 @@ import {
   type ExposureKind,
 } from '@/experiment/experiments';
 import { isFeasibilityDue } from '@/experiment/start-attempt';
-import { getLatestMilestone } from '@/experiment/milestones';
+import { buildRunInRange } from '@/experiment/wait-value';
 import { getRunInDescriptiveStats, type RunInDescriptiveStats } from '@/experiment/view-model';
 import {
   CAFFEINE_TIME_UNREADABLE_MARKER,
@@ -246,12 +246,7 @@ export default function RunInScreen() {
     ? computeExperimentBaseline(exposure, runInEntries, { cutoffTime })
     : null;
   // The first real aha: the user's own range, once there are enough nights to show one.
-  const runInMilestone = getLatestMilestone({
-    entries: runInEntries,
-    today,
-    exposure,
-    cutoffTime,
-  });
+  const runInRange = buildRunInRange(runInEntries);
 
   // Past 3 editable days list (yesterday, -2 days, -3 days)
   const pastDays = [
@@ -303,11 +298,9 @@ export default function RunInScreen() {
               <Text variant="body" color="textMuted">
                 {progressSentence(validDaysCount, runInMinValidDays)}
               </Text>
-              {/* The first real aha: their own range, and why one night cannot answer. */}
-              {runInMilestone ? (
-                <Text variant="sub" color="textMuted">
-                  {runInMilestone.title} {runInMilestone.body}
-                </Text>
+              {/* Their own range, and why one night cannot answer the question. */}
+              {runInRange ? (
+                <Text variant="sub" color="textMuted">{runInRange.sentence}</Text>
               ) : null}
             </View>
           </View>

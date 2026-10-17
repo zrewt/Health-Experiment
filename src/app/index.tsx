@@ -34,14 +34,17 @@ import { getToday } from '@/experiment/clock';
 import { getTodayDashboardModel } from '@/experiment/today-dashboard';
 import type { DailyEntry } from '@/experiment/types';
 import { extractCutoffTime } from '@/experiment/lifecycle';
-import { getMorningMirror } from '@/experiment/morning-mirror';
-import { getProgressFigures } from '@/experiment/progress-figures';
-import { getLatestMilestone } from '@/experiment/milestones';
+import { entriesForRunIn } from '@/experiment/adapter';
+import { addDaysToLocalDate } from '@/experiment/dates';
+import {
+  buildCheckInReceipt,
+  buildRunInRecap,
+  PAIRS_EXPLANATION,
+} from '@/experiment/wait-value';
 import { CheckInCard } from '@/components/CheckInCard';
-import { MorningMirrorCard } from '@/components/MorningMirrorCard';
-import { InsightCard } from '@/components/InsightCard';
+import { CheckInReceiptCard } from '@/components/CheckInReceiptCard';
 import { NightTracker } from '@/components/NightTracker';
-import { progressSentence, weeklyRecap } from '@/experiment/plain-language';
+import { progressSentence } from '@/experiment/plain-language';
 import { exposureValue } from '@/experiment/experiments';
 import { syncReminders } from '@/notifications/reminders';
 import { routeForHomeState } from '@/notifications/tap-target';
@@ -173,34 +176,40 @@ export default function HomeScreen() {
   const activeDayItem = dashboard.checkIn.recentDays.find((d) => d.date === activeCheckInDate);
   const canEditActiveDate = activeDayItem ? activeDayItem.editable : true;
 
-  // A plain read-back of the last seven nights; shown only once something is logged.
-  const recap = weeklyRecap(entries, today);
-
   const lastNightLogged = dashboard.checkIn.status === 'logged';
-  // The mirror and the milestone cards read the test the user is actually running.
-  const activeExposure = dashboard.checkIn.exposure;
   const activeCutoff = plan
     ? extractCutoffTime(plan.plan)
     : setup?.cutoffTime ?? null;
-  const mirror = lastNightLogged && activeCutoff
-    ? getMorningMirror({
+
+  // Run-in only: these nights are not test days, so a range and a usual are honest here.
+  const runInEntries = entriesForRunIn(entries, savedPlans.map((item) => item.plan), today);
+  const recap = buildRunInRecap(runInEntries, today);
+
+  // The receipt repeats the night the user logged and counts only. During a test it never
+  // touches another test night's sleep, and it never compares day types.
+  const receiptEntry = entries.find(
+    (item) => item.date === dashboard.checkIn.defaultDate && item.sleepMinutes !== null,
+  );
+  const schedule = plan?.plan.schedule ?? [];
+  const lastNightIsTestDay = schedule.some((day) => day.date === dashboard.checkIn.defaultDate);
+  const yesterday = addDaysToLocalDate(today, -1);
+  const runInWindowDates: string[] = [];
+  for (let index = 0; index < 14; index++) {
+    const date = addDaysToLocalDate(yesterday, -index);
+    if (setup?.runInStartDate && date < setup.runInStartDate) break;
+    runInWindowDates.unshift(date);
+  }
+  const testWindowDates = schedule.filter((day) => day.date <= today).map((day) => day.date);
+  const receipt = lastNightLogged && receiptEntry && !editingCheckIn && dashboard.checkIn.enabled
+    ? buildCheckInReceipt({
+        entry: receiptEntry,
         entries,
-        today,
-        exposure: activeExposure,
+        windowDates: lastNightIsTestDay ? testWindowDates : runInWindowDates,
+        cutoffDates: lastNightIsTestDay
+          ? schedule.filter((day) => day.date <= today && day.condition === 'intervention').map((day) => day.date)
+          : null,
+        exposure: dashboard.checkIn.exposure,
         cutoffTime: activeCutoff,
-        schedule: plan?.plan.schedule,
-      })
-    : null;
-  const progressFigures = plan && activeCutoff
-    ? getProgressFigures(plan.plan.schedule, entries, activeCutoff, activeExposure, today)
-    : null;
-  const latestMilestone = activeCutoff
-    ? getLatestMilestone({
-        entries,
-        today,
-        exposure: activeExposure,
-        cutoffTime: activeCutoff,
-        schedule: plan?.plan.schedule,
       })
     : null;
   const checkInFormVisible =
@@ -410,10 +419,10 @@ export default function HomeScreen() {
           ) : null}
         </Card>
 
-        {/* The morning receipt: shown once last night is in the log, before any progress. */}
-        {mirror && !editingCheckIn ? (
-          <MorningMirrorCard
-            model={mirror}
+        {/* The receipt for the night just logged: their own entry and plain counts. */}
+        {receipt ? (
+          <CheckInReceiptCard
+            model={receipt}
             onEdit={() => {
               setSaveMessage(null);
               setSelectedDate(dashboard.checkIn.defaultDate);
@@ -441,8 +450,8 @@ export default function HomeScreen() {
               </Banner>
             ) : null}
 
-            {/* The mirror already carries the summary and the edit row when it is shown. */}
-            {lastNightLogged && !editingCheckIn && !mirror ? (
+            {/* The receipt already carries the summary and the edit row when it is shown. */}
+            {lastNightLogged && !editingCheckIn && !receipt ? (
               <Card tone="tint" overline={`Logged for last night (${dashboard.checkIn.defaultDate})`}>
                 <Text variant="heading">Last night is logged</Text>
                 <Text variant="body" color="textMuted" tabular>{dashboard.checkIn.summary}</Text>
@@ -523,13 +532,6 @@ export default function HomeScreen() {
           </>
         ) : null}
 
-        {/* Plain read-back of the last seven nights, shown once anything is logged. */}
-        {recap.daysLogged > 0 ? (
-          <Card tone="quiet">
-            <Text variant="sub" color="textMuted">{recap.sentence}</Text>
-          </Card>
-        ) : null}
-
         {/* Progress: one dot per night and one sentence. The figures sit under Details. */}
         {dashboard.progress?.kind === 'run_in' ? (
           <Card tone="tint" overline="Your progress">
@@ -538,11 +540,14 @@ export default function HomeScreen() {
               {progressSentence(dashboard.progress.validDays, dashboard.progress.targetDays)}
             </Text>
 
-            {/* The first real aha: the user's own range, and why a single night cannot answer. */}
-            {latestMilestone && latestMilestone.id === 'range' ? (
-              <Text variant="sub" color="textMuted">
-                {latestMilestone.title} {latestMilestone.body}
-              </Text>
+            {/* Their own range, unlocked at three run-in nights. */}
+            {dashboard.progress.range ? (
+              <Text variant="sub" color="textMuted">{dashboard.progress.range.sentence}</Text>
+            ) : null}
+
+            {/* Weekly read-back, run-in only: test-day sleep is never averaged before the end. */}
+            {recap ? (
+              <Text variant="caption" color="textMuted">{recap.sentence}</Text>
             ) : null}
 
             {dashboard.progress.descriptiveStats ? (
@@ -578,32 +583,24 @@ export default function HomeScreen() {
 
         {dashboard.progress?.kind === 'experiment' ? (
           <Card tone="tint" overline="Test">
-            {/* Progress counts what the user controls: kept cutoff days and finished pairs. */}
-            {progressFigures ? (
-              <>
-                <Text variant="heading" tabular>
-                  {progressFigures.cutoffDaysKept} of {progressFigures.cutoffDaysPlanned} cutoff days kept
-                </Text>
-                <Text variant="caption" color="textMuted" tabular>
-                  Day {dashboard.progress.currentDayNum > 0 ? dashboard.progress.currentDayNum : 0} of {dashboard.progress.totalDays}
-                  {' · '}
-                  {progressFigures.pairsDone} of {progressFigures.pairsPlanned} pairs done
-                </Text>
-              </>
-            ) : (
-              <Text variant="heading" tabular>
-                {dashboard.progress.currentDayNum > 0
-                  ? `Day ${dashboard.progress.currentDayNum} of ${dashboard.progress.totalDays}`
-                  : `${dashboard.progress.totalDays} days to go`}
-              </Text>
-            )}
-            <StatStrip
-              items={[
-                { label: 'Days logged', value: String(dashboard.progress.daysLogged) },
-                { label: 'Best run', value: String(progressFigures?.bestRun ?? 0) },
-                { label: 'Days remaining', value: String(dashboard.progress.daysRemaining) },
-              ]}
-            />
+            {/* Progress counts nights in the log and cutoff days kept, never sleep values. */}
+            <Text variant="heading" tabular>
+              {dashboard.progress.nightsSoFar > 0
+                ? `${dashboard.progress.nightsLogged} of ${dashboard.progress.nightsSoFar} nights logged`
+                : 'No nights logged yet'}
+            </Text>
+            <Text variant="sub" tabular>
+              {dashboard.progress.cutoffDaysSoFar > 0
+                ? `${dashboard.progress.cutoffDaysKept} of ${dashboard.progress.cutoffDaysSoFar} cutoff days kept`
+                : 'The first cutoff day is still ahead'}
+            </Text>
+            <Text variant="caption" color="textMuted" tabular>
+              {dashboard.progress.pairsDone} of {dashboard.progress.pairsPlanned} pairs done
+              {dashboard.progress.currentDayNum > 0
+                ? ` · Day ${dashboard.progress.currentDayNum} of ${dashboard.progress.totalDays}`
+                : ''}
+            </Text>
+            <Text variant="caption" color="textMuted">{PAIRS_EXPLANATION}</Text>
             <Text variant="sub" color="textMuted">{dashboard.progress.nextStepText}</Text>
             <Details summary="See your daily breakdown">
               <StatStrip
@@ -624,11 +621,6 @@ export default function HomeScreen() {
               />
             </Details>
           </Card>
-        ) : null}
-
-        {/* One unlocked milestone at a time, and never instead of the morning mirror. */}
-        {!mirror && latestMilestone && dashboard.progress?.kind === 'experiment' ? (
-          <InsightCard title={latestMilestone.title} body={latestMilestone.body} />
         ) : null}
 
         {dashboard.progress?.kind === 'result' ? (

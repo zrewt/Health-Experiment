@@ -75,6 +75,11 @@ export interface JournalInputs {
   /** Optional full plan history so archived completed plans stay locked in the journal. */
   plans?: readonly StoredExperimentPlan[];
   maxTimelineDays?: number;
+  /**
+   * True while a test is running: no sleep average is shown, because averaging test-day
+   * sleep would be an interim reading of the thing the test is measuring.
+   */
+  hideAverage?: boolean;
 }
 
 export function formatSleepDuration(sleepMinutes: number | null): string {
@@ -115,7 +120,7 @@ function formatExposureDisplay(
  * - Never exposes future experiment assignments or interim condition comparisons.
  */
 export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
-  const { entries, today, setup, plan, plans = [], maxTimelineDays = 60 } = inputs;
+  const { entries, today, setup, plan, plans = [], maxTimelineDays = 60, hideAverage = false } = inputs;
   const yesterday = getMorningEntryDate(today);
   // The journal reads the same test the rest of the app is running: the active plan owns it
   // while one exists, otherwise the setup row does.
@@ -258,11 +263,13 @@ export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
     };
   });
 
-  const averageSleepMinutes = sleepCount > 0 ? Math.round(sleepSum / sleepCount) : null;
+  const averageSleepMinutes = sleepCount > 0 && !hideAverage ? Math.round(sleepSum / sleepCount) : null;
   const chartLoggedCount = bars.filter(b => b.sleepMinutes !== null).length;
   const accessibleOverview =
     chartLoggedCount > 0 && averageSleepMinutes !== null
       ? `Sleep duration over the last ${bars.length} days (${startDate <= bars[0].date ? bars[0].date : startDate} to ${yesterday}): ${chartLoggedCount} of ${bars.length} nights logged, overall average ${formatSleepDuration(averageSleepMinutes)}.`
+      : chartLoggedCount > 0
+      ? `Sleep duration over the last ${bars.length} days: ${chartLoggedCount} of ${bars.length} nights logged.`
       : `Sleep duration over the last ${bars.length} days: no sleep nights logged yet.`;
 
   return {
