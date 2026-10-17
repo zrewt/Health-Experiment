@@ -226,23 +226,25 @@ export default function ResultScreen() {
           notice={MEDICAL_NOTICE}
           action={<Button label="Today" variant="quiet" onPress={backToToday} />}
         />
-        <Card tone="hero">
-          <Text variant="title" accessibilityRole="header">{plain.headline}</Text>
-          <View style={styles.whatThisMeans}>
-            <Text variant="caption" color="textMuted">{sentenceCase('WHAT THIS MEANS')}</Text>
-            <Text variant="body">{plain.paragraph}</Text>
-          </View>
-          <Text variant="caption" color="textMuted">{causationCaveat(experiment.exposureWord)}</Text>
-        </Card>
-        <Card tone="tint" overline={sentenceCase('WHAT TO DO NEXT')}>
-          <Text variant="sub" color="textMuted">{plain.nextStep}</Text>
-          <Button
-            label="Start a new sleep test"
-            variant="primary"
-            onPress={() => router.replace('/choose-test' as Href)}
-          />
-          <NavRow label="Past tests" onPress={() => router.push('/experiment' as Href)} />
-        </Card>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Card tone="hero">
+            <Text variant="title" accessibilityRole="header">{plain.headline}</Text>
+            <View style={styles.whatThisMeans}>
+              <Text variant="caption" color="textMuted">{sentenceCase('WHAT THIS MEANS')}</Text>
+              <Text variant="body">{plain.paragraph}</Text>
+            </View>
+            <Text variant="caption" color="textMuted">{causationCaveat(experiment.exposureWord)}</Text>
+          </Card>
+          <Card tone="tint" overline={sentenceCase('WHAT TO DO NEXT')}>
+            <Text variant="sub" color="textMuted">{plain.nextStep}</Text>
+            <Button
+              label="Start a new sleep test"
+              variant="primary"
+              onPress={() => router.replace('/choose-test' as Href)}
+            />
+            <NavRow label="Past tests" onPress={() => router.push('/experiment' as Href)} />
+          </Card>
+        </ScrollView>
       </Screen>
     );
   }
