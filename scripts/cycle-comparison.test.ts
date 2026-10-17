@@ -25,8 +25,9 @@ function finishedPlan(
     result:
       status === 'completed'
         ? {
-            verdictLabel: 'inconclusive',
+            verdictLabel: 'SUPPORTED',
             statement: 'x',
+            interval: estimate === null ? null : [estimate, estimate + 10],
             conservativeEstimate: estimate,
             adherence: { counts: { ADHERENT: adherent, NON_ADHERENT: 0, CONTAMINATED: 0, CONTROL_CLEAN: 0, UNKNOWN: 0 } },
             evaluatedAt: '2026-10-01T00:00:00.000Z',
@@ -66,7 +67,7 @@ test('rows run oldest first, and the sentences compare the two latest finished t
   );
   assert.equal(
     comparison.sentences[2],
-    'The cautious estimate of extra sleep on cutoff days went from 15 to 25 minutes a night.',
+    'The cautious sleep reading was 15 minutes more a night in the earlier test and 25 minutes more a night in the later one.',
   );
 });
 
@@ -110,4 +111,43 @@ test('the newest test is compared with the newest finished test of the same kind
     comparison.sentences[1],
     'The rule was followed on 20 of 42 days, then on 30 of 42 days.',
   );
+});
+
+test('unclear tests say they are too noisy to compare', () => {
+  const comparison = buildCycleComparison([
+    finishedPlan('a', '2026-08-01', '12:00', 30, 10, 'completed'),
+    finishedPlan('b', '2026-09-01', '12:00', 28, 12, 'completed'),
+  ]);
+  assert.ok(comparison);
+  assert.equal(comparison.rows[0].comparable, true);
+
+  const unclear = [
+    finishedPlan('a', '2026-08-01', '12:00', 30, 10),
+    finishedPlan('b', '2026-09-01', '12:00', 28, 12),
+  ];
+  unclear[0].result!.verdictLabel = 'INCONCLUSIVE';
+  const unclearComparison = buildCycleComparison(unclear);
+  assert.ok(unclearComparison);
+  assert.equal(unclearComparison.rows[0].comparable, false);
+  assert.equal(
+    unclearComparison.sentences[2],
+    'These tests are too noisy to compare on sleep. Their own results did not show a steady enough difference.',
+  );
+});
+
+test('no comparison sentence ever shows a bare number or an unlabelled unit', () => {
+  const comparison = buildCycleComparison([
+    finishedPlan('a', '2026-08-01', '12:00', 30, 75),
+    finishedPlan('b', '2026-09-01', '13:00', 28, 125),
+  ]);
+  assert.ok(comparison);
+  const text = comparison.sentences.join(' ');
+  assert.equal(
+    comparison.sentences[2],
+    'The cautious sleep reading was 1 hour 15 minutes more a night in the earlier test and 2 hours 5 minutes more a night in the later one.',
+  );
+  for (const banned of ['units', 'significant', 'improved', 'worse', 'trend', 'adherence']) {
+    assert.ok(!text.toLowerCase().includes(banned), banned);
+  }
+  assert.ok(!/\d+\.\d/.test(text));
 });

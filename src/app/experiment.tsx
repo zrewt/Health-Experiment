@@ -35,6 +35,7 @@ import type { StoredExperimentPlan } from '@/data/plan-persistence';
 import { getToday } from '@/experiment/clock';
 import { getExperimentLifecycleModel } from '@/experiment/lifecycle';
 import { buildCycleComparison } from '@/experiment/cycle-comparison';
+import { formatSleepMinutes, roundSleepMinutes } from '@/experiment/result-plain-language';
 
 export default function ExperimentScreen() {
   const router = useRouter();
@@ -236,7 +237,9 @@ export default function ExperimentScreen() {
                   value={
                     row.sleepEstimateMinutes === null
                       ? 'Could not be worked out'
-                      : `${row.sleepEstimateMinutes} min a night more on cutoff days`
+                      : roundSleepMinutes(row.sleepEstimateMinutes) === 0
+                        ? 'About the same on cutoff days'
+                        : `${formatSleepMinutes(row.sleepEstimateMinutes)} more a night`
                   }
                 />
               </View>

@@ -1,6 +1,7 @@
 import type { StoredExperimentPlan } from '../data/plan-persistence';
 import { VERDICT_HEADINGS } from './verdict-headings';
 import { experimentForRuleType, type ExperimentId } from './experiments';
+import { formatSleepMinutes, roundSleepMinutes } from './result-plain-language';
 
 /**
  * Side-by-side comparison of finished sleep tests.
@@ -29,6 +30,11 @@ export interface CycleComparisonRow {
   /** Engine's cautious estimate in minutes a night, or null when none could be worked out. */
   sleepEstimateMinutes: number | null;
   verdictHeading: string | null;
+  /**
+   * False when the engine's own verdict says these nights do not support a comparison.
+   * The card then says the tests are too noisy to compare instead of showing a number.
+   */
+  comparable: boolean;
 }
 
 export interface CycleComparison {
@@ -49,6 +55,20 @@ function cutoffOf(item: StoredExperimentPlan): string {
   return experimentOf(item).defaultCutoff;
 }
 
+/**
+ * The engine's own stored verdict decides whether the nights support a comparison. An
+ * inconclusive test is never dressed up as a reading, and no second judgement is made here.
+ */
+function isComparable(result: NonNullable<StoredExperimentPlan['result']>): boolean {
+  return result.verdictLabel === 'SUPPORTED' || result.verdictLabel === 'NO_DETECTABLE_EFFECT';
+}
+
+/** "15 minutes more a night", "about the same a night"; never a raw number or a unit. */
+function cautiousReading(minutes: number): string {
+  if (roundSleepMinutes(minutes) === 0) return 'about the same a night';
+  return `${formatSleepMinutes(minutes)} ${minutes < 0 ? 'less' : 'more'} a night`;
+}
+
 function rowFor(item: StoredExperimentPlan): CycleComparisonRow {
   const result = item.result ?? null;
   const experiment = experimentOf(item);
@@ -62,6 +82,7 @@ function rowFor(item: StoredExperimentPlan): CycleComparisonRow {
     ruleFollowedDays: result ? result.adherence.counts.ADHERENT : null,
     sleepEstimateMinutes: result ? result.conservativeEstimate : null,
     verdictHeading: result ? (VERDICT_HEADINGS[result.verdictLabel] ?? result.verdictLabel) : null,
+    comparable: result ? isComparable(result) : false,
   };
 }
 
@@ -80,13 +101,17 @@ function sentencesFor(previous: CycleComparisonRow, latest: CycleComparisonRow):
     );
   }
 
-  if (previous.sleepEstimateMinutes !== null && latest.sleepEstimateMinutes !== null) {
+  if (previous.sleepEstimateMinutes === null || latest.sleepEstimateMinutes === null) {
     sentences.push(
-      `The cautious estimate of extra sleep on cutoff days went from ${previous.sleepEstimateMinutes} to ${latest.sleepEstimateMinutes} minutes a night.`,
+      'A single sleep estimate could not be worked out for one of these tests, so they cannot be compared on sleep.',
+    );
+  } else if (!previous.comparable || !latest.comparable) {
+    sentences.push(
+      'These tests are too noisy to compare on sleep. Their own results did not show a steady enough difference.',
     );
   } else {
     sentences.push(
-      'A single sleep estimate could not be worked out for one of these tests, so they cannot be compared on sleep.',
+      `The cautious sleep reading was ${cautiousReading(previous.sleepEstimateMinutes)} in the earlier test and ${cautiousReading(latest.sleepEstimateMinutes)} in the later one.`,
     );
   }
 
