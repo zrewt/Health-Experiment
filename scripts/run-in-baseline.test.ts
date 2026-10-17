@@ -1,3 +1,4 @@
+import { CURRENT_CONSENT_VERSION } from '../src/experiment/consent';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { generateSchedule } from '../src/engine';
@@ -143,7 +144,7 @@ test('the first cycle is unchanged: with no earlier plan every logged night coun
   assert.equal(validRunInDays(allEntries, [], today), PLAN_LENGTH + RUN_IN_NIGHTS);
   // Same rule as before for an account that has never run a test.
   assert.equal(getHomeState({
-    consent: { userId: 'u', consentType: 'health-data', policyVersion: 'v1', granted: true, createdAt: '2026-01-01T00:00:00.000Z' },
+    consent: { userId: 'u', consentType: 'health-data', policyVersion: CURRENT_CONSENT_VERSION, granted: true, createdAt: '2026-01-01T00:00:00.000Z' },
     setup: { experimentId: 'caffeine-cutoff', cutoffTime: '12:00', screeningAnswer: 'usually', runInStartDate: '2026-01-01' },
     entries: runInLogs(),
     plan: null,
@@ -166,7 +167,7 @@ test('the gate follows the same rule: a finished test cannot unlock the next run
   const entries = [...planLogs(), ...threeNights];
   const gateToday = threeNights[threeNights.length - 1].date;
   const inputs = {
-    consent: { userId: 'u', consentType: 'health-data' as const, policyVersion: 'v1', granted: true, createdAt: '2026-01-01T00:00:00.000Z' },
+    consent: { userId: 'u', consentType: 'health-data' as const, policyVersion: CURRENT_CONSENT_VERSION, granted: true, createdAt: '2026-01-01T00:00:00.000Z' },
     setup: { experimentId: 'caffeine-cutoff', cutoffTime: '12:00', screeningAnswer: 'usually' as const, runInStartDate: '2026-01-01' },
     entries,
     plan: null,
@@ -190,7 +191,7 @@ test('archived completed plan dates stay edit-locked on Today and Journal during
   assert.equal(canEditDate(dayAfterTest, LAST_PLANNED_DAY, [finishedPlan]), false);
 
   const dashboardOnDayAfter = getTodayDashboardModel({
-    consent: { userId: 'u', consentType: 'health-data', policyVersion: 'v1', granted: true, createdAt: '2026-01-01T00:00:00.000Z' },
+    consent: { userId: 'u', consentType: 'health-data', policyVersion: CURRENT_CONSENT_VERSION, granted: true, createdAt: '2026-01-01T00:00:00.000Z' },
     setup: { experimentId: 'caffeine-cutoff', cutoffTime: '12:00', screeningAnswer: 'usually', runInStartDate: '2026-01-01' },
     entries: planLogs(),
     plan: null,

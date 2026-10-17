@@ -33,9 +33,24 @@ import type { StoredExperimentPlan } from '@/data/plan-persistence';
 import { getToday } from '@/experiment/clock';
 import { getTodayDashboardModel } from '@/experiment/today-dashboard';
 import type { DailyEntry } from '@/experiment/types';
+import { extractCutoffTime } from '@/experiment/lifecycle';
+import { getMorningMirror } from '@/experiment/morning-mirror';
+import { getProgressFigures } from '@/experiment/progress-figures';
+import { getLatestMilestone } from '@/experiment/milestones';
 import { CheckInCard } from '@/components/CheckInCard';
+import { MorningMirrorCard } from '@/components/MorningMirrorCard';
+import { InsightCard } from '@/components/InsightCard';
+import { NightTracker } from '@/components/NightTracker';
+import { progressSentence, weeklyRecap } from '@/experiment/plain-language';
+import { exposureValue } from '@/experiment/experiments';
 import { syncReminders } from '@/notifications/reminders';
 import { routeForHomeState } from '@/notifications/tap-target';
+
+/**
+ * Set once a brand-new account has been sent into setup in this app session. Without it,
+ * backing out of setup to Home would send the user straight back into it.
+ */
+let autoSetupRouted = false;
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -46,6 +61,7 @@ export default function HomeScreen() {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState('');
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [previousEntrySnapshot, setPreviousEntrySnapshot] = useState<DailyEntry | null>(null);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
   const [reminderNotice, setReminderNotice] = useState<string | null>(null);
 
@@ -81,6 +97,15 @@ export default function HomeScreen() {
       setPlan(loadedPlan);
       setSavedPlans(loadedPlans);
       setError('');
+
+      // An account that has never answered the consent question is new: it goes straight
+      // into onboarding, so it starts right after sign-up without a tap on Home. The first
+      // step is choosing which test to run, never a default one picked for the user.
+      if (loadedConsent === null && !autoSetupRouted) {
+        autoSetupRouted = true;
+        router.replace('/choose-test');
+        return;
+      }
 
       const model = getTodayDashboardModel({
         consent: loadedConsent,
@@ -122,7 +147,7 @@ export default function HomeScreen() {
     } finally {
       setLoadingData(false);
     }
-  }, [user, today]);
+  }, [user, today, router]);
 
   // The focus effect also runs on mount (the screen is focused when it mounts), so a
   // separate mount effect would only fetch the same data twice.
@@ -148,7 +173,36 @@ export default function HomeScreen() {
   const activeDayItem = dashboard.checkIn.recentDays.find((d) => d.date === activeCheckInDate);
   const canEditActiveDate = activeDayItem ? activeDayItem.editable : true;
 
+  // A plain read-back of the last seven nights; shown only once something is logged.
+  const recap = weeklyRecap(entries, today);
+
   const lastNightLogged = dashboard.checkIn.status === 'logged';
+  // The mirror and the milestone cards read the test the user is actually running.
+  const activeExposure = dashboard.checkIn.exposure;
+  const activeCutoff = plan
+    ? extractCutoffTime(plan.plan)
+    : setup?.cutoffTime ?? null;
+  const mirror = lastNightLogged && activeCutoff
+    ? getMorningMirror({
+        entries,
+        today,
+        exposure: activeExposure,
+        cutoffTime: activeCutoff,
+        schedule: plan?.plan.schedule,
+      })
+    : null;
+  const progressFigures = plan && activeCutoff
+    ? getProgressFigures(plan.plan.schedule, entries, activeCutoff, activeExposure, today)
+    : null;
+  const latestMilestone = activeCutoff
+    ? getLatestMilestone({
+        entries,
+        today,
+        exposure: activeExposure,
+        cutoffTime: activeCutoff,
+        schedule: plan?.plan.schedule,
+      })
+    : null;
   const checkInFormVisible =
     !loadingData && dashboard.checkIn.enabled && (!lastNightLogged || editingCheckIn);
   const earlierUnlogged = dashboard.checkIn.recentDays
@@ -163,6 +217,22 @@ export default function HomeScreen() {
 
   const handleSaveCheckIn = async (entry: DailyEntry) => {
     if (!user) return;
+    const prevExisting = entries.find((e) => e.date === entry.date);
+    setPreviousEntrySnapshot(
+      prevExisting
+        ? {
+            date: prevExisting.date,
+            sleepMinutes: prevExisting.sleepMinutes,
+            lastCaffeineTime: prevExisting.lastCaffeineTime,
+            lastScreenTime: prevExisting.lastScreenTime ?? null,
+          }
+        : {
+            date: entry.date,
+            sleepMinutes: null,
+            lastCaffeineTime: null,
+            lastScreenTime: null,
+          },
+    );
     setSavingEntry(true);
     setSaveMessage(null);
     setSyncNotice(null);
@@ -198,6 +268,28 @@ export default function HomeScreen() {
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not save. Try again.');
+    } finally {
+      setSavingEntry(false);
+    }
+  };
+
+  const handleUndoCheckIn = async () => {
+    if (!user || !previousEntrySnapshot || savingEntry) return;
+    setSavingEntry(true);
+    setError('');
+    try {
+      const restored = await saveEntry(user.id, previousEntrySnapshot);
+      setEntries((prev) => {
+        const next = prev.filter((e) => e.date !== previousEntrySnapshot.date);
+        next.push(restored);
+        return next.sort((a, b) => a.date.localeCompare(b.date));
+      });
+      setSelectedDate(previousEntrySnapshot.date);
+      setPreviousEntrySnapshot(null);
+      setEditingCheckIn(true);
+      setSaveMessage(`Restored ${previousEntrySnapshot.date} so you can change it.`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not undo right now.');
     } finally {
       setSavingEntry(false);
     }
@@ -318,15 +410,39 @@ export default function HomeScreen() {
           ) : null}
         </Card>
 
+        {/* The morning receipt: shown once last night is in the log, before any progress. */}
+        {mirror && !editingCheckIn ? (
+          <MorningMirrorCard
+            model={mirror}
+            onEdit={() => {
+              setSaveMessage(null);
+              setSelectedDate(dashboard.checkIn.defaultDate);
+              setEditingCheckIn(true);
+            }}
+          />
+        ) : null}
+
         {!loadingData && dashboard.checkIn.enabled ? (
           <>
             {saveMessage ? (
-              <Text variant="sub" color="accent" accessibilityRole="alert" accessibilityLiveRegion="polite">
+              <Banner
+                tone="success"
+                action={
+                  previousEntrySnapshot ? (
+                    <Button
+                      label="Undo"
+                      variant="quiet"
+                      onPress={() => void handleUndoCheckIn()}
+                    />
+                  ) : undefined
+                }
+              >
                 {saveMessage}
-              </Text>
+              </Banner>
             ) : null}
 
-            {lastNightLogged && !editingCheckIn ? (
+            {/* The mirror already carries the summary and the edit row when it is shown. */}
+            {lastNightLogged && !editingCheckIn && !mirror ? (
               <Card tone="tint" overline={`Logged for last night (${dashboard.checkIn.defaultDate})`}>
                 <Text variant="heading">Last night is logged</Text>
                 <Text variant="body" color="textMuted" tabular>{dashboard.checkIn.summary}</Text>
@@ -351,7 +467,8 @@ export default function HomeScreen() {
                     : activeCheckInDate
                 }
                 initialSleepMinutes={activeDayItem?.sleepMinutes ?? null}
-                initialCaffeineTime={activeDayItem?.lastCaffeineTime ?? null}
+                initialCaffeineTime={exposureValue(activeDayItem, dashboard.checkIn.exposure)}
+                exposure={dashboard.checkIn.exposure}
                 onSave={handleSaveCheckIn}
                 saving={savingEntry}
               />
@@ -406,64 +523,112 @@ export default function HomeScreen() {
           </>
         ) : null}
 
-        {/* Progress: figures only, no interim estimates. */}
+        {/* Plain read-back of the last seven nights, shown once anything is logged. */}
+        {recap.daysLogged > 0 ? (
+          <Card tone="quiet">
+            <Text variant="sub" color="textMuted">{recap.sentence}</Text>
+          </Card>
+        ) : null}
+
+        {/* Progress: one dot per night and one sentence. The figures sit under Details. */}
         {dashboard.progress?.kind === 'run_in' ? (
-          <Card tone="tint" overline="Progress">
-            <Text variant="heading" tabular>
-              {dashboard.progress.validDays} of {dashboard.progress.targetDays} nights logged
+          <Card tone="tint" overline="Your progress">
+            <NightTracker logged={dashboard.progress.validDays} target={dashboard.progress.targetDays} />
+            <Text variant="body">
+              {progressSentence(dashboard.progress.validDays, dashboard.progress.targetDays)}
             </Text>
-            <Text variant="sub" color="textMuted">{dashboard.progress.nextStepText}</Text>
+
+            {/* The first real aha: the user's own range, and why a single night cannot answer. */}
+            {latestMilestone && latestMilestone.id === 'range' ? (
+              <Text variant="sub" color="textMuted">
+                {latestMilestone.title} {latestMilestone.body}
+              </Text>
+            ) : null}
 
             {dashboard.progress.descriptiveStats ? (
-              <StatStrip
-                items={[
-                  { label: 'Days logged', value: String(dashboard.progress.descriptiveStats.daysLogged) },
-                  {
-                    label: 'Avg sleep',
-                    value:
-                      dashboard.progress.descriptiveStats.averageSleepMinutes !== null
-                        ? `${(dashboard.progress.descriptiveStats.averageSleepMinutes / 60).toFixed(1)}h`
-                        : '—',
-                  },
-                  {
-                    label: 'Caffeine after noon',
-                    value: `${dashboard.progress.descriptiveStats.afternoonCaffeineDays}`,
-                  },
-                  {
-                    label: 'Caffeine not logged',
-                    value: `${dashboard.progress.descriptiveStats.unknownCaffeineDays}`,
-                  },
-                ]}
-              />
+              <Details summary="See your numbers">
+                <Text variant="sub" color="textMuted">{dashboard.progress.nextStepText}</Text>
+                <StatStrip
+                  items={[
+                    { label: 'Days logged', value: String(dashboard.progress.descriptiveStats.daysLogged) },
+                    {
+                      label: 'Avg sleep',
+                      value:
+                        dashboard.progress.descriptiveStats.averageSleepMinutes !== null
+                          ? `${(dashboard.progress.descriptiveStats.averageSleepMinutes / 60).toFixed(1)}h`
+                          : '—',
+                    },
+                    {
+                      label: `${dashboard.checkIn.exposure === 'screens' ? 'Screens' : 'Caffeine'} after ${dashboard.progress.cutoffTime}`,
+                      value: `${dashboard.progress.descriptiveStats.afterCutoffDays}`,
+                    },
+                    {
+                      label:
+                        dashboard.checkIn.exposure === 'screens'
+                          ? 'Screens not logged'
+                          : 'Caffeine not logged',
+                      value: `${dashboard.progress.descriptiveStats.unknownExposureDays}`,
+                    },
+                  ]}
+                />
+              </Details>
             ) : null}
           </Card>
         ) : null}
 
         {dashboard.progress?.kind === 'experiment' ? (
           <Card tone="tint" overline="Test">
-            <Text variant="heading" tabular>
-              {dashboard.progress.currentDayNum > 0
-                ? `Day ${dashboard.progress.currentDayNum} of ${dashboard.progress.totalDays}`
-                : `${dashboard.progress.totalDays} days to go`}
-            </Text>
+            {/* Progress counts what the user controls: kept cutoff days and finished pairs. */}
+            {progressFigures ? (
+              <>
+                <Text variant="heading" tabular>
+                  {progressFigures.cutoffDaysKept} of {progressFigures.cutoffDaysPlanned} cutoff days kept
+                </Text>
+                <Text variant="caption" color="textMuted" tabular>
+                  Day {dashboard.progress.currentDayNum > 0 ? dashboard.progress.currentDayNum : 0} of {dashboard.progress.totalDays}
+                  {' · '}
+                  {progressFigures.pairsDone} of {progressFigures.pairsPlanned} pairs done
+                </Text>
+              </>
+            ) : (
+              <Text variant="heading" tabular>
+                {dashboard.progress.currentDayNum > 0
+                  ? `Day ${dashboard.progress.currentDayNum} of ${dashboard.progress.totalDays}`
+                  : `${dashboard.progress.totalDays} days to go`}
+              </Text>
+            )}
             <StatStrip
               items={[
                 { label: 'Days logged', value: String(dashboard.progress.daysLogged) },
+                { label: 'Best run', value: String(progressFigures?.bestRun ?? 0) },
                 { label: 'Days remaining', value: String(dashboard.progress.daysRemaining) },
               ]}
             />
-            <StatStrip
-              items={[
-                { label: 'Kept the rule', value: String(dashboard.progress.adherenceCounts.ADHERENT), emphasis: 'strong' },
-                { label: 'Normal days', value: String(dashboard.progress.adherenceCounts.CONTROL_CLEAN) },
-                // CONTAMINATED is a normal day where caffeine was skipped or early, not
-                // "caffeine after cutoff" — that would describe the opposite of the count.
-                { label: 'Normal, no caffeine', value: String(dashboard.progress.adherenceCounts.CONTAMINATED) },
-                { label: 'Not sure', value: String(dashboard.progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
-              ]}
-            />
             <Text variant="sub" color="textMuted">{dashboard.progress.nextStepText}</Text>
+            <Details summary="See your daily breakdown">
+              <StatStrip
+                items={[
+                  { label: 'Kept the rule', value: String(dashboard.progress.adherenceCounts.ADHERENT), emphasis: 'strong' },
+                  { label: 'Normal days', value: String(dashboard.progress.adherenceCounts.CONTROL_CLEAN) },
+                  // CONTAMINATED is a normal day where the exposure was skipped or early, not
+                  // "after cutoff" — that would describe the opposite of the count.
+                  {
+                    label:
+                      dashboard.checkIn.exposure === 'screens'
+                        ? 'Normal, screens used'
+                        : 'Normal, no caffeine',
+                    value: String(dashboard.progress.adherenceCounts.CONTAMINATED),
+                  },
+                  { label: 'Not sure', value: String(dashboard.progress.adherenceCounts.UNKNOWN), emphasis: 'muted' },
+                ]}
+              />
+            </Details>
           </Card>
+        ) : null}
+
+        {/* One unlocked milestone at a time, and never instead of the morning mirror. */}
+        {!mirror && latestMilestone && dashboard.progress?.kind === 'experiment' ? (
+          <InsightCard title={latestMilestone.title} body={latestMilestone.body} />
         ) : null}
 
         {dashboard.progress?.kind === 'result' ? (
@@ -479,6 +644,15 @@ export default function HomeScreen() {
             <Text variant="sub" color="textMuted">{dashboard.progress.nextStepText}</Text>
           </Card>
         ) : null}
+
+        {/* One test runs at a time; this is where the other one is chosen. */}
+        <Card tone="quiet">
+          <NavRow
+            label="Choose a test"
+            detail="Caffeine cutoff, or screens off in the evening"
+            onPress={() => router.push('/choose-test' as Href)}
+          />
+        </Card>
 
         {typeof __DEV__ !== 'undefined' && __DEV__ ? (
           <View>

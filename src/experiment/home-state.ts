@@ -3,6 +3,8 @@ import type { StoredExperimentPlan } from '../data/plan-persistence';
 import type { ConsentRecord, ExperimentSetupRecord } from '../data/experiment-store';
 import { isFeasibilityDue } from './start-attempt';
 import { validRunInDays } from './adapter';
+import { exposureForExperimentId } from './experiments';
+import { consentCoversCurrentVersion } from './consent';
 
 export type HomeState =
   | 'needs_consent'
@@ -48,7 +50,9 @@ export interface HomeStateInputs {
 export function getHomeState(inputs: HomeStateInputs): HomeState {
   const { consent, setup, entries, plan, plans, today } = inputs;
 
-  if (!consent || !consent.granted) {
+  // A new consent version re-asks the user: the log now stores screen times as well as
+  // sleep and caffeine, so an older agreement does not cover what is collected today.
+  if (!consentCoversCurrentVersion(consent)) {
     return 'needs_consent';
   }
 
@@ -82,7 +86,10 @@ export function getHomeState(inputs: HomeStateInputs): HomeState {
 
   // No active/running plan. Only days outside every earlier plan's window count, so a
   // second cycle is judged on its own run-in rather than on the test that came before it.
-  const validDaysCount = validRunInDays(entries, plans, today);
+  // The run-in is counted for the test the setup row names: a screens night needs its
+  // screen time logged, so the two tests never inherit each other's nights.
+  const exposure = exposureForExperimentId(setup.experimentId);
+  const validDaysCount = validRunInDays(entries, plans, today, exposure);
   if (isFeasibilityDue(validDaysCount, setup.nextCheckDate ?? null, today)) {
     return 'feasibility_ready';
   }

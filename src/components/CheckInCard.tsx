@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Pressable, Modal, Platform } from 'react-native';
+import { View, StyleSheet, Pressable, Modal, Platform, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Text, Button, Field, Card } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
 import type { DailyEntry } from '@/experiment/types';
+import {
+  CAFFEINE_PRESETS,
+  SCREEN_PRESETS,
+  SLEEP_PRESETS,
+  formatSleepFriendly,
+  sleepMinutesFromInputs,
+} from '@/experiment/plain-language';
 import {
   CAFFEINE_TIME_FORMAT_MESSAGE,
   CAFFEINE_TIME_UNREADABLE_MESSAGE,
@@ -11,11 +18,57 @@ import {
   readCaffeineTime,
 } from '@/experiment/caffeine-time';
 
+/** "HH:MM" for a Date, the format the rest of the app stores. */
+function formatHHMM(date: Date): string {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+/** A Date on today's date at the given "HH:MM", used by the one-tap presets. */
+function dateFromHHMM(time: string): Date {
+  const [hour, minute] = time.split(':').map(Number);
+  const d = new Date();
+  d.setHours(hour ?? 0, minute ?? 0, 0, 0);
+  return d;
+}
+
+/** The words and presets for each exposure. Only the words change; the controls are the same. */
+const WORDS = {
+  caffeine: {
+    question: 'Last caffeine yesterday',
+    noAnswer: 'No caffeine',
+    presets: CAFFEINE_PRESETS,
+    setLabel: 'Set the last caffeine time',
+    clearLabel: 'Clear caffeine answer',
+    quickLabel: 'Quick caffeine times',
+    modalTitle: 'Last caffeine time',
+    presetLabel: (label: string, time: string) => `Last caffeine ${label.toLowerCase()}, about ${time}`,
+    preview: (time: string) => `Last caffeine ${time}`,
+    blank: 'Caffeine left blank',
+  },
+  screens: {
+    question: 'Last screen use yesterday',
+    noAnswer: 'No screens',
+    presets: SCREEN_PRESETS,
+    setLabel: 'Set the last screen time',
+    clearLabel: 'Clear screen answer',
+    quickLabel: 'Quick screen times',
+    modalTitle: 'Last screen time',
+    presetLabel: (label: string, time: string) => `Last screen use ${label.toLowerCase()}, about ${time}`,
+    preview: (time: string) => `Last screen use ${time}`,
+    blank: 'Screen use left blank',
+  },
+} as const;
+
+export type ExposureKind = keyof typeof WORDS;
+
 interface CheckInCardProps {
   date: string;
   label?: string;
   initialSleepMinutes: number | null;
+  /** The stored exposure time for the active test: caffeine time, or screen time when `exposure` is 'screens'. */
   initialCaffeineTime: string | 'none' | null;
+  /** Which test the check-in records. Defaults to the caffeine test. */
+  exposure?: ExposureKind;
   onSave: (entry: DailyEntry) => Promise<void>;
   saving: boolean;
 }
@@ -25,9 +78,11 @@ export function CheckInCard({
   label,
   initialSleepMinutes,
   initialCaffeineTime,
+  exposure = 'caffeine',
   onSave,
   saving,
 }: CheckInCardProps) {
+  const words = WORDS[exposure];
   const [sleepHours, setSleepHours] = useState(
     initialSleepMinutes !== null ? String(Math.floor(initialSleepMinutes / 60)) : ''
   );
@@ -40,16 +95,24 @@ export function CheckInCard({
   const [selectedTime, setSelectedTime] = useState<Date | null>(() => {
     const stored = readCaffeineTime(initialCaffeineTime);
     if (stored.kind === 'valid' && stored.time) {
-      const [hour, minute] = stored.time.split(':').map(Number);
-      const d = new Date();
-      d.setHours(hour ?? 0, minute ?? 0, 0, 0);
-      return d;
+      return dateFromHHMM(stored.time);
     }
     return null;
+  });
+  const [webTimeText, setWebTimeText] = useState(() => {
+    const stored = readCaffeineTime(initialCaffeineTime);
+    return stored.kind === 'valid' && stored.time ? stored.time : '';
   });
   const [error, setError] = useState<string | null>(null);
   const [lastCaffeineValidationMessage, setLastCaffeineValidationMessage] = useState<string | null>(null);
   const [timePickerOpen, setTimePickerOpen] = useState(false);
+  // Where the wheel starts when nothing is stored yet. It seeds the picker only; it is
+  // never saved, so an untouched answer stays unknown instead of becoming "now".
+  const [pickerSeed, setPickerSeed] = useState(() => new Date());
+  // What the answer was when the picker opened. iOS applies the wheel live, so Cancel has
+  // to put these back instead of merely closing the sheet.
+  const [pickerStart, setPickerStart] = useState<{ time: Date | null; noCaffeine: boolean } | null>(null);
+  const isIos = Platform.OS === 'ios';
 
   // Callers pass `key={date}`, so changing the day mounts a fresh card with the day's
   // stored values instead of syncing them through an effect.
@@ -60,11 +123,59 @@ export function CheckInCard({
       : 'set';
     if (type === 'set' && selectedDate) {
       setSelectedTime(selectedDate);
-      // Picking an explicit time overrides a previous "No caffeine" answer.
+      setWebTimeText(formatHHMM(selectedDate));
+      // Picking an explicit time overrides a previous "No" answer.
       setNoCaffeine(false);
+      setLastCaffeineValidationMessage(null);
     }
-    // Both 'set' and Android's 'dismissed' close the modal; only 'set' records a time.
+    // iOS keeps the spinner open while it is scrolled, so the wheel never vanishes
+    // mid-pick; Done closes it. Android shows its own dialog, whose result closes this
+    // modal either way, and only 'set' records a time.
+    if (!isIos) setTimePickerOpen(false);
+  };
+
+  const cancelTimePicker = () => {
+    if (pickerStart) {
+      setSelectedTime(pickerStart.time);
+      setNoCaffeine(pickerStart.noCaffeine);
+      setWebTimeText(pickerStart.time ? formatHHMM(pickerStart.time) : '');
+      setLastCaffeineValidationMessage(null);
+    }
     setTimePickerOpen(false);
+  };
+
+  const handleApplyTimeModal = () => {
+    if (Platform.OS === 'web') {
+      const trimmed = webTimeText.trim();
+      if (trimmed === '') {
+        setSelectedTime(null);
+        setTimePickerOpen(false);
+        return;
+      }
+      const padded = /^\d:\d{2}$/.test(trimmed) ? `0${trimmed}` : trimmed;
+      if (!isValidCaffeineTime(padded)) {
+        setLastCaffeineValidationMessage(CAFFEINE_TIME_FORMAT_MESSAGE);
+        return;
+      }
+      setSelectedTime(dateFromHHMM(padded));
+      setWebTimeText(padded);
+      setNoCaffeine(false);
+      setLastCaffeineValidationMessage(null);
+    }
+    setTimePickerOpen(false);
+  };
+
+  const handleClearCaffeine = () => {
+    setSelectedTime(null);
+    setWebTimeText('');
+    setNoCaffeine(false);
+    setLastCaffeineValidationMessage(null);
+  };
+
+  const handleClearSleep = () => {
+    setSleepHours('');
+    setSleepMins('');
+    setError(null);
   };
 
   const handleSave = async () => {
@@ -73,48 +184,117 @@ export function CheckInCard({
     if (sleepHours.trim() !== '' || sleepMins.trim() !== '') {
       const h = Number(sleepHours.trim()) || 0;
       const m = Number(sleepMins.trim()) || 0;
-      if (h < 0 || m < 0 || m >= 60) {
-        setError('Check your sleep hours and minutes.');
+      if (h < 0 || m < 0 || m >= 60 || Number.isNaN(h) || Number.isNaN(m)) {
+        setError('Check your sleep hours and minutes (minutes must be 0 to 59).');
         return;
       }
       finalSleepMinutes = h * 60 + m;
     }
 
-    let finalCaffeine: string | 'none' | null = null;
+    // Gentle bounds confirmation for sleep outside 2h to 14h so a typo can be taken back.
+    if (finalSleepMinutes !== null) {
+      const hours = finalSleepMinutes / 60;
+      if (hours < 2 || hours > 14) {
+        const proceed = await new Promise<boolean>((resolve) => {
+          if (Platform.OS === 'web') {
+            resolve(
+              window.confirm(
+                `You logged ${hours.toFixed(1)} hours of sleep. Save it anyway?`,
+              ),
+            );
+          } else {
+            Alert.alert(
+              'That seems unusual',
+              `You logged ${hours.toFixed(1)} hours of sleep. Save it anyway?`,
+              [
+                { text: 'Go back', onPress: () => resolve(false), style: 'cancel' },
+                { text: 'Save', onPress: () => resolve(true) },
+              ],
+            );
+          }
+        });
+        if (!proceed) return;
+      }
+    }
+
+    let finalExposure: string | 'none' | null = null;
     if (noCaffeine) {
-      finalCaffeine = 'none';
-    } else if (selectedTime && selectedTime.getHours() !== undefined && selectedTime.getMinutes() !== undefined) {
-      const hour = String(selectedTime.getHours()).padStart(2, '0');
-      const minute = String(selectedTime.getMinutes()).padStart(2, '0');
-      const trimmed = `${hour}:${minute}`;
+      finalExposure = 'none';
+    } else if (selectedTime) {
+      const trimmed = formatHHMM(selectedTime);
       if (!isValidCaffeineTime(trimmed)) {
         setLastCaffeineValidationMessage(CAFFEINE_TIME_FORMAT_MESSAGE);
         return;
       }
-      finalCaffeine = trimmed;
+      finalExposure = trimmed;
     }
 
-    await onSave({
-      date,
-      sleepMinutes: finalSleepMinutes,
-      lastCaffeineTime: finalCaffeine,
-    });
+    // The screens test records its own field; the caffeine field stays empty for it.
+    await onSave(
+      exposure === 'screens'
+        ? { date, sleepMinutes: finalSleepMinutes, lastCaffeineTime: null, lastScreenTime: finalExposure }
+        : { date, sleepMinutes: finalSleepMinutes, lastCaffeineTime: finalExposure },
+    );
     setLastCaffeineValidationMessage(null);
   };
 
+  const typedSleepMinutes = sleepMinutesFromInputs(sleepHours, sleepMins);
   // The time option is highlighted only when a real time is set; "not answered" stays neutral.
   const timeIsSelected = !noCaffeine && selectedTime !== null;
   // Read-side policy: a stored value that is neither a valid time, 'none' nor blank is unreadable.
   const storedUnreadable = readCaffeineTime(initialCaffeineTime).kind === 'unreadable';
-  const timeLabel = selectedTime
-    ? `${String(selectedTime.getHours()).padStart(2, '0')}:${String(selectedTime.getMinutes()).padStart(2, '0')}`
-    : 'Set time';
+  const timeLabel = selectedTime ? formatHHMM(selectedTime) : 'Set time';
+
+  // Live preview of what will be recorded, so the user always knows what tapping Save does.
+  const sleepPreview =
+    typedSleepMinutes !== null ? formatSleepFriendly(typedSleepMinutes) : 'Sleep left blank';
+  const exposurePreview = noCaffeine
+    ? words.noAnswer
+    : selectedTime
+    ? words.preview(formatHHMM(selectedTime))
+    : words.blank;
 
   return (
     <Card tone="tint" overline={`Check-in for ${label ?? date}`}>
       <Text variant="heading">Morning check-in</Text>
 
-      <Text variant="sub" color="textMuted">Sleep last night</Text>
+      <View style={styles.sectionHeader}>
+        <Text variant="sub" color="textMuted">Sleep last night</Text>
+        {typedSleepMinutes !== null ? (
+          <Pressable
+            onPress={handleClearSleep}
+            accessibilityRole="button"
+            accessibilityLabel="Clear sleep amount"
+          >
+            <Text variant="caption" color="accent" weight="semiBold">Clear</Text>
+          </Pressable>
+        ) : null}
+      </View>
+      <View style={styles.chipRow} accessibilityRole="radiogroup" accessibilityLabel="Quick sleep amounts">
+        {SLEEP_PRESETS.map((preset) => {
+          const active = typedSleepMinutes === preset.minutes;
+          return (
+            <Pressable
+              key={preset.minutes}
+              onPress={() => {
+                if (active) {
+                  handleClearSleep();
+                } else {
+                  setSleepHours(String(preset.minutes / 60));
+                  setSleepMins('0');
+                  setError(null);
+                }
+              }}
+              style={[styles.chip, active && styles.chipActive]}
+              accessibilityRole="radio"
+              accessibilityLabel={`Slept ${preset.label}`}
+              accessibilityState={{ selected: active }}
+            >
+              <Text variant="caption" color={active ? 'surface' : 'text'} weight="semiBold">{preset.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <View style={styles.row}>
         <View style={styles.flexInput}>
           <Field
@@ -137,13 +317,56 @@ export function CheckInCard({
           />
         </View>
       </View>
-      <Text variant="sub" color="textMuted">Last caffeine yesterday</Text>
+
+      <View style={styles.sectionHeader}>
+        <Text variant="sub" color="textMuted">{words.question}</Text>
+        {noCaffeine || selectedTime !== null ? (
+          <Pressable
+            onPress={handleClearCaffeine}
+            accessibilityRole="button"
+            accessibilityLabel={words.clearLabel}
+          >
+            <Text variant="caption" color="accent" weight="semiBold">Clear</Text>
+          </Pressable>
+        ) : null}
+      </View>
+      <View style={styles.chipRow} accessibilityRole="radiogroup" accessibilityLabel={words.quickLabel}>
+        {words.presets.map((preset) => {
+          const active = !noCaffeine && selectedTime !== null && formatHHMM(selectedTime) === preset.time;
+          return (
+            <Pressable
+              key={preset.time}
+              onPress={() => {
+                if (active) {
+                  handleClearCaffeine();
+                } else {
+                  setSelectedTime(dateFromHHMM(preset.time));
+                  setWebTimeText(preset.time);
+                  setNoCaffeine(false);
+                  setLastCaffeineValidationMessage(null);
+                }
+              }}
+              style={[styles.chip, active && styles.chipActive]}
+              accessibilityRole="radio"
+              accessibilityLabel={words.presetLabel(preset.label, preset.time)}
+              accessibilityState={{ selected: active }}
+            >
+              <Text variant="caption" color={active ? 'surface' : 'text'} weight="semiBold">{preset.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <View style={styles.row}>
         <Pressable
-          onPress={() => setTimePickerOpen(true)}
+          onPress={() => {
+            setWebTimeText(selectedTime ? formatHHMM(selectedTime) : '');
+            setPickerSeed(new Date());
+            setPickerStart({ time: selectedTime, noCaffeine });
+            setTimePickerOpen(true);
+          }}
           style={[styles.segment, timeIsSelected && styles.segmentActive]}
           accessibilityRole="button"
-          accessibilityLabel="Set the last caffeine time"
+          accessibilityLabel={words.setLabel}
           accessibilityState={{ selected: timeIsSelected }}
         >
           <Text
@@ -156,10 +379,18 @@ export function CheckInCard({
           </Text>
         </Pressable>
         <Pressable
-          onPress={() => setNoCaffeine((prev) => !prev)}
+          onPress={() => {
+            const next = !noCaffeine;
+            setNoCaffeine(next);
+            if (next) {
+              setSelectedTime(null);
+              setWebTimeText('');
+              setLastCaffeineValidationMessage(null);
+            }
+          }}
           style={[styles.segment, noCaffeine && styles.segmentActive]}
           accessibilityRole="button"
-          accessibilityLabel="No caffeine"
+          accessibilityLabel={words.noAnswer}
           accessibilityState={{ selected: noCaffeine }}
         >
           <Text
@@ -167,30 +398,63 @@ export function CheckInCard({
             color={noCaffeine ? 'surface' : 'text'}
             weight="semiBold"
           >
-            No caffeine
+            {words.noAnswer}
           </Text>
         </Pressable>
       </View>
 
-      <Modal visible={timePickerOpen} transparent animationType="fade" onRequestClose={() => setTimePickerOpen(false)}>
+      <Modal visible={timePickerOpen} transparent animationType="fade" onRequestClose={cancelTimePicker}>
         <View style={styles.modalOverlay}>
           <View style={styles.timePickerCard}>
             <Text variant="caption" color="textMuted">Pick a time</Text>
             <Text variant="heading" style={styles.timePickerTitle}>
-              Last caffeine time
+              {words.modalTitle}
             </Text>
-            <DateTimePicker
-              value={selectedTime ?? new Date()}
-              mode="time"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={handleCaffeinePick}
-            />
-            <Button
-              label="Done"
-              variant="primary"
-              onPress={() => setTimePickerOpen(false)}
-              style={styles.timePickerButton}
-            />
+            {Platform.OS === 'web' ? (
+              <Field
+                label="24-hour time (HH:MM)"
+                placeholder="14:30"
+                value={webTimeText}
+                onChangeText={setWebTimeText}
+                autoCapitalize="none"
+                autoCorrect={false}
+                onSubmitEditing={handleApplyTimeModal}
+              />
+            ) : (
+              <View style={isIos ? styles.pickerWrapIos : undefined}>
+                <DateTimePicker
+                  value={selectedTime ?? pickerSeed}
+                  mode="time"
+                  display={isIos ? 'spinner' : 'default'}
+                  is24Hour
+                  onValueChange={handleCaffeinePick}
+                  onDismiss={() => setTimePickerOpen(false)}
+                  // The card is light, so the wheel is pinned to the light appearance: left to
+                  // the system, a dark-mode device draws white digits on the white card and
+                  // the picker looks empty.
+                  {...(isIos
+                    ? { themeVariant: 'light' as const, textColor: colors.text, accentColor: colors.accent }
+                    : {})}
+                />
+              </View>
+            )}
+            {lastCaffeineValidationMessage ? (
+              <Text variant="caption" color="signalText">{lastCaffeineValidationMessage}</Text>
+            ) : null}
+            <View style={styles.row}>
+              <Button
+                label="Cancel"
+                variant="secondary"
+                onPress={cancelTimePicker}
+                style={styles.flexInput}
+              />
+              <Button
+                label="Done"
+                variant="primary"
+                onPress={handleApplyTimeModal}
+                style={styles.flexInput}
+              />
+            </View>
           </View>
         </View>
       </Modal>
@@ -200,8 +464,20 @@ export function CheckInCard({
           {CAFFEINE_TIME_UNREADABLE_MESSAGE}
         </Text>
       ) : null}
-      {error ? <Text variant="caption" color="signalText">{error}</Text> : null}
-      {lastCaffeineValidationMessage ? <Text variant="caption" color="signalText">{lastCaffeineValidationMessage}</Text> : null}
+      {error ? (
+        <Text variant="caption" color="signalText" accessibilityRole="alert">
+          {error}
+        </Text>
+      ) : null}
+      {lastCaffeineValidationMessage && !timePickerOpen ? (
+        <Text variant="caption" color="signalText" accessibilityRole="alert">
+          {lastCaffeineValidationMessage}
+        </Text>
+      ) : null}
+
+      <Text variant="caption" color="textMuted" tabular>
+        Ready to save: {sleepPreview} · {exposurePreview}
+      </Text>
 
       <Button
         label={saving ? 'Saving...' : 'Save check-in'}
@@ -215,6 +491,27 @@ export function CheckInCard({
 }
 
 const styles = StyleSheet.create({
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  // One-tap presets: a wrapping row of 44 pt targets, same border and fill as the controls below.
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  chip: {
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+    justifyContent: 'center',
+    borderRadius: radii.control,
+    borderWidth: 1,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface,
+  },
+  chipActive: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
   row: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
   flexInput: { flex: 1 },
   inputContainer: { marginVertical: 0 },
@@ -246,12 +543,15 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.md,
     width: '90%',
+    maxWidth: 420,
   },
   timePickerTitle: {
     textAlign: 'center',
   },
-  timePickerButton: {
-    width: '100%',
-    paddingVertical: spacing.sm,
+  // The iOS spinner has its own fixed height; naming it keeps a flex parent from
+  // collapsing the wheel to nothing.
+  pickerWrapIos: {
+    height: 216,
+    justifyContent: 'center',
   },
 });

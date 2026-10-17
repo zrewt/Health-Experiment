@@ -10,6 +10,14 @@ import {
   readCaffeineTime,
 } from './caffeine-time';
 import { VERDICT_HEADINGS } from './verdict-headings';
+import {
+  cutoffRuleText,
+  experimentById,
+  experimentForRuleType,
+  exposureForExperimentId,
+  exposureValue,
+  type ExposureKind,
+} from './experiments';
 
 export interface DashboardDayItem {
   date: string;
@@ -19,6 +27,8 @@ export interface DashboardDayItem {
   editable: boolean;
   sleepMinutes: number | null;
   lastCaffeineTime: string | 'none' | null;
+  /** Last screen use, only ever read by the screens-off test. */
+  lastScreenTime?: string | 'none' | null;
   synced: boolean;
 }
 
@@ -46,6 +56,10 @@ export interface TodayDashboardModel {
   checkIn: {
     enabled: boolean;
     defaultDate: string;
+    /** The exposure this check-in records, so the screen never re-derives the test. */
+    exposure: ExposureKind;
+    /** The exposure as the user reads it, e.g. "caffeine" or "screens". */
+    exposureWord: string;
     recentDays: DashboardDayItem[];
     /** Whether the morning check-in for defaultDate is already complete. */
     status: DashboardDayItem['statusTone'];
@@ -57,6 +71,8 @@ export interface TodayDashboardModel {
         kind: 'run_in';
         validDays: number;
         targetDays: number;
+        /** The cutoff the user chose, so read-backs name their own time. */
+        cutoffTime: string;
         nextStepText: string;
         descriptiveStats: RunInDescriptiveStats | null;
       }
@@ -102,20 +118,21 @@ function formatSleepMinutes(sleepMinutes: number | null): string {
 }
 
 /** One plain-language line describing a logged day, with missing values left missing. */
-function summarizeDay(item: DashboardDayItem | undefined): string {
-  const read = readCaffeineTime(item?.lastCaffeineTime ?? null);
-  const caffeine =
+function summarizeDay(item: DashboardDayItem | undefined, exposure: ExposureKind): string {
+  const read = readCaffeineTime(exposureValue(item, exposure));
+  const isScreens = exposure === 'screens';
+  const exposureText =
     read.kind === 'none'
-      ? 'No caffeine'
+      ? isScreens ? 'No screens' : 'No caffeine'
       : read.kind === 'valid'
-      ? `Last caffeine ${read.time}`
+      ? isScreens ? `Last screen ${read.time}` : `Last caffeine ${read.time}`
       : read.kind === 'unreadable'
-      ? 'Caffeine time unreadable'
-      : 'Caffeine not logged';
-  return `${formatSleepMinutes(item?.sleepMinutes ?? null)} · ${caffeine}`;
+      ? isScreens ? 'Screen time unreadable' : 'Caffeine time unreadable'
+      : isScreens ? 'Screens not logged' : 'Caffeine not logged';
+  return `${formatSleepMinutes(item?.sleepMinutes ?? null)} · ${exposureText}`;
 }
 
-function buildDayStatus(entry: DashboardEntry | undefined): {
+function buildDayStatus(entry: DashboardEntry | undefined, exposure: ExposureKind): {
   statusText: string;
   statusTone: DashboardDayItem['statusTone'];
   synced: boolean;
@@ -125,9 +142,9 @@ function buildDayStatus(entry: DashboardEntry | undefined): {
   }
   const synced = entry.synced !== false;
   const syncSuffix = synced ? '' : ' (not synced yet)';
-  const caffeineRead = readCaffeineTime(entry.lastCaffeineTime);
+  const exposureRead = readCaffeineTime(exposureValue(entry, exposure));
 
-  if (caffeineRead.kind === 'unreadable') {
+  if (exposureRead.kind === 'unreadable') {
     const base = entry.sleepMinutes !== null ? 'Partly logged' : 'Missing';
     return {
       statusText: `${base}${syncSuffix} — ${CAFFEINE_TIME_UNREADABLE_MARKER}`,
@@ -136,11 +153,11 @@ function buildDayStatus(entry: DashboardEntry | undefined): {
     };
   }
 
-  if (entry.sleepMinutes !== null && entry.lastCaffeineTime !== null) {
+  if (entry.sleepMinutes !== null && exposureRead.kind !== 'unset') {
     return { statusText: `Logged${syncSuffix}`, statusTone: 'logged', synced };
   }
 
-  if (entry.sleepMinutes !== null || entry.lastCaffeineTime !== null) {
+  if (entry.sleepMinutes !== null || exposureRead.kind !== 'unset') {
     return { statusText: `Partly logged${syncSuffix}`, statusTone: 'partial', synced };
   }
 
@@ -162,6 +179,13 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
   const unsyncedCount = entries.filter(e => e.synced === false).length;
   const yesterday = getMorningEntryDate(today);
 
+  // The test the user is running: the active plan owns it while one exists, otherwise the
+  // setup row does. Every label below is read from that test, never assumed to be caffeine.
+  const experiment = plan
+    ? experimentForRuleType(plan.plan.definition.conditionRule.type)
+    : experimentById(setup?.experimentId);
+  const exposure = exposureForExperimentId(experiment.id);
+
   const candidateDates = [
     yesterday,
     addDaysToLocalDate(yesterday, -1),
@@ -177,7 +201,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
 
   const recentDays: DashboardDayItem[] = candidateDates.map(d => {
     const existing = entries.find(e => e.date === d);
-    const { statusText, statusTone, synced } = buildDayStatus(existing);
+    const { statusText, statusTone, synced } = buildDayStatus(existing, exposure);
     return {
       date: d,
       label: d === yesterday ? `Last night (${d})` : d,
@@ -186,6 +210,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       editable: canEditDate(today, d, lockPlans),
       sleepMinutes: existing?.sleepMinutes ?? null,
       lastCaffeineTime: existing?.lastCaffeineTime ?? null,
+      lastScreenTime: existing?.lastScreenTime ?? null,
       synced,
     };
   });
@@ -200,8 +225,10 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
     const item = opts.recentDays.find((d) => d.date === opts.defaultDate);
     return {
       ...opts,
+      exposure,
+      exposureWord: experiment.exposureWord,
       status: item?.statusTone ?? 'missing',
-      summary: summarizeDay(item),
+      summary: summarizeDay(item, exposure),
     };
   };
 
@@ -213,12 +240,12 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       instruction: {
         overline: 'GETTING STARTED',
         heading: 'Let’s get you set up',
-        body: 'See how your log is used, then pick your daily cutoff time.',
+        body: 'Pick the sleep test you want to run, then read how your log is used.',
         detail: 'Takes about two minutes.',
       },
       primaryAction: {
-        label: 'Set up',
-        route: '/setup-consent',
+        label: 'Choose a test',
+        route: '/choose-test',
         tone: 'primary',
       },
       checkIn: buildCheckIn({
@@ -239,12 +266,12 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       instruction: {
         overline: 'GETTING STARTED',
         heading: 'One step left',
-        body: 'Pick your daily caffeine cutoff time.',
+        body: 'Pick the sleep test you want to run.',
         detail: 'Then you can start logging.',
       },
       primaryAction: {
-        label: 'Set up',
-        route: '/setup-consent',
+        label: 'Choose a test',
+        route: '/choose-test',
         tone: 'primary',
       },
       checkIn: buildCheckIn({
@@ -261,8 +288,11 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
     // The counters read the run-in window only: days inside an earlier plan's schedule are
     // not "getting to know your sleep", they are days of a test that already ran.
     const runInEntries = entriesForRunIn(entries, plans, today);
-    const validDays = validRunInDays(entries, plans, today);
-    const descriptiveStats = validDays >= 3 ? getRunInDescriptiveStats(runInEntries) : null;
+    const validDays = validRunInDays(entries, plans, today, exposure);
+    const cutoffTime = setup?.cutoffTime ?? experimentById(setup?.experimentId).defaultCutoff;
+    const descriptiveStats = validDays >= 3
+      ? getRunInDescriptiveStats(runInEntries, cutoffTime, exposure)
+      : null;
     const remaining = Math.max(0, runInMinValidDays - validDays);
     const nextStepText =
       state === 'feasibility_ready'
@@ -285,7 +315,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
             }
           : {
               overline: 'GETTING TO KNOW YOU',
-              heading: 'Today: normal day',
+              heading: 'Keep your usual routine',
               body: 'Keep your usual habits, and log your night each morning.',
               detail: `${validDays} of ${runInMinValidDays} nights logged.`,
             },
@@ -302,6 +332,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
         kind: 'run_in',
         validDays,
         targetDays: runInMinValidDays,
+        cutoffTime,
         nextStepText,
         descriptiveStats,
       },
@@ -418,7 +449,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
     const currentDayNum = dayIndex >= 0 ? dayIndex + 1 : 1;
     const instructionHeading =
       todayScheduled?.condition === 'intervention'
-        ? `Today: cutoff day, no caffeine after ${cutoffTime}`
+        ? `Today: cutoff day, ${cutoffRuleText(experiment, cutoffTime)}`
         : 'Today: normal day';
 
     return {
@@ -428,7 +459,7 @@ export function getTodayDashboardModel(inputs: TodayDashboardInputs): TodayDashb
       instruction: {
         overline: 'TODAY',
         heading: instructionHeading,
-        body: 'Log last night’s sleep and your last caffeine time below.',
+        body: `Log last night’s sleep and ${experiment.exposureLogPhrase} below.`,
         detail: `Day ${currentDayNum} of ${activePlan.chosenDuration}`,
       },
       primaryAction: {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, Pressable, Platform, Alert } from 'react-native';
+import { StyleSheet, ScrollView, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   Screen,
@@ -9,9 +9,14 @@ import {
   StatStrip,
   Text,
   Button,
-  Field,
+  Details,
+  Banner,
+  SplitDisc,
 } from '@/components/ui';
-import { colors, radii, spacing } from '@/design/tokens';
+import { CheckInCard } from '@/components/CheckInCard';
+import { NightTracker } from '@/components/NightTracker';
+import { spacing } from '@/design/tokens';
+import { sentenceCase } from '@/design/labels';
 import { useAuthStore } from '@/store/auth';
 import {
   listEntries,
@@ -20,9 +25,10 @@ import {
   getConsent,
   getSetup,
   listExperimentPlans,
-  StoredDailyEntry,
+  type StoredDailyEntry,
 } from '@/data/experiment-store';
 import type { StoredExperimentPlan } from '@/data/plan-persistence';
+import type { DailyEntry } from '@/experiment/types';
 import { getToday } from '@/experiment/clock';
 import {
   getMorningEntryDate,
@@ -30,16 +36,39 @@ import {
   canEditDate,
 } from '@/experiment/dates';
 import { runInMinValidDays } from '@/experiment/config';
-import { entriesForRunIn, validRunInDays } from '@/experiment/adapter';
+import {
+  formatSleepFriendly,
+  progressSentence,
+} from '@/experiment/plain-language';
+import { computeExperimentBaseline, entriesForRunIn, validRunInDays } from '@/experiment/adapter';
+import {
+  experimentById,
+  exposureForExperimentId,
+  exposureValue,
+  type ExposureKind,
+} from '@/experiment/experiments';
 import { isFeasibilityDue } from '@/experiment/start-attempt';
+import { getLatestMilestone } from '@/experiment/milestones';
 import { getRunInDescriptiveStats, type RunInDescriptiveStats } from '@/experiment/view-model';
 import {
-  CAFFEINE_TIME_FORMAT_MESSAGE,
   CAFFEINE_TIME_UNREADABLE_MARKER,
-  CAFFEINE_TIME_UNREADABLE_MESSAGE,
-  isValidCaffeineTime,
   readCaffeineTime,
 } from '@/experiment/caffeine-time';
+
+function summarizeEntry(entry: DailyEntry, exposure: ExposureKind = 'caffeine'): string {
+  const sleep = formatSleepFriendly(entry.sleepMinutes);
+  const read = readCaffeineTime(exposureValue(entry, exposure));
+  const word = exposure === 'screens' ? 'screen use' : 'caffeine';
+  const exposureText =
+    read.kind === 'none'
+      ? `No ${exposure === 'screens' ? 'screens' : 'caffeine'}`
+      : read.kind === 'valid'
+      ? `Last ${word} ${read.time}`
+      : read.kind === 'unreadable'
+      ? `${exposure === 'screens' ? 'Screen' : 'Caffeine'} time unreadable`
+      : `${exposure === 'screens' ? 'Screen use' : 'Caffeine'} not logged`;
+  return `${sleep} · ${exposureText}`;
+}
 
 export default function RunInScreen() {
   const router = useRouter();
@@ -51,16 +80,14 @@ export default function RunInScreen() {
   const [activeDate, setActiveDate] = useState<string>('');
   const [storageError, setStorageError] = useState<string | null>(null);
   const [nextCheckDate, setNextCheckDate] = useState<string | null>(null);
+  // The time the user picked in setup; the descriptive counts read it, not a default.
+  const [cutoffTime, setCutoffTime] = useState<string>('12:00');
 
-  // Morning check-in card input states
-  const [sleepHours, setSleepHours] = useState<string>('');
-  const [sleepMins, setSleepMins] = useState<string>('');
-  const [caffeineTime, setCaffeineTime] = useState<string>('');
-  const [noCaffeine, setNoCaffeine] = useState(false);
   const [savingEntry, setSavingEntry] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [previousEntrySnapshot, setPreviousEntrySnapshot] = useState<DailyEntry | null>(null);
+  const [editing, setEditing] = useState(false);
 
   const today = getToday();
   const defaultEntryDate = getMorningEntryDate(today);
@@ -78,49 +105,24 @@ export default function RunInScreen() {
         const consent = await getConsent(userId!);
         if (!isCurrent) return;
         if (!consent || !consent.granted) {
-          router.replace('/setup-consent');
+          // Onboarding starts at the test picker, so no test is chosen for the user.
+          router.replace('/choose-test');
           return;
         }
 
-        const setup = await getSetup(userId!);
+        const [setup, loaded, plans] = await Promise.all([
+          getSetup(userId!),
+          listEntries(userId!),
+          listExperimentPlans(userId!),
+        ]);
         if (!isCurrent) return;
         setNextCheckDate(setup?.nextCheckDate ?? null);
-        const loaded = await listEntries(userId!);
-        if (!isCurrent) return;
+        setExposure(exposureForExperimentId(setup?.experimentId));
+        setCutoffTime(setup?.cutoffTime ?? experimentById(setup?.experimentId).defaultCutoff);
         setEntries(loaded);
-        const plans = await listExperimentPlans(userId!);
-        if (!isCurrent) return;
         setSavedPlans(plans);
-
-        const target = defaultEntryDate;
-        setActiveDate(target);
-        const existing = loaded.find((e) => e.date === target);
-        if (existing) {
-          if (existing.sleepMinutes !== null) {
-            setSleepHours(String(Math.floor(existing.sleepMinutes / 60)));
-            setSleepMins(String(existing.sleepMinutes % 60));
-          } else {
-            setSleepHours('');
-            setSleepMins('');
-          }
-          const storedCaffeine = readCaffeineTime(existing.lastCaffeineTime);
-          if (storedCaffeine.kind === 'none') {
-            setNoCaffeine(true);
-            setCaffeineTime('');
-          } else if (storedCaffeine.kind === 'valid') {
-            setNoCaffeine(false);
-            setCaffeineTime(storedCaffeine.time ?? '');
-          } else {
-            // 'unset' or 'unreadable': never prefill a guessed or malformed value.
-            setNoCaffeine(false);
-            setCaffeineTime('');
-          }
-        } else {
-          setSleepHours('');
-          setSleepMins('');
-          setCaffeineTime('');
-          setNoCaffeine(false);
-        }
+        setActiveDate((prev) => prev || defaultEntryDate);
+        setStorageError(null);
       } catch (err) {
         if (isCurrent) {
           setStorageError(err instanceof Error ? err.message : 'Could not load your log.');
@@ -135,130 +137,97 @@ export default function RunInScreen() {
     };
   }, [userId, defaultEntryDate, router, reloadTrigger]);
 
+  const [exposure, setExposure] = useState<ExposureKind>('caffeine');
+
   const selectDateForEdit = (date: string) => {
     if (!canEditDate(today, date, savedPlans)) return;
     setActiveDate(date);
-    const existing = entries.find((e) => e.date === date);
-    if (existing) {
-      if (existing.sleepMinutes !== null) {
-        setSleepHours(String(Math.floor(existing.sleepMinutes / 60)));
-        setSleepMins(String(existing.sleepMinutes % 60));
-      } else {
-        setSleepHours('');
-        setSleepMins('');
-      }
-      const storedCaffeine = readCaffeineTime(existing.lastCaffeineTime);
-      if (storedCaffeine.kind === 'none') {
-        setNoCaffeine(true);
-        setCaffeineTime('');
-      } else if (storedCaffeine.kind === 'valid') {
-        setNoCaffeine(false);
-        setCaffeineTime(storedCaffeine.time ?? '');
-      } else {
-        setNoCaffeine(false);
-        setCaffeineTime('');
-      }
-    } else {
-      setSleepHours('');
-      setSleepMins('');
-      setCaffeineTime('');
-      setNoCaffeine(false);
-    }
-    setFieldErrors(null);
+    setEditing(true);
     setStatusMessage(null);
   };
 
-  const handleSaveEntry = async () => {
+  const handleSaveEntry = async (entry: DailyEntry) => {
     if (!user) return;
-    if (!canEditDate(today, activeDate, savedPlans)) {
-      setFieldErrors('This day belongs to a finished test and is locked.');
+    if (!canEditDate(today, entry.date, savedPlans)) {
+      setStorageError('This day belongs to a finished test and is locked.');
       return;
     }
-    setFieldErrors(null);
-    setStorageError(null);
 
-    // Compute sleep minutes (null if skipped)
-    let finalSleepMinutes: number | null = null;
-    if (sleepHours.trim() !== '' || sleepMins.trim() !== '') {
-      const h = Number(sleepHours.trim()) || 0;
-      const m = Number(sleepMins.trim()) || 0;        if (h < 0 || m < 0 || m >= 60) {
-        setFieldErrors('Please enter valid sleep hours and minutes.');
-        return;
-      }
-      finalSleepMinutes = h * 60 + m;
-    }
-
-    // Gentle bounds confirmation for sleep outside 2h to 14h
-    if (finalSleepMinutes !== null) {
-      const hours = finalSleepMinutes / 60;
-      if (hours < 2 || hours > 14) {
-        const proceed = await new Promise<boolean>((resolve) => {
-          if (Platform.OS === 'web') {
-            resolve(window.confirm(`You logged ${hours.toFixed(1)} hours of sleep. Would you like to save this?`));
-          } else {
-            Alert.alert(
-              'That seems unusual',
-              `You logged ${hours.toFixed(1)} hours of sleep. Save it anyway?`,
-              [
-                { text: 'Go back', onPress: () => resolve(false), style: 'cancel' },
-                { text: 'Save', onPress: () => resolve(true) },
-              ],
-            );
+    const prevExisting = entries.find((e) => e.date === entry.date);
+    setPreviousEntrySnapshot(
+      prevExisting
+        ? {
+            date: prevExisting.date,
+            sleepMinutes: prevExisting.sleepMinutes,
+            lastCaffeineTime: prevExisting.lastCaffeineTime,
+            lastScreenTime: prevExisting.lastScreenTime ?? null,
           }
-        });
-        if (!proceed) return;
-      }
-    }
-
-    // Caffeine value: strict HH:MM only; single-digit hours are not padded.
-    // On rejection the typed text is kept and nothing is saved for this field.
-    let finalCaffeine: string | 'none' | null = null;
-    if (noCaffeine) {
-      finalCaffeine = 'none';
-    } else if (caffeineTime.trim() !== '') {
-      if (!isValidCaffeineTime(caffeineTime.trim())) {
-        setFieldErrors(CAFFEINE_TIME_FORMAT_MESSAGE);
-        return;
-      }
-      finalCaffeine = caffeineTime.trim();
-    }
+        : {
+            date: entry.date,
+            sleepMinutes: null,
+            lastCaffeineTime: null,
+            lastScreenTime: null,
+          },
+    );
 
     setSavingEntry(true);
     setStorageError(null);
     setStatusMessage(null);
     try {
-      const saved = await saveEntry(user.id, {
-        date: activeDate,
-        sleepMinutes: finalSleepMinutes,
-        lastCaffeineTime: finalCaffeine,
-      });
+      const saved = await saveEntry(user.id, entry);
 
       // Update local state without dropping
       setEntries((prev) => {
-        const next = prev.filter((e) => e.date !== activeDate);
+        const next = prev.filter((e) => e.date !== entry.date);
         next.push(saved);
         return next.sort((a, b) => a.date.localeCompare(b.date));
       });
-      // Distinct from the "not synced yet" banner below: claim a full save only once the
-      // write is confirmed, never while it is still local-only.
-      setStatusMessage(saved.synced === false ? null : 'Check-in saved.');
+      setEditing(false);
 
-      if (saved.synced === false) {
-        setStorageError('Entry saved locally (not synced yet). Sync will be retried now.');
-        void syncUnsyncedEntries(user.id).then((result) => {
-          if (result.failedCount === 0) {
-            setStorageError(null);
-            setReloadTrigger((n) => n + 1);
-          } else {
-            setStorageError(`${result.failedCount} entries still not synced yet. You can retry sync.`);
-          }
-        }).catch(() => {
-          setStorageError('Entry saved locally (not synced yet). Sync failed; you can retry.');
-        });
+      if (saved.synced !== false) {
+        setStatusMessage(`Saved for ${entry.date}: ${summarizeEntry(entry, exposure)}.`);
+      } else {
+        setStorageError('Saved on this device (not synced yet). Retrying sync now…');
+        void syncUnsyncedEntries(user.id)
+          .then((result) => {
+            if (result.failedCount === 0) {
+              setStorageError(null);
+              setStatusMessage(`Saved and synced for ${entry.date}: ${summarizeEntry(entry, exposure)}.`);
+              setReloadTrigger((n) => n + 1);
+            } else {
+              setStorageError(
+                `${result.failedCount} entr${result.failedCount === 1 ? 'y' : 'ies'} saved on this device. Tap Retry sync when online.`,
+              );
+            }
+          })
+          .catch(() => {
+            setStorageError('Saved on this device. Sync will retry when your connection is back.');
+          });
       }
     } catch {
-      // Plain failure message: no raw technical text is surfaced to the user.
-      setStorageError('Could not save this check-in. Please try again.');
+      setStorageError('Could not save this check-in. Your answers are still in the form — try again.');
+    } finally {
+      setSavingEntry(false);
+    }
+  };
+
+  const handleUndoLastSave = async () => {
+    if (!user || !previousEntrySnapshot || savingEntry) return;
+    setSavingEntry(true);
+    setStorageError(null);
+    try {
+      const restored = await saveEntry(user.id, previousEntrySnapshot);
+      setEntries((prev) => {
+        const next = prev.filter((e) => e.date !== previousEntrySnapshot.date);
+        next.push(restored);
+        return next.sort((a, b) => a.date.localeCompare(b.date));
+      });
+      setActiveDate(previousEntrySnapshot.date);
+      setPreviousEntrySnapshot(null);
+      setEditing(true);
+      setStatusMessage(`Restored ${previousEntrySnapshot.date} so you can change it.`);
+    } catch {
+      setStorageError('Could not undo the change right now. Try editing the day directly below.');
     } finally {
       setSavingEntry(false);
     }
@@ -269,9 +238,20 @@ export default function RunInScreen() {
   // a finished test were not "getting to know your sleep" and must not inflate this count.
   const allPlans = savedPlans.map((item) => item.plan);
   const runInEntries = entriesForRunIn(entries, allPlans, today);
-  const validDaysCount = validRunInDays(entries, allPlans, today);
+  const validDaysCount = validRunInDays(entries, allPlans, today, exposure);
   const isRunInComplete = isFeasibilityDue(validDaysCount, nextCheckDate, today);
-  const descriptiveStats: RunInDescriptiveStats = getRunInDescriptiveStats(runInEntries);
+  const descriptiveStats: RunInDescriptiveStats = getRunInDescriptiveStats(runInEntries, cutoffTime);
+  // The screens test reads its own baseline: nights with screens after the cutoff.
+  const screenBaseline = exposure === 'screens'
+    ? computeExperimentBaseline(exposure, runInEntries, { cutoffTime })
+    : null;
+  // The first real aha: the user's own range, once there are enough nights to show one.
+  const runInMilestone = getLatestMilestone({
+    entries: runInEntries,
+    today,
+    exposure,
+    cutoffTime,
+  });
 
   // Past 3 editable days list (yesterday, -2 days, -3 days)
   const pastDays = [
@@ -280,22 +260,25 @@ export default function RunInScreen() {
     addDaysToLocalDate(defaultEntryDate, -2),
   ];
 
-  // Read-side guard surfaced in the card: the active day's stored value could not be read.
-  const activeEntry = entries.find((e) => e.date === activeDate);
-  const activeCaffeineUnreadable = activeEntry
-    ? readCaffeineTime(activeEntry.lastCaffeineTime).kind === 'unreadable'
-    : false;
+  const targetDate = activeDate || defaultEntryDate;
+  const activeEntry = entries.find((e) => e.date === targetDate);
+  const targetDayLogged =
+    activeEntry !== undefined &&
+    activeEntry.sleepMinutes !== null &&
+    exposureValue(activeEntry, exposure) !== null &&
+    readCaffeineTime(exposureValue(activeEntry, exposure)).kind !== 'unreadable';
 
   const getDayStatus = (d: string) => {
     const entry = entries.find((e) => e.date === d);
     if (!entry) return 'Missing';
     const syncSuffix = entry.synced === false ? ' (not synced yet)' : '';
-    if (readCaffeineTime(entry.lastCaffeineTime).kind === 'unreadable') {
+    const exposureRead = exposureValue(entry, exposure);
+    if (readCaffeineTime(exposureRead).kind === 'unreadable') {
       const base = entry.sleepMinutes !== null ? 'Partly logged' : 'Missing';
       return `${base}${syncSuffix} — ${CAFFEINE_TIME_UNREADABLE_MARKER}`;
     }
-    if (entry.sleepMinutes !== null && entry.lastCaffeineTime !== null) return `Logged${syncSuffix}`;
-    if (entry.sleepMinutes !== null || entry.lastCaffeineTime !== null) return `Partly logged${syncSuffix}`;
+    if (entry.sleepMinutes !== null && exposureRead !== null) return `Logged${syncSuffix}`;
+    if (entry.sleepMinutes !== null || exposureRead !== null) return `Partly logged${syncSuffix}`;
     return `Missing${syncSuffix}`;
   };
 
@@ -303,171 +286,160 @@ export default function RunInScreen() {
     <Screen>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader
-          overline="GETTING TO KNOW YOU"
+          overline={sentenceCase('GETTING TO KNOW YOU')}
           title="Getting to know your sleep"
           notice="This app is not medical advice."
           action={<Button label="Today" variant="quiet" onPress={() => router.replace('/')} />}
         />
 
-        {/* Progress line: counts only, never a result. */}
-        <Card tone="hero" overline="PROGRESS">
-          <Text variant="titleMedium" color="champagneLight" tabular>
-            {validDaysCount} of {runInMinValidDays} nights logged
-          </Text>
-          <Text variant="sub" color="ivorySecondary">
-            Nights logged count, not days in a row.
-          </Text>
+        {/* Progress: one dot per night, exact count badge, and one plain sentence. */}
+        <Card tone="hero" overline="Your progress">
+          <View style={styles.heroHeader}>
+            <SplitDisc size={68} tone="normal" />
+            <View style={styles.heroMeta}>
+              <Text variant="heading" tabular>
+                {validDaysCount} of {runInMinValidDays} nights logged
+              </Text>
+              <Text variant="body" color="textMuted">
+                {progressSentence(validDaysCount, runInMinValidDays)}
+              </Text>
+              {/* The first real aha: their own range, and why one night cannot answer. */}
+              {runInMilestone ? (
+                <Text variant="sub" color="textMuted">
+                  {runInMilestone.title} {runInMilestone.body}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+          <NightTracker logged={validDaysCount} target={runInMinValidDays} />
+          {nextCheckDate && !isRunInComplete ? (
+            <Text variant="caption" color="textMuted" tabular>
+              Next check unlocks on {nextCheckDate}. Keep logging each morning.
+            </Text>
+          ) : null}
         </Card>
 
-        {/* Storage error / offline sync banner */}
+        {/* Storage error / offline sync recovery banner */}
         {storageError ? (
-          <Card tone="danger">
-            <Text variant="sub" color="garnet" weight="semiBold" accessibilityRole="alert">
-              {storageError}
-            </Text>
-            <Button
-              label="Retry Sync"
-              variant="quiet"
-              loading={syncing}
-              onPress={async () => {
-                if (user) {
-                  setSyncing(true);
-                  const res = await syncUnsyncedEntries(user.id);
-                  setSyncing(false);
-                  setEntries(await listEntries(user.id));
-                  if (res.failedCount === 0) {
-                    setStorageError(null);
-                  } else {
-                    setStorageError(`${res.failedCount} entries still not synced yet. Tap to retry.`);
+          <Banner
+            tone="error"
+            action={
+              <Button
+                label="Retry sync"
+                variant="quiet"
+                loading={syncing}
+                onPress={async () => {
+                  if (user) {
+                    setSyncing(true);
+                    try {
+                      const res = await syncUnsyncedEntries(user.id);
+                      setEntries(await listEntries(user.id));
+                      if (res.failedCount === 0) {
+                        setStorageError(null);
+                        setStatusMessage('All saved entries are synced with your account.');
+                      } else {
+                        setStorageError(
+                          `${res.failedCount} entr${res.failedCount === 1 ? 'y' : 'ies'} still waiting to sync. Your log is safe on this device.`,
+                        );
+                      }
+                      setReloadTrigger((n) => n + 1);
+                    } finally {
+                      setSyncing(false);
+                    }
                   }
-                  setReloadTrigger((n) => n + 1);
-                }
-              }}
-            />
-          </Card>
+                }}
+              />
+            }
+          >
+            {storageError}
+          </Banner>
+        ) : null}
+
+        {/* Save confirmation with immediate Undo / Edit affordances */}
+        {statusMessage ? (
+          <Banner
+            tone="success"
+            action={
+              <View style={styles.bannerActions}>
+                {previousEntrySnapshot ? (
+                  <Button
+                    label="Undo"
+                    variant="quiet"
+                    onPress={() => void handleUndoLastSave()}
+                  />
+                ) : null}
+                <Button
+                  label="Back to Today"
+                  variant="quiet"
+                  onPress={() => router.replace('/')}
+                />
+              </View>
+            }
+          >
+            {statusMessage}
+          </Banner>
         ) : null}
 
         {/* All-nights-logged banner */}
         {isRunInComplete ? (
-          <Card tone="hero" title="All set">
-            <Text variant="body" color="ivorySecondary">
-              {nextCheckDate ? 'Your next check is ready.' : 'You have logged 14 nights. Next: find out whether a test is worth doing.'}
+          <Card tone="hero" overline="Ready to check" title="All 14 nights are in">
+            <Text variant="body" color="textMuted">
+              {nextCheckDate
+                ? 'Your next check is ready.'
+                : 'You have logged 14 nights. Next: find out whether a test is worth doing.'}
             </Text>
-            <Button label="Is this test worth doing?" onPress={() => router.push('/feasibility')} />
+            <Button
+              label="Is this test worth doing?"
+              variant="primary"
+              onPress={() => router.push('/feasibility')}
+            />
           </Card>
-        ) : nextCheckDate ? (
-          <Text color="ivorySecondary">Next check: {nextCheckDate}. Keep logging.</Text>
         ) : null}
 
-        {/* Morning check-in card */}
-        <Card
-          overline={`CHECK-IN FOR ${activeDate === defaultEntryDate ? 'LAST NIGHT' : activeDate}`}
-          title="Morning check-in"
-        >
-
-          {/* Sleep duration inputs */}
-          <Text variant="sub" color="ivoryMuted">
-            How long you slept
-          </Text>
-          <View style={styles.timeInputsRow}>
-            <View style={styles.flexInput}>
-              <Field
-                placeholder="Hours (e.g. 7)"
-                keyboardType="numeric"
-                value={sleepHours}
-                onChangeText={setSleepHours}
-              />
-            </View>
-            <View style={styles.flexInput}>
-              <Field
-                placeholder="Minutes (e.g. 30)"
-                keyboardType="numeric"
-                value={sleepMins}
-                onChangeText={setSleepMins}
-              />
-            </View>
-          </View>
-
-          {/* Last caffeine time input */}
-          <Text variant="sub" color="ivoryMuted">
-            Last caffeine yesterday
-          </Text>
-          <View style={styles.caffeineRow}>
-            <View style={styles.flexInput}>
-              <Field
-                placeholder="HH:MM (e.g. 14:30)"
-                editable={!noCaffeine}
-                value={noCaffeine ? '' : caffeineTime}
-                onChangeText={setCaffeineTime}
-              />
-            </View>
-            <Pressable
-              onPress={() => {
-                setNoCaffeine(!noCaffeine);
-                if (!noCaffeine) setCaffeineTime('');
-              }}
-              style={[styles.segment, noCaffeine && styles.segmentActive]}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: noCaffeine }}
-            >
-              <Text
-                variant="sub"
-                color={noCaffeine ? 'ground' : 'ivorySecondary'}
-                weight="semiBold"
-              >
-                No caffeine
-              </Text>
-            </Pressable>
-          </View>
-
-          {activeCaffeineUnreadable ? (
-            <Text
-              variant="caption"
-              color="garnet"
-              accessibilityRole="alert"
-            >
-              {CAFFEINE_TIME_UNREADABLE_MESSAGE}
+        {/* Morning check-in: collapses to a clean summary card once logged unless editing */}
+        {targetDayLogged && !editing && activeEntry ? (
+          <Card
+            tone="tint"
+            overline={
+              targetDate === defaultEntryDate
+                ? `Logged for last night (${targetDate})`
+                : `Logged for ${targetDate}`
+            }
+          >
+            <Text variant="heading">Check-in saved</Text>
+            <Text variant="body" color="textMuted" tabular>
+              {summarizeEntry(activeEntry)}
             </Text>
-          ) : null}
-
-          {fieldErrors ? (
-            <Text variant="caption" color="garnet" accessibilityRole="alert">
-              {fieldErrors}
-            </Text>
-          ) : null}
-
-          {statusMessage ? (
-            <Text
-              variant="caption"
-              color="champagneLight"
-              accessibilityRole="alert"
-              accessibilityLiveRegion="polite"
-            >
-              {statusMessage}
-            </Text>
-          ) : null}
-
-          <Button
-            label={savingEntry ? 'Saving...' : 'Save check-in'}
-            variant="primary"
-            disabled={savingEntry}
-            loading={savingEntry}
-            onPress={() => void handleSaveEntry()}
+            <NavRow
+              label="Edit this check-in"
+              onPress={() => setEditing(true)}
+            />
+          </Card>
+        ) : (
+          <CheckInCard
+            key={targetDate}
+            date={targetDate}
+            label={targetDate === defaultEntryDate ? `last night (${targetDate})` : targetDate}
+            initialSleepMinutes={activeEntry?.sleepMinutes ?? null}
+            exposure={exposure}
+            initialCaffeineTime={exposureValue(activeEntry, exposure)}
+            onSave={handleSaveEntry}
+            saving={savingEntry}
           />
-        </Card>
+        )}
 
         {/* Last 3 days list */}
-        <Card overline="RECENT DAYS">
+        <Card tone="tint" overline="Recent days">
           {pastDays.map((d) => {
             const status = getDayStatus(d);
             const isEditable = canEditDate(today, d, savedPlans);
-            const isSelected = activeDate === d;
+            const isSelected = targetDate === d && editing;
             return (
               <NavRow
                 key={d}
-                label={d}
+                label={d === defaultEntryDate ? `Last night (${d})` : d}
                 detail={status}
-                value={isEditable ? (isSelected ? 'Editing' : 'Edit') : 'Read-only'}
+                value={isEditable ? (isSelected ? 'Editing' : 'Edit') : 'Locked'}
                 disabled={!isEditable}
                 onPress={() => selectDateForEdit(d)}
               />
@@ -475,33 +447,35 @@ export default function RunInScreen() {
           })}
         </Card>
 
-        {/* Your own counts only: never a comparison, estimate or verdict. */}
+        {/* Your own counts only: never a comparison, estimate or verdict. Tucked under Details. */}
         {validDaysCount >= 3 ? (
-          <Card
-            overline="WHAT YOUR LOG SHOWS"
-            subtitle="Your own numbers, not a result."
-          >
-            <StatStrip
-              size="lg"
-              items={[
-                { label: 'Days logged', value: String(descriptiveStats.daysLogged) },
-                {
-                  label: 'Average sleep',
-                  value:
-                    descriptiveStats.averageSleepMinutes !== null
-                      ? `${(descriptiveStats.averageSleepMinutes / 60).toFixed(1)} hrs`
-                      : '—',
-                },
-                {
-                  label: 'Caffeine after noon',
-                  value: `${descriptiveStats.afternoonCaffeineDays} of ${descriptiveStats.daysLogged}`,
-                },
-                {
-                  label: 'Caffeine not logged',
-                  value: String(descriptiveStats.unknownCaffeineDays),
-                },
-              ]}
-            />
+          <Card tone="quiet">
+            <Details summary="See your numbers so far">
+              <Text variant="sub" color="textMuted">
+                Your own numbers, not a result. Nights logged count, not days in a row.
+              </Text>
+              <StatStrip
+                size="lg"
+                items={[
+                  { label: 'Days logged', value: String(descriptiveStats.daysLogged) },
+                  {
+                    label: 'Average sleep',
+                    value:
+                      descriptiveStats.averageSleepMinutes !== null
+                        ? `${(descriptiveStats.averageSleepMinutes / 60).toFixed(1)} hrs`
+                        : '—',
+                  },
+                  {
+                    label: `${screenBaseline ? 'Screens' : 'Caffeine'} after ${cutoffTime}`,
+                    value: `${screenBaseline ? screenBaseline.lateCaffeineDays : descriptiveStats.afterCutoffDays} of ${descriptiveStats.daysLogged}`,
+                  },
+                  {
+                    label: screenBaseline ? 'Screen time not logged' : 'Caffeine not logged',
+                    value: String(screenBaseline ? screenBaseline.unknownExposureDays : descriptiveStats.unknownExposureDays),
+                  },
+                ]}
+              />
+            </Details>
           </Card>
         ) : null}
       </ScrollView>
@@ -511,21 +485,18 @@ export default function RunInScreen() {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.section, paddingBottom: spacing.xxl },
-  timeInputsRow: { flexDirection: 'row', gap: spacing.md },
-  caffeineRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
-  flexInput: { flex: 1 },
-  segment: {
-    height: 54,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.surfaceHigh,
-    borderColor: colors.hairline,
-    borderWidth: 1,
-    borderRadius: radii.control,
+  heroHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: spacing.md,
   },
-  segmentActive: {
-    backgroundColor: colors.champagne,
-    borderColor: colors.champagneLight,
+  heroMeta: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  bannerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
 });

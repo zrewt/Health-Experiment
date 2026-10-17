@@ -1,3 +1,4 @@
+import { CURRENT_CONSENT_VERSION } from '../src/experiment/consent';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { getHomeState, HomeStateInputs } from '../src/experiment/home-state';
@@ -11,7 +12,7 @@ import type { ExperimentPlan } from '../src/experiment/types';
 const defaultConsent = {
   userId: 'user-1',
   consentType: 'health-data' as const,
-  policyVersion: '2026-10-health-draft-v1',
+  policyVersion: CURRENT_CONSENT_VERSION,
   granted: true,
   createdAt: '2026-01-01T00:00:00.000Z',
 };
@@ -344,7 +345,7 @@ test('getTodayDashboardModel covers run_in, feasibility_ready, and completed res
     today: '2026-01-05',
   });
   assert.equal(runInModel.state, 'run_in');
-  assert.equal(runInModel.instruction.heading, 'Today: normal day');
+  assert.equal(runInModel.instruction.heading, 'Keep your usual routine');
   assert.equal(runInModel.checkIn.enabled, true);
   assert.equal(runInModel.checkIn.status, 'logged');
   assert.equal(runInModel.checkIn.summary, '7h 00m · Last caffeine 15:00');
@@ -434,4 +435,20 @@ test('the Today check-in reports whether last night is already logged', () => {
     assert.equal(model.checkIn.status, expectedStatus, `${label}: status`);
     assert.equal(model.checkIn.summary, expectedSummary, `${label}: summary`);
   }
+});
+
+test('a new account is asked which test to run before any default is assumed', () => {
+  const today = '2026-01-10';
+  const base = { setup: null, entries: [], plan: null, plans: [], today } as const;
+
+  for (const consent of [null, { ...defaultConsent, granted: false }]) {
+    const model = getTodayDashboardModel({ consent, ...base });
+    assert.equal(model.state, 'needs_consent');
+    // Never /setup-consent, which would silently default the account to caffeine.
+    assert.equal(model.primaryAction.route, '/choose-test');
+  }
+
+  const consented = getTodayDashboardModel({ consent: defaultConsent, ...base });
+  assert.equal(consented.state, 'needs_setup');
+  assert.equal(consented.primaryAction.route, '/choose-test');
 });

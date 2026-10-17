@@ -11,13 +11,28 @@ import {
   CAFFEINE_TIME_UNREADABLE_MARKER,
   readCaffeineTime,
 } from './caffeine-time';
+import {
+  experimentById,
+  experimentForRuleType,
+  exposureForExperimentId,
+  exposureValue,
+  type ExposureKind,
+} from './experiments';
 
 export interface JournalDayItem {
   date: string;
   sleepMinutes: number | null;
   sleepText: string;
-  lastCaffeineTime: string | 'none' | null;
-  caffeineText: string;
+  /** Which exposure this test logs: the time column the day was judged on. */
+  exposure: ExposureKind;
+  exposureWord: string;
+  /** The stored value for that exposure (caffeine time or screen time). */
+  exposureValue: string | 'none' | null;
+  exposureText: string;
+  /** The other exposure, so both fields stay visible in the log. Null when not logged. */
+  otherExposure: ExposureKind;
+  otherExposureWord: string;
+  otherExposureText: string | null;
   statusText: string;
   statusTone: 'logged' | 'partial' | 'missing' | 'unreadable';
   editable: boolean;
@@ -69,16 +84,20 @@ export function formatSleepDuration(sleepMinutes: number | null): string {
   return `${h}h ${String(m).padStart(2, '0')}m`;
 }
 
-function formatCaffeineDisplay(raw: string | 'none' | null): {
-  text: string;
-  unreadable: boolean;
-} {
+function formatExposureDisplay(
+  raw: string | 'none' | null,
+  exposure: ExposureKind,
+): { text: string; unreadable: boolean } {
+  const isScreens = exposure === 'screens';
   const parsed = readCaffeineTime(raw);
   if (parsed.kind === 'none') {
-    return { text: 'No caffeine', unreadable: false };
+    return { text: isScreens ? 'No screens' : 'No caffeine', unreadable: false };
   }
   if (parsed.kind === 'valid' && parsed.time) {
-    return { text: `Last caffeine ${parsed.time}`, unreadable: false };
+    return {
+      text: isScreens ? `Last screen ${parsed.time}` : `Last caffeine ${parsed.time}`,
+      unreadable: false,
+    };
   }
   if (parsed.kind === 'unreadable') {
     return { text: CAFFEINE_TIME_UNREADABLE_MARKER, unreadable: true };
@@ -98,6 +117,13 @@ function formatCaffeineDisplay(raw: string | 'none' | null): {
 export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
   const { entries, today, setup, plan, plans = [], maxTimelineDays = 60 } = inputs;
   const yesterday = getMorningEntryDate(today);
+  // The journal reads the same test the rest of the app is running: the active plan owns it
+  // while one exists, otherwise the setup row does.
+  const experiment = plan
+    ? experimentForRuleType(plan.plan.definition.conditionRule.type)
+    : experimentById(setup?.experimentId);
+  const exposure = exposureForExperimentId(experiment.id);
+  const otherExposure: ExposureKind = exposure === 'screens' ? 'caffeine' : 'screens';
 
   const byDate = new Map<string, DashboardEntry>();
   for (const entry of entries) {
@@ -149,26 +175,28 @@ export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
     const date = addDaysToLocalDate( yesterday, -offset );
     const entry = byDate.get(date);
     const sleepMinutes = entry?.sleepMinutes ?? null;
-    const lastCaffeineTime = entry?.lastCaffeineTime ?? null;
+    const storedExposure = exposureValue(entry, exposure);
+    const otherStoredExposure = exposureValue(entry, otherExposure);
     const synced = entry ? entry.synced !== false : true;
     const syncSuffix = synced ? '' : ' (not synced yet)';
     const sleepText = formatSleepDuration(sleepMinutes);
-    const caffeineInfo = formatCaffeineDisplay(lastCaffeineTime);
+    const exposureInfo = formatExposureDisplay(storedExposure, exposure);
+    const otherExposureInfo = formatExposureDisplay(otherStoredExposure, otherExposure);
 
     let statusText: string;
     let statusTone: JournalDayItem['statusTone'];
 
-    if (caffeineInfo.unreadable) {
+    if (exposureInfo.unreadable) {
       const base = sleepMinutes !== null ? 'Partly logged' : 'Missing';
       statusText = `${base}${syncSuffix} — ${CAFFEINE_TIME_UNREADABLE_MARKER}`;
       statusTone = 'unreadable';
       if (sleepMinutes !== null) partialDays++;
       else missingDays++;
-    } else if (sleepMinutes !== null && lastCaffeineTime !== null) {
+    } else if (sleepMinutes !== null && storedExposure !== null) {
       statusText = `Logged${syncSuffix}`;
       statusTone = 'logged';
       loggedDays++;
-    } else if (sleepMinutes !== null || lastCaffeineTime !== null) {
+    } else if (sleepMinutes !== null || storedExposure !== null) {
       statusText = `Partly logged${syncSuffix}`;
       statusTone = 'partial';
       partialDays++;
@@ -187,8 +215,15 @@ export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
       date,
       sleepMinutes,
       sleepText,
-      lastCaffeineTime,
-      caffeineText: caffeineInfo.text,
+      exposure,
+      exposureWord: experiment.exposureWord,
+      exposureValue: storedExposure,
+      exposureText: exposureInfo.text,
+      otherExposure,
+      otherExposureWord: otherExposure === 'screens' ? 'screens' : 'caffeine',
+      // Only shown when the other field holds a value: an empty one is not this test's job.
+      otherExposureText:
+        otherStoredExposure === null ? null : otherExposureInfo.text,
       statusText,
       statusTone,
       editable: canEditDate(today, date, allPlans),
@@ -212,8 +247,8 @@ export function getJournalViewModel(inputs: JournalInputs): JournalViewModel {
         : 0;
     const accessibleSummary =
       d.sleepMinutes !== null
-        ? `${d.date}: ${d.sleepText} sleep, ${d.caffeineText}`
-        : `${d.date}: sleep not logged, ${d.caffeineText}`;
+        ? `${d.date}: ${d.sleepText} sleep, ${d.exposureText}`
+        : `${d.date}: sleep not logged, ${d.exposureText}`;
     return {
       date: d.date,
       shortLabel: d.date.slice(5),

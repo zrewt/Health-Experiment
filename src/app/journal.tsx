@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import {
   Screen,
   ScreenHeader,
@@ -12,8 +12,10 @@ import {
   Text,
   Button,
   PrimaryNav,
+  Banner,
 } from '@/components/ui';
 import { colors, radii, spacing } from '@/design/tokens';
+import { sentenceCase } from '@/design/labels';
 import { useAuthStore } from '@/store/auth';
 import {
   getSetup,
@@ -34,6 +36,7 @@ import { CheckInCard } from '@/components/CheckInCard';
 type FilterMode = 'all' | 'incomplete' | 'editable';
 
 export default function JournalScreen() {
+  const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
   const [loading, setLoading] = useState(true);
@@ -41,6 +44,7 @@ export default function JournalScreen() {
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [previousEntrySnapshot, setPreviousEntrySnapshot] = useState<DailyEntry | null>(null);
   const [filter, setFilter] = useState<FilterMode>('all');
 
   const [setup, setSetup] = useState<ExperimentSetupRecord | null>(null);
@@ -104,6 +108,25 @@ export default function JournalScreen() {
     setSaving(true);
     setError(null);
     setSaveMessage(null);
+
+    const prevExisting = entries.find((e) => e.date === entry.date);
+    setPreviousEntrySnapshot(
+      prevExisting
+        ? {
+            date: prevExisting.date,
+            sleepMinutes: prevExisting.sleepMinutes,
+            lastCaffeineTime: prevExisting.lastCaffeineTime,
+            // Undo restores the whole check-in, so a screens test's time is kept too.
+            lastScreenTime: prevExisting.lastScreenTime ?? null,
+          }
+        : {
+            date: entry.date,
+            sleepMinutes: null,
+            lastCaffeineTime: null,
+            lastScreenTime: null,
+          },
+    );
+
     try {
       const saved = await saveEntry(user.id, entry);
       setEntries((prev) => {
@@ -112,7 +135,7 @@ export default function JournalScreen() {
         return next.sort((a, b) => a.date.localeCompare(b.date));
       });
       if (saved.synced === false) {
-        setSaveMessage('Saved on this device. Sync is waiting.');
+        setSaveMessage(`Saved on this device for ${entry.date}. Sync is waiting.`);
         void syncUnsyncedEntries(user.id).then(async () => {
           setEntries(await listEntries(user.id));
         });
@@ -127,6 +150,26 @@ export default function JournalScreen() {
     }
   };
 
+  const handleUndoSave = async () => {
+    if (!user || !previousEntrySnapshot || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const restored = await saveEntry(user.id, previousEntrySnapshot);
+      setEntries((prev) => {
+        const next = prev.filter((e) => e.date !== previousEntrySnapshot.date);
+        next.push(restored);
+        return next.sort((a, b) => a.date.localeCompare(b.date));
+      });
+      setSaveMessage(`Restored ${previousEntrySnapshot.date} to its previous entry.`);
+      setPreviousEntrySnapshot(null);
+    } catch {
+      setError('Could not undo the change right now. Tap the day below to edit it.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleRetrySync = async () => {
     if (!user || syncing) return;
     setSyncing(true);
@@ -134,7 +177,7 @@ export default function JournalScreen() {
       const res = await syncUnsyncedEntries(user.id);
       setEntries(await listEntries(user.id));
       if (res.failedCount === 0) {
-        setSaveMessage('All synced.');
+        setSaveMessage('All entries are synced with your account.');
       }
     } finally {
       setSyncing(false);
@@ -143,42 +186,74 @@ export default function JournalScreen() {
 
   return (
     <Screen>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <ScreenHeader
-          overline="YOUR LOG"
+          overline={sentenceCase('YOUR LOG')}
           title="Journal"
           notice={journal.medicalNotice}
         />
 
         {error ? (
-          <Card tone="danger">
-            <Text color="garnet" accessibilityRole="alert">{error}</Text>
-            <Button label="Retry" variant="quiet" onPress={() => void loadJournal()} />
-          </Card>
+          <Banner
+            tone="error"
+            action={<Button label="Retry" variant="quiet" onPress={() => void loadJournal()} />}
+          >
+            {error}
+          </Banner>
         ) : null}
 
         {unsyncedCount > 0 ? (
-          <Card>
-            <Text variant="sub" color="champagneLight">
-              {unsyncedCount} saved on this device, not synced yet.
-            </Text>
-            <Button label="Try sync again" variant="quiet" loading={syncing} onPress={() => void handleRetrySync()} />
-          </Card>
+          <Banner
+            tone="notice"
+            action={
+              <Button
+                label="Try sync again"
+                variant="quiet"
+                loading={syncing}
+                onPress={() => void handleRetrySync()}
+              />
+            }
+          >
+            {unsyncedCount} check-in{unsyncedCount === 1 ? '' : 's'} saved on this device, not synced yet.
+          </Banner>
         ) : null}
 
         {saveMessage ? (
-          <Text variant="sub" color="champagneLight" accessibilityRole="alert" accessibilityLiveRegion="polite">
+          <Banner
+            tone="success"
+            action={
+              previousEntrySnapshot ? (
+                <Button
+                  label="Undo"
+                  variant="quiet"
+                  onPress={() => void handleUndoSave()}
+                />
+              ) : undefined
+            }
+          >
             {saveMessage}
-          </Text>
+          </Banner>
         ) : null}
 
         {/* Descriptive counts only: never a condition comparison. */}
-        <Card overline="YOUR LOG">
+        <Card tone="hero" overline={sentenceCase('YOUR LOG')}>
           <StatStrip
             items={[
-              { label: 'Complete days', value: String(journal.summary.loggedDays), emphasis: 'strong' },
+              {
+                label: 'Complete days',
+                value: String(journal.summary.loggedDays),
+                emphasis: 'strong',
+              },
               { label: 'Partly logged', value: String(journal.summary.partialDays) },
-              { label: 'Missing days', value: String(journal.summary.missingDays), emphasis: 'muted' },
+              {
+                label: 'Missing days',
+                value: String(journal.summary.missingDays),
+                emphasis: 'muted',
+              },
               {
                 label: 'Avg sleep',
                 value:
@@ -188,17 +263,20 @@ export default function JournalScreen() {
               },
             ]}
           />
-          <Text variant="caption" color="ivoryMuted">
+          <Text variant="caption" color="textMuted">
             Missing stays blank. It is never counted as zero.
           </Text>
         </Card>
 
-        <Card overline={`SLEEP PER NIGHT (${journal.chart.bars.length} NIGHTS)`}>
-          <Text variant="sub" color="ivorySecondary" accessibilityRole="summary">
+        <Card tone="tint" overline={`Sleep per night (${journal.chart.bars.length} nights)`}>
+          <Text variant="sub" color="textMuted" accessibilityRole="summary">
             {journal.chart.accessibleOverview}
           </Text>
 
-          <View style={styles.chartContainer} accessibilityLabel={journal.chart.accessibleOverview}>
+          <View
+            style={styles.chartContainer}
+            accessibilityLabel={journal.chart.accessibleOverview}
+          >
             {journal.chart.bars.map((bar) => (
               <View
                 key={bar.date}
@@ -218,7 +296,7 @@ export default function JournalScreen() {
                     <View style={styles.barMissingDot} />
                   )}
                 </View>
-                <Text variant="overline" color="ivoryMuted" tabular style={styles.barLabel}>
+                <Text variant="caption" color="textMuted" tabular style={styles.barLabel}>
                   {bar.shortLabel}
                 </Text>
               </View>
@@ -231,7 +309,7 @@ export default function JournalScreen() {
               .slice(-5)
               .reverse()
               .map((bar) => (
-                <Text key={bar.date} variant="caption" color="ivorySecondary" tabular>
+                <Text key={bar.date} variant="caption" color="textMuted" tabular>
                   • {bar.accessibleSummary}
                 </Text>
               ))}
@@ -244,9 +322,14 @@ export default function JournalScreen() {
             <CheckInCard
               key={activeEditItem.date}
               date={activeEditItem.date}
-              label={activeEditItem.date}
+              label={
+                activeEditItem.date === journal.yesterday
+                  ? `last night (${activeEditItem.date})`
+                  : activeEditItem.date
+              }
               initialSleepMinutes={activeEditItem.sleepMinutes}
-              initialCaffeineTime={activeEditItem.lastCaffeineTime}
+              initialCaffeineTime={activeEditItem.exposureValue}
+              exposure={activeEditItem.exposure}
               onSave={handleSaveEntry}
               saving={saving}
             />
@@ -254,14 +337,14 @@ export default function JournalScreen() {
           </View>
         ) : null}
 
-        <Card overline="EVERY DAY">
-          <Text variant="caption" color="ivoryMuted">
-            You can edit yesterday and the 3 days before it.
+        <Card overline={sentenceCase('EVERY DAY')}>
+          <Text variant="caption" color="textMuted">
+            You can edit yesterday ({journal.yesterday}) and the 3 days before it.
           </Text>
 
           <Details summary="Why some days cannot be changed">
-            <Text variant="caption" color="ivorySecondary">
-              Days lock once you save what we found for a test, so the saved reading still matches your log.
+            <Text variant="caption" color="textMuted">
+              Days lock once you save what we found for a test, so the saved reading still matches your log. Older days outside the 4-day window are also read-only.
             </Text>
           </Details>
 
@@ -269,7 +352,10 @@ export default function JournalScreen() {
             {(
               [
                 ['all', `All (${journal.days.length})`],
-                ['incomplete', `Incomplete (${journal.summary.missingDays + journal.summary.partialDays})`],
+                [
+                  'incomplete',
+                  `Incomplete (${journal.summary.missingDays + journal.summary.partialDays})`,
+                ],
                 ['editable', 'Editable'],
               ] as const
             ).map(([key, label]) => (
@@ -282,7 +368,7 @@ export default function JournalScreen() {
               >
                 <Text
                   variant="caption"
-                  color={filter === key ? 'ground' : 'ivorySecondary'}
+                  color={filter === key ? 'surface' : 'text'}
                   weight="semiBold"
                 >
                   {label}
@@ -292,9 +378,29 @@ export default function JournalScreen() {
           </View>
 
           {loading ? (
-            <Text color="ivorySecondary">Loading…</Text>
+            <Text color="textMuted">Loading…</Text>
           ) : filteredDays.length === 0 ? (
-            <Text color="ivoryMuted">No days match this filter.</Text>
+            <View style={styles.emptyBlock}>
+              <Text variant="sub" color="textMuted">
+                {filter === 'incomplete'
+                  ? 'Every day in this window is fully logged.'
+                  : filter === 'editable'
+                  ? 'No days are currently editable.'
+                  : 'No nights logged yet.'}
+              </Text>
+              {filter !== 'all' ? (
+                <Button
+                  label="Show all days"
+                  variant="secondary"
+                  onPress={() => setFilter('all')}
+                />
+              ) : (
+                <NavRow
+                  label="Go to Today to log last night"
+                  onPress={() => router.replace('/' as Href)}
+                />
+              )}
+            </View>
           ) : (
             filteredDays.map((day) => {
               const isSelected = editingDate === day.date;
@@ -308,39 +414,48 @@ export default function JournalScreen() {
                   }}
                   style={[styles.dayRow, isSelected && styles.dayRowSelected]}
                   accessibilityRole="button"
-                  accessibilityLabel={`${day.date}, ${day.phaseLabel}, Sleep ${day.sleepText}, ${day.caffeineText}, Status ${day.statusText}`}
+                  accessibilityLabel={`${day.date}, ${day.phaseLabel}, Sleep ${day.sleepText}, ${day.exposureText}, Status ${day.statusText}`}
                   accessibilityState={{ selected: isSelected, disabled: !day.editable }}
                 >
                   <View style={styles.dayRowMain}>
                     <View style={styles.dayHeaderLine}>
-                      <Text variant="body" color="ivory" weight="semiBold" tabular>
-                        {day.date}
+                      <Text variant="body" color="text" weight="semiBold" tabular>
+                        {day.date === journal.yesterday ? `Last night (${day.date})` : day.date}
                       </Text>
-                      <Text variant="overline" color="champagneMuted">
-                        {day.phaseLabel.toUpperCase()}
+                      <Text variant="caption" color="textMuted">
+                        {day.phaseLabel}
                       </Text>
                     </View>
-                    <Text variant="sub" color="ivorySecondary" tabular>
-                      Sleep: {day.sleepText} • {day.caffeineText}
+                    <Text variant="sub" color="textMuted" tabular>
+                      Sleep: {day.sleepText} · {day.exposureText}
                     </Text>
+                    {/* The other exposure stays visible when it holds a value, so a screens
+                        test never hides a caffeine time the user did log. */}
+                    {day.otherExposureText ? (
+                      <Text variant="caption" color="textMuted" tabular>
+                        Also logged: {day.otherExposureWord} {day.otherExposureText}
+                      </Text>
+                    ) : null}
                     <Text
                       variant="caption"
                       color={
                         day.statusTone === 'unreadable'
-                          ? 'garnet'
+                          ? 'signalText'
                           : day.statusTone === 'logged'
-                          ? 'champagneLight'
-                          : day.statusTone === 'partial'
-                          ? 'ivorySecondary'
-                          : 'ivoryMuted'
+                          ? 'accent'
+                          : 'textMuted'
                       }
                     >
                       {day.statusText}
                     </Text>
                     {/* Its own line: the sleep reading stays on one line instead of
                         competing with the action for the row's width. */}
-                    <Text variant="sub" color={day.editable ? 'champagne' : 'ivorySubtle'}>
-                      {!day.editable ? 'Read-only' : isSelected ? 'Editing — tap to close' : 'Edit this day'}
+                    <Text variant="sub" color={day.editable ? 'accent' : 'textMuted'}>
+                      {!day.editable
+                        ? 'Locked'
+                        : isSelected
+                        ? 'Editing — tap to close'
+                        : 'Edit this day'}
                     </Text>
                   </View>
                 </Pressable>
@@ -365,7 +480,7 @@ const styles = StyleSheet.create({
     height: 132,
     paddingTop: spacing.sm,
     paddingHorizontal: spacing.xs,
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: colors.surface,
     borderRadius: radii.control,
     gap: 4,
   },
@@ -385,18 +500,16 @@ const styles = StyleSheet.create({
   },
   barFill: {
     width: '100%',
-    backgroundColor: colors.champagne,
+    backgroundColor: colors.accent,
     borderRadius: 4,
   },
   barMissingDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.ivorySubtle,
+    backgroundColor: colors.lineStrong,
   },
-  barLabel: {
-    fontSize: 9,
-  },
+  barLabel: {},
   editorWrapper: {
     gap: spacing.md,
   },
@@ -412,24 +525,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radii.pill,
     borderWidth: 1,
-    borderColor: colors.hairlineBright,
-    backgroundColor: colors.surfaceHigh,
+    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface,
   },
   filterChipActive: {
-    backgroundColor: colors.champagne,
-    borderColor: colors.champagne,
+    backgroundColor: colors.text,
+    borderColor: colors.text,
+  },
+  emptyBlock: {
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
   },
   dayRow: {
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     borderRadius: radii.control,
-    // Kept as an invisible border so selecting a day does not shift the row.
     borderWidth: 1,
     borderColor: 'transparent',
   },
   dayRowSelected: {
-    backgroundColor: colors.surfaceHigh,
-    borderColor: colors.hairlineGold,
+    backgroundColor: colors.surfaceTint,
+    borderColor: colors.accent,
   },
   dayRowMain: {
     gap: 6,
@@ -437,6 +553,7 @@ const styles = StyleSheet.create({
   dayHeaderLine: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: spacing.sm,
   },
 });
